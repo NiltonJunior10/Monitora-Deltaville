@@ -195,3 +195,22 @@ A versão web passa a ter uma estrutura própria, sem reutilizar visualmente o m
 - home continua em tela única quando houver altura suficiente;
 - notebooks/telas baixas passam a rolar a página em vez de comprimir excessivamente os cards;
 - melhorias de foco, hover, cursores e feedback visual.
+
+
+## v4.8.5 — UX mobile refinada
+
+- pinch zoom, arrastar e duplo toque explícitos no mapa mobile;
+- cabeçalho sticky com blur e melhor leitura;
+- melhor respiro entre cards e rodapé;
+- áreas de toque maiores;
+- formulários/sheets com rolagem própria;
+- chips e seleção de tipos reorganizados para telas pequenas;
+- mantém o rodapé móvel fixo e o mapa com gestos independentes do zoom da página.
+
+
+## v4.8.6 — categorias completas no mobile
+
+- categorias de clima/água e infraestrutura/manutenção ficam visíveis diretamente no formulário mobile;
+- iluminação, árvores, buracos, sinalização, calçada, energia, água, esgoto, lixo, estrutura e outros problemas aparecem sem precisar abrir "manual";
+- grid responsivo em 2 colunas e 1 coluna em telas muito estreitas;
+- fotos foram deslocadas abaixo das categorias para priorizar o tipo de ocorrência.
