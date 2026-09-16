@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=482">
+  <link rel="stylesheet" href="styles.css?v=483">
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -278,19 +278,7 @@
           <button data-filter="alerts">Alertas</button>
         </div>
 
-        <button type="button" class="pick-point-btn" id="pickPointBtn">
-          <span class="pick-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 21s6-5.6 6-11a6 6 0 1 0-12 0c0 5.4 6 11 6 11Z"/>
-              <circle cx="12" cy="10" r="2.2"/>
-            </svg>
-          </span>
-          <span class="pick-copy">
-            <b id="pickPointText">Marcar ponto</b>
-          </span>
-        </button>
-        <div class="map-pick-help" id="mapPickHelp">Pressione e segure para marcar o ponto exato.</div>
-
+        <div class="map-workspace">
         <div class="map-shell">
           <div class="map-floating-toolbar">
             <button type="button" class="map-chip-btn" id="mapCenterBtn">Centralizar</button>
@@ -344,6 +332,20 @@
           </div>
         </div>
 
+          <aside class="map-side-panel" aria-label="Controles e pontos monitorados">
+            <button type="button" class="pick-point-btn" id="pickPointBtn">
+          <span class="pick-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s6-5.6 6-11a6 6 0 1 0-12 0c0 5.4 6 11 6 11Z"/>
+              <circle cx="12" cy="10" r="2.2"/>
+            </svg>
+          </span>
+          <span class="pick-copy">
+            <b id="pickPointText">Marcar ponto</b>
+          </span>
+        </button>
+            <div class="map-pick-help" id="mapPickHelp">Pressione e segure para marcar o ponto exato.</div>
+
         <div class="map-focus-card" id="mapFocusCard" hidden>
           <div class="map-focus-card__top">
             <div>
@@ -363,13 +365,14 @@
           </div>
         </div>
 
+            <p class="map-note">Pressione e segure para marcar um ponto exato, ou delimite início e fim de um trecho alagado quando a ocorrência for em avenida.</p>
 
-
-        <p class="map-note">Pressione e segure para marcar um ponto exato, ou delimite início e fim de um trecho alagado quando a ocorrência for em avenida.</p>
-        <section class="section locations-section">
+<section class="section locations-section">
           <div class="section-head"><div><p class="kicker">LOCAIS</p><h2>Pontos monitorados</h2><small class="section-helper">Toque em um item para localizar no mapa.</small></div></div>
           <div id="locationsList" class="locations-list"></div>
         </section>
+          </aside>
+        </div>
       </section>
 
       <section class="page" data-page="alerts">
@@ -832,6 +835,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=482"></script>
+  <script src="app.js?v=483"></script>
 </body>
 </html>

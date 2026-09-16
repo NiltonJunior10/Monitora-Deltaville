@@ -1,9 +1,9 @@
-const CACHE="monitora-deltaville-v482-map-page-fix";
+const CACHE="monitora-deltaville-v483-map-desktop-stable";
 const APP_SHELL=[
   "./",
   "./index.html",
-  "./styles.css?v=482",
-  "./app.js?v=482",
+  "./styles.css?v=483",
+  "./app.js?v=483",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",

@@ -216,12 +216,36 @@ function navigate(page){
   window.scrollTo({top:0,behavior:"smooth"});
   if(page==="reports")renderReports();
   if(page==="map"){
-    [30,100,260,520].forEach(delay=>setTimeout(()=>ensureMapLayout(state.maps.full,true),delay));
-    setTimeout(syncMapBottomUI,40);
-    setTimeout(()=>state.maps.full?.invalidateSize({animate:false}),650);
+    setTimeout(syncMapBottomUI,30);
+    refreshFullMapLayout();
   }else{
     setTimeout(()=>ensureMapLayout(state.maps.home,true),80);
   }
+}
+
+function refreshFullMapLayout(){
+  const map=state.maps.full;
+  const el=$("#fullMap");
+  if(!map||!el)return;
+
+  const apply=()=>{
+    const rect=el.getBoundingClientRect();
+    if(rect.width<120||rect.height<120)return false;
+
+    map.invalidateSize({animate:false,pan:false});
+    map.setMaxBounds(MAP_EXTENDED_BOUNDS);
+
+    const coverZoom=map.getBoundsZoom(MAP_BOUNDS,true,[12,12]);
+    if(Number.isFinite(coverZoom)){
+      map.setMinZoom(coverZoom-.22);
+      map.fitBounds(MAP_BOUNDS,{padding:[12,12],animate:false});
+    }
+    renderMapMarkers();
+    return true;
+  };
+
+  requestAnimationFrame(()=>requestAnimationFrame(apply));
+  [80,180,360,700].forEach(delay=>setTimeout(apply,delay));
 }
 function showLoading(show){$("#loading").hidden=!show;}
 
@@ -1303,8 +1327,11 @@ function attachMapResizeObserver(){
     const el=document.getElementById(id);
     if(el)state.mapResizeObserver.observe(el);
   });
-  window.addEventListener("orientationchange",()=>setTimeout(()=>ensureMapLayout(state.maps.full,false),180));
-  window.addEventListener("resize",()=>setTimeout(()=>ensureMapLayout(state.maps.full,false),80));
+  window.addEventListener("orientationchange",()=>setTimeout(()=>refreshFullMapLayout(),180));
+  window.addEventListener("resize",()=>{
+    if(document.body.classList.contains("map-open"))setTimeout(()=>refreshFullMapLayout(),90);
+    else setTimeout(()=>ensureMapLayout(state.maps.home,false),80);
+  });
 }
 function renderLakeZones(which){
   const map=state.maps[which];
