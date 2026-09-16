@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0B63CE">
+  <meta name="color-scheme" content="light">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Monitora">
+  <meta name="description" content="Monitora Deltaville — monitoramento comunitário de lagos, alagamentos e eventos climáticos.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://wdyvfuzmntqbldxxzokd.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <title>Monitora Deltaville</title>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <header class="topbar">
+      <button class="brand" data-nav="home" aria-label="Ir para o início">
+        <img src="assets/brand-mark.svg" alt="">
+        <span><b>Monitora</b><strong>Deltaville</strong></span>
+      </button>
+
+      <section class="top-weather" aria-label="Previsão local">
+        <div class="top-weather-main">
+          <div class="top-weather-icon" id="topWeatherIcon" aria-hidden="true">☀️</div>
+          <div class="top-weather-now">
+            <span id="weatherHeadline">Clima local</span>
+            <strong id="weatherTemp">—</strong>
+          </div>
+          <div class="top-weather-divider"></div>
+          <div class="top-weather-rain">
+            <span>Próx. 6h</span>
+            <b id="topWeatherRain">—</b>
+          </div>
+        </div>
+        <small class="top-weather-summary" id="weatherDetail" aria-live="polite">Carregando previsão…</small>
+      </section>
+    </header>
+
+    <main>
+      <section class="page active" data-page="home">
+        <div class="hello">
+          <div>
+            <p class="eyebrow">MONITORA DELTAVILLE</p>
+            <h1 id="helloTitle">Olá</h1>
+            <p id="residentLine" class="muted">Carregando seu cadastro…</p>
+          </div>
+          <span class="status-pill normal" id="overallPill">● Normal</span>
+        </div>
+
+        <section class="status-card">
+          <div>
+            <span class="label">Situação atual</span>
+            <strong id="overallStatus">Normal</strong>
+            <small id="statusReason">Nenhuma ocorrência crítica ativa.</small>
+          </div>
+          <div class="status-stats">
+            <article class="status-alerts-tile">
+              <div class="status-stat-head">
+                <span>Alertas ativos</span>
+                <button class="notify-inline-btn" id="notifyBtn" type="button" aria-label="Abrir alertas" title="Abrir alertas">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                    <path d="M10 21h4"/>
+                  </svg>
+                  <i id="notifyDot" hidden></i>
+                </button>
+              </div>
+              <b id="homeCount">0</b>
+              <small class="notify-inline-copy" id="notifyInlineCopy">Ver alertas</small>
+            </article>
+            <article><span>Chuva próxima 6h</span><b id="rain6h">—</b><small id="rainChance">—</small></article>
+          </div>
+        </section>
+
+        <button class="primary wide" id="homeReport">＋ Registrar ocorrência</button>
+
+        <section class="section">
+          <div class="section-head">
+            <div><p class="kicker">VISÃO RÁPIDA</p><h2>Mapa do Deltaville</h2></div>
+            <button class="link" data-nav="map">Abrir mapa</button>
+          </div>
+          <div class="home-map-shell">
+            <div id="homeMap" class="map map-preview" aria-label="Prévia interativa do mapa do Deltaville"></div>
+            <div class="home-map-hint">Arraste para explorar • toque para abrir</div>
+          </div>
+          <div class="map-legend-card">
+            <b>Status dos pontos</b>
+            <span><i class="dot normal"></i>Normal</span>
+            <span><i class="dot attention"></i>Atenção</span>
+            <span><i class="dot alert"></i>Alerta</span>
+            <span><i class="dot critical"></i>Crítico</span>
+          </div>
+          <p class="map-source-note">Base visual: mapa ilustrado do Deltaville, expandido e suavizado a partir da implantação real do empreendimento.</p>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <div><p class="kicker">AGORA</p><h2>Ocorrências ativas</h2></div>
+            <span class="count" id="occurrenceCount">0</span>
+          </div>
+          <div id="homeOccurrences" class="cards"></div>
+        </section>
+      </section>
+
+      <section class="page" data-page="map">
+        <div class="page-title map-fullscreen-title">
+          <div class="map-title-left">
+            <button type="button" class="map-back-btn" id="mapBackBtn" aria-label="Voltar para o início">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <div><p class="kicker">MONITORAMENTO</p><h1>Mapa do Deltaville</h1></div>
+          </div>
+          <button class="small-btn map-report-top" id="mapReport">＋ Ocorrência</button>
+        </div>
+        <div class="chips" id="mapFilters">
+          <button class="selected" data-filter="all">Todos</button>
+          <button data-filter="lake">Lagos</button>
+          <button data-filter="avenue">Avenidas</button>
+          <button data-filter="river">Rio</button>
+          <button data-filter="alerts">Alertas</button>
+        </div>
+
+        <button type="button" class="pick-point-btn" id="pickPointBtn">
+          <span class="pick-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s6-5.6 6-11a6 6 0 1 0-12 0c0 5.4 6 11 6 11Z"/>
+              <circle cx="12" cy="10" r="2.2"/>
+            </svg>
+          </span>
+          <span class="pick-copy">
+            <b id="pickPointText">Marcar ponto</b>
+          </span>
+        </button>
+        <div class="map-pick-help" id="mapPickHelp">Pressione e segure para marcar o ponto exato.</div>
+
+        <div class="map-shell">
+          <div class="map-floating-toolbar">
+            <button type="button" class="map-chip-btn" id="mapCenterBtn">Centralizar</button>
+            <button type="button" class="map-chip-btn" id="mapLegendBtn">Legenda</button>
+          </div>
+
+          <div class="map-inline-legend" id="mapInlineLegend" hidden>
+            <div class="map-inline-legend__head">
+              <b>Leitura do mapa</b>
+              <button type="button" id="mapLegendCloseBtn" aria-label="Fechar legenda">×</button>
+            </div>
+            <div class="map-inline-legend__grid">
+              <span><i class="legend-symbol water"></i>Lagos monitorados</span>
+              <span><i class="legend-symbol road"></i>Avenidas monitoradas</span>
+              <span><i class="legend-symbol river"></i>Rio Biguaçu</span>
+              <span><i class="legend-dot normal"></i>Normal</span>
+              <span><i class="legend-dot attention"></i>Atenção</span>
+              <span><i class="legend-dot alert"></i>Alerta</span>
+              <span><i class="legend-dot critical"></i>Crítico</span>
+            </div>
+          </div>
+
+          <div id="fullMap" class="map map-full"></div>
+
+          <div class="selected-point-action selected-point-overlay map-bottom-action" id="selectedPointAction" hidden>
+            <div class="selected-point-copy">
+              <span class="selected-point-dot"></span>
+              <div>
+                <b id="selectedPointActionTitle">Ponto marcado</b>
+                <small id="selectedPointActionText">Pronto para registrar</small>
+              </div>
+            </div>
+            <div class="selected-point-buttons">
+              <button type="button" class="delete-point-btn" id="clearMapPointBtn">Cancelar</button>
+              <button type="button" class="primary register-here-btn" id="reportHereBtn">Registrar</button>
+            </div>
+          </div>
+
+          <div class="selected-point-action selected-segment-overlay map-bottom-action" id="selectedSegmentAction" hidden>
+            <div class="selected-point-copy">
+              <span class="selected-point-dot water"></span>
+              <div>
+                <b id="selectedSegmentActionTitle">Trecho marcado</b>
+                <small id="selectedSegmentActionText">Pronto para registrar</small>
+              </div>
+            </div>
+            <div class="selected-point-buttons">
+              <button type="button" class="delete-point-btn" id="clearMapSegmentBtn">Cancelar</button>
+              <button type="button" class="primary register-here-btn" id="reportSegmentBtn">Registrar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="map-focus-card" id="mapFocusCard" hidden>
+          <div class="map-focus-card__top">
+            <div>
+              <p class="kicker">DETALHE DO MAPA</p>
+              <h3 id="mapFocusTitle">Ponto monitorado</h3>
+            </div>
+            <span class="mini-status" id="mapFocusStatus">Normal</span>
+          </div>
+          <p class="map-focus-card__desc" id="mapFocusDesc">Toque em um lago, avenida ou alerta para ver o detalhe.</p>
+          <div class="map-focus-photos" id="mapFocusPhotos" hidden></div>
+          <div class="map-focus-card__meta" id="mapFocusMeta">
+            <span>Sem ocorrência ativa.</span>
+          </div>
+          <div class="map-focus-card__actions">
+            <button type="button" class="text-action" id="mapFocusCloseBtn">Fechar</button>
+            <button type="button" class="secondary" id="mapFocusReportBtn">Registrar ocorrência</button>
+          </div>
+        </div>
+
+
+
+        <p class="map-note">Pressione e segure para marcar um ponto exato, ou delimite início e fim de um trecho alagado quando a ocorrência for em avenida.</p>
+        <section class="section locations-section">
+          <div class="section-head"><div><p class="kicker">LOCAIS</p><h2>Pontos monitorados</h2><small class="section-helper">Toque em um item para localizar no mapa.</small></div></div>
+          <div id="locationsList" class="locations-list"></div>
+        </section>
+      </section>
+
+      <section class="page" data-page="alerts">
+        <div class="page-title">
+          <div><p class="kicker">COMUNIDADE</p><h1>Alertas e ocorrências</h1></div>
+          <span class="count" id="alertsCount">0</span>
+        </div>
+        <div class="chips" id="alertFilters">
+          <button class="selected" data-alert-filter="all">Todos</button>
+          <button data-alert-filter="attention">Atenção</button>
+          <button data-alert-filter="alert">Alerta</button>
+          <button data-alert-filter="critical">Crítico</button>
+        </div>
+        <div id="alertsPageList" class="cards"></div>
+      </section>
+
+      <section class="page" data-page="profile">
+        <div class="page-title">
+          <div><p class="kicker">CADASTRO</p><h1>Meu perfil</h1></div>
+        </div>
+        <section class="profile-card" id="profileView"></section>
+
+        <section class="push-settings-card" id="pushSettingsCard">
+          <div class="push-settings-top">
+            <div class="push-settings-copy">
+              <span class="push-bell" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 6.4-2.8 6.8-2.8 8.8h17.6C20.8 14.8 18 14.4 18 8Z"/><path d="M10 20h4"/></svg>
+              </span>
+              <div>
+                <b>Notificações de ocorrências</b>
+                <small id="pushStatusText">Desativadas neste aparelho</small>
+              </div>
+            </div>
+            <button type="button" class="settings-switch" id="pushToggle" role="switch" aria-checked="false" aria-label="Ativar notificações">
+              <span></span>
+            </button>
+          </div>
+
+          <div class="push-level-panel" id="pushLevelPanel" hidden>
+            <div class="push-level-title">
+              <b>Notificar a partir de</b>
+              <small>Escolha o grau mínimo que deseja receber.</small>
+            </div>
+            <div class="push-levels" id="pushLevels">
+              <button type="button" data-push-level="attention" class="selected">
+                <i class="attention"></i><span><b>Atenção</b><small>Receber todos</small></span>
+              </button>
+              <button type="button" data-push-level="alert">
+                <i class="alert"></i><span><b>Alerta</b><small>Alerta + Crítico</small></span>
+              </button>
+              <button type="button" data-push-level="critical">
+                <i class="critical"></i><span><b>Crítico</b><small>Somente críticos</small></span>
+              </button>
+            </div>
+          </div>
+
+          <p class="push-help" id="pushHelp">Ative para receber novas ocorrências mesmo quando o app estiver fechado.</p>
+        </section>
+
+        <button class="secondary wide" id="editProfileBtn">Editar cadastro</button>
+        <button class="secondary wide legacy-access-btn" id="upgradeLegacyBtn" hidden>Criar PIN para usar em outros aparelhos</button>
+        <button class="danger wide" id="logoutBtn">Sair / trocar usuário</button>
+        <section class="info-card subtle" id="backendStatusCard">
+          <b>Conexão com a comunidade</b>
+          <p id="backendStatus">Verificando Supabase…</p>
+        </section>
+        <section class="info-card">
+          <b>Sobre seu acesso</b>
+          <p>O Monitora Deltaville não exige e-mail. Novos cadastros usam condomínio, casa/lote e um PIN de 6 dígitos para permitir acesso no iPhone, Android ou outro aparelho.</p>
+        </section>
+        <section class="info-card subtle">
+          <b>Segurança</b>
+          <p>Seu número de casa/lote não é exibido nas ocorrências. Os alertas comunitários não substituem orientações da Defesa Civil ou de autoridades públicas.</p>
+        </section>
+        <button class="secondary wide" id="installBtn">Instalar / adicionar à tela inicial</button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <button data-nav="home" class="nav-item active">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3.5 10.5 12 3.5l8.5 7v9a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1Z"/>
+          </svg>
+        </span>
+        <b>Início</b>
+      </button>
+
+      <button data-nav="map" class="nav-item">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 5.2 5-2 8 2.6 5-2v14.9l-5 2-8-2.6-5 2Z"/>
+            <path d="M8 3.2v14.9M16 5.8v14.9"/>
+            <path d="M14.3 10c0 2.2-2.3 4.8-2.3 4.8S9.7 12.2 9.7 10a2.3 2.3 0 1 1 4.6 0Z"/>
+            <circle cx="12" cy="10" r=".65" class="fill-dot"/>
+          </svg>
+        </span>
+        <b>Mapa</b>
+      </button>
+
+      <button id="navReport" class="report" aria-label="Registrar ocorrência">
+        <span class="report-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </span>
+        <b>Registrar</b>
+      </button>
+
+      <button data-nav="alerts" class="nav-item nav-alerts">
+        <span class="nav-icon alert-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3.6 21 20H3Z"/>
+            <path d="M12 9v5"/>
+            <path d="M12 17.3h.01"/>
+          </svg>
+          <i class="nav-badge" id="navAlertBadge" hidden>0</i>
+        </span>
+        <b>Alertas</b>
+      </button>
+
+      <button data-nav="profile" class="nav-item">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.3"/>
+            <path d="M5.4 19.5c.8-3.8 3-5.7 6.6-5.7s5.8 1.9 6.6 5.7"/>
+            <circle cx="12" cy="12" r="9.5"/>
+          </svg>
+        </span>
+        <b>Perfil</b>
+      </button>
+    </nav>
+  </div>
+
+  <section class="overlay" id="loading">
+    <div class="loading-card">
+      <img src="assets/brand-mark.svg" alt="">
+      <b>Monitora Deltaville</b>
+      <span>Conectando à comunidade…</span>
+      <i></i>
+    </div>
+  </section>
+
+  <section class="overlay onboarding" id="accessOverlay" hidden>
+    <div class="sheet onboarding-sheet access-sheet">
+      <img src="assets/logo-horizontal.svg" alt="Monitora Deltaville" class="logo-horizontal">
+      <div>
+        <p class="eyebrow">ACESSO DO MORADOR</p>
+        <h2 id="accessTitle">Entrar no aplicativo</h2>
+        <p class="muted" id="accessSubtitle">Sem e-mail. Use seu condomínio, casa/lote e PIN.</p>
+      </div>
+
+      <div class="access-tabs" id="accessTabs">
+        <button class="selected" type="button" data-access-mode="login">Já tenho cadastro</button>
+        <button type="button" data-access-mode="register">Sou novo</button>
+      </div>
+
+      <form id="loginForm" class="form access-panel" data-access-panel="login">
+        <label>Condomínio<select id="loginCondominium" required><option value="">Selecione</option></select></label>
+        <label>Número da casa ou lote
+          <input id="loginHouseLot" class="numeric-field" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" placeholder="Digite o número" required>
+        </label>
+        <label>PIN de 6 dígitos
+          <div class="secure-input-wrap">
+            <input id="loginPin" class="pin-field" type="password" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" enterkeyhint="next" placeholder="••••••">
+            <button type="button" class="password-eye" data-toggle-secret="loginPin" aria-label="Mostrar PIN" aria-pressed="false">
+              <svg class="eye-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Zm9.8 3.4A3.4 3.4 0 1 0 12 8.6a3.4 3.4 0 0 0 0 6.8Z"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.3 2 22 20.7l-1.3 1.3-3.1-3.1A11.8 11.8 0 0 1 12 20C5.7 20 2.2 14 2.2 14a20 20 0 0 1 3.2-4.1L2 6.5 3.3 5.2 21 22.9 19.7 24l-2.5-2.5M8.1 12.6a3.9 3.9 0 0 0 5.3 5.3l-5.3-5.3Zm3.4-6.5L15 9.6a3.9 3.9 0 0 1 1.4 3.8l2.7 2.7A16.7 16.7 0 0 0 21.8 14S18.3 8 12 8c-.2 0-.3 0-.5.1Z"/></svg>
+            </button>
+          </div>
+        </label>
+        <p class="error" id="loginError"></p>
+        <button class="primary wide" type="submit">Entrar</button>
+        <button class="text-action" id="legacyAccessBtn" type="button">Meu cadastro foi feito antes do PIN</button>
+      </form>
+
+      <form id="registerForm" class="form access-panel" data-access-panel="register" hidden>
+        <div class="grid2">
+          <label>Nome<input id="registerFirstName" required maxlength="60" autocomplete="given-name"></label>
+          <label>Sobrenome<input id="registerLastName" required maxlength="80" autocomplete="family-name"></label>
+        </div>
+        <label>Condomínio<select id="registerCondominium" required><option value="">Selecione</option></select></label>
+        <label>Número da casa ou lote
+          <input id="registerHouseLot" class="numeric-field" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" placeholder="Digite o número" required>
+        </label>
+        <label>Crie um PIN de 6 dígitos
+          <div class="secure-input-wrap">
+            <input id="registerPin" class="pin-field" type="password" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="new-password" enterkeyhint="next" placeholder="••••••">
+            <button type="button" class="password-eye" data-toggle-secret="registerPin" aria-label="Mostrar PIN" aria-pressed="false">
+              <svg class="eye-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Zm9.8 3.4A3.4 3.4 0 1 0 12 8.6a3.4 3.4 0 0 0 0 6.8Z"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.3 2 22 20.7l-1.3 1.3-3.1-3.1A11.8 11.8 0 0 1 12 20C5.7 20 2.2 14 2.2 14a20 20 0 0 1 3.2-4.1L2 6.5 3.3 5.2 21 22.9 19.7 24l-2.5-2.5M8.1 12.6a3.9 3.9 0 0 0 5.3 5.3l-5.3-5.3Zm3.4-6.5L15 9.6a3.9 3.9 0 0 1 1.4 3.8l2.7 2.7A16.7 16.7 0 0 0 21.8 14S18.3 8 12 8c-.2 0-.3 0-.5.1Z"/></svg>
+            </button>
+          </div>
+        </label>
+        <label>Confirme o PIN
+          <div class="secure-input-wrap">
+            <input id="registerPin2" class="pin-field" type="password" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="new-password" enterkeyhint="next" placeholder="••••••">
+            <button type="button" class="password-eye" data-toggle-secret="registerPin2" aria-label="Mostrar PIN" aria-pressed="false">
+              <svg class="eye-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Zm9.8 3.4A3.4 3.4 0 1 0 12 8.6a3.4 3.4 0 0 0 0 6.8Z"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.3 2 22 20.7l-1.3 1.3-3.1-3.1A11.8 11.8 0 0 1 12 20C5.7 20 2.2 14 2.2 14a20 20 0 0 1 3.2-4.1L2 6.5 3.3 5.2 21 22.9 19.7 24l-2.5-2.5M8.1 12.6a3.9 3.9 0 0 0 5.3 5.3l-5.3-5.3Zm3.4-6.5L15 9.6a3.9 3.9 0 0 1 1.4 3.8l2.7 2.7A16.7 16.7 0 0 0 21.8 14S18.3 8 12 8c-.2 0-.3 0-.5.1Z"/></svg>
+            </button>
+          </div>
+        </label>
+        <div class="notice">Cada casa/lote pode ter até 2 moradores cadastrados. Cada morador deve criar seu próprio PIN de 6 dígitos. Não use data de nascimento ou sequência como 123456.</div>
+        <p class="error" id="registerError"></p>
+        <button class="primary wide" type="submit">Criar cadastro</button>
+      </form>
+
+      <form id="legacyForm" class="form access-panel" data-access-panel="legacy" hidden>
+        <div class="legacy-note">
+          <b>Recuperar cadastro da versão anterior</b>
+          <span>Informe os mesmos dados usados no cadastro antigo e crie um PIN de 6 dígitos.</span>
+        </div>
+        <div class="grid2">
+          <label>Nome<input id="legacyFirstName" required maxlength="60"></label>
+          <label>Sobrenome<input id="legacyLastName" required maxlength="80"></label>
+        </div>
+        <label>Condomínio<select id="legacyCondominium" required><option value="">Selecione</option></select></label>
+        <label>Número da casa ou lote
+          <input id="legacyHouseLot" class="numeric-field" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" placeholder="Digite o número" required>
+        </label>
+        <label>Novo PIN de 6 dígitos
+          <div class="secure-input-wrap">
+            <input id="legacyPin" class="pin-field" type="password" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="new-password" enterkeyhint="next" placeholder="••••••">
+            <button type="button" class="password-eye" data-toggle-secret="legacyPin" aria-label="Mostrar PIN" aria-pressed="false">
+              <svg class="eye-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Zm9.8 3.4A3.4 3.4 0 1 0 12 8.6a3.4 3.4 0 0 0 0 6.8Z"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.3 2 22 20.7l-1.3 1.3-3.1-3.1A11.8 11.8 0 0 1 12 20C5.7 20 2.2 14 2.2 14a20 20 0 0 1 3.2-4.1L2 6.5 3.3 5.2 21 22.9 19.7 24l-2.5-2.5M8.1 12.6a3.9 3.9 0 0 0 5.3 5.3l-5.3-5.3Zm3.4-6.5L15 9.6a3.9 3.9 0 0 1 1.4 3.8l2.7 2.7A16.7 16.7 0 0 0 21.8 14S18.3 8 12 8c-.2 0-.3 0-.5.1Z"/></svg>
+            </button>
+          </div>
+        </label>
+        <label>Confirme o PIN
+          <div class="secure-input-wrap">
+            <input id="legacyPin2" class="pin-field" type="password" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="new-password" enterkeyhint="next" placeholder="••••••">
+            <button type="button" class="password-eye" data-toggle-secret="legacyPin2" aria-label="Mostrar PIN" aria-pressed="false">
+              <svg class="eye-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Zm9.8 3.4A3.4 3.4 0 1 0 12 8.6a3.4 3.4 0 0 0 0 6.8Z"/></svg>
+              <svg class="eye-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.3 2 22 20.7l-1.3 1.3-3.1-3.1A11.8 11.8 0 0 1 12 20C5.7 20 2.2 14 2.2 14a20 20 0 0 1 3.2-4.1L2 6.5 3.3 5.2 21 22.9 19.7 24l-2.5-2.5M8.1 12.6a3.9 3.9 0 0 0 5.3 5.3l-5.3-5.3Zm3.4-6.5L15 9.6a3.9 3.9 0 0 1 1.4 3.8l2.7 2.7A16.7 16.7 0 0 0 21.8 14S18.3 8 12 8c-.2 0-.3 0-.5.1Z"/></svg>
+            </button>
+          </div>
+        </label>
+        <p class="error" id="legacyError"></p>
+        <button class="primary wide" type="submit">Recuperar e criar PIN</button>
+        <button class="text-action" type="button" data-access-mode="login">Voltar para entrar</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="overlay modal" id="reportModal" hidden>
+    <button class="backdrop" data-close="report" aria-label="Fechar"></button>
+    <div class="sheet report-sheet-v4">
+      <div class="handle"></div>
+      <div class="sheet-head">
+        <div>
+          <p class="kicker" id="reportKicker">NOVO REGISTRO</p>
+          <h2 id="reportTitle">Registrar ocorrência</h2>
+          <small class="report-subtitle">Descreva. O app organiza o restante para você.</small>
+        </div>
+        <button class="icon-btn" data-close="report">×</button>
+      </div>
+
+      <form id="reportForm" class="form report-v4">
+        <section class="smart-composer" id="smartComposer">
+          <div class="smart-composer-head">
+            <div class="smart-spark">✦</div>
+            <div>
+              <b>Assistente inteligente</b>
+              <small>Ex.: “Wilson e Beira Rio estão alagadas. Na Beira Rio não passa carro.”</small>
+            </div>
+          </div>
+          <textarea id="smartDescription" maxlength="500" rows="3" placeholder="Descreva o que está acontecendo…"></textarea>
+          <div class="smart-actions">
+            <button type="button" class="secondary smart-mic" id="smartMicBtn">◉ Falar</button>
+            <button type="button" class="primary smart-analyze" id="smartAnalyzeBtn">Entender ocorrência</button>
+          </div>
+        </section>
+
+        <section class="report-photo-card" id="reportPhotoSection">
+          <div class="report-photo-head">
+            <div>
+              <b>Fotos <em>opcional</em></b>
+              <small>Até 3 fotos. O app reduz o tamanho e remove os metadados da imagem.</small>
+            </div>
+            <span id="photoCount">0/3</span>
+          </div>
+          <div class="report-photo-grid" id="reportPhotoGrid"></div>
+          <div class="report-photo-actions" id="reportPhotoActions">
+            <button type="button" class="secondary" id="takePhotoBtn">▣ Tirar foto</button>
+            <button type="button" class="secondary" id="choosePhotoBtn">▧ Biblioteca</button>
+          </div>
+          <input id="photoCameraInput" type="file" accept="image/*" capture="environment" hidden>
+          <input id="photoLibraryInput" type="file" accept="image/*" multiple hidden>
+        </section>
+
+        <section class="smart-result" id="smartResult" hidden>
+          <div class="smart-result-head">
+            <div>
+              <small>ENTENDI ASSIM</small>
+              <b id="smartResultTitle">Ocorrência</b>
+            </div>
+            <button type="button" class="text-action" id="smartAdjustBtn">Ajustar</button>
+          </div>
+          <div class="smart-summary-chips" id="smartSummaryChips"></div>
+          <div class="smart-locations" id="smartLocations"></div>
+        </section>
+
+        <button type="button" class="manual-toggle" id="manualReportToggle">
+          <span>Prefiro escolher manualmente</span><i>⌄</i>
+        </button>
+
+        <section class="manual-report" id="manualReportFields" hidden>
+          <div class="compact-block">
+            <b>O que aconteceu?</b>
+            <div class="type-chip-grid" id="typeChips">
+              <button type="button" data-occ-type="avenue_flooding">🌊 Alagamento</button>
+              <button type="button" data-occ-type="lakes_full">≈ Lago cheio</button>
+              <button type="button" data-occ-type="river_level">↟ Rio subindo</button>
+              <button type="button" data-occ-type="river_overflow">⚠ Rio transbordou</button>
+              <button type="button" data-occ-type="heavy_rain_flood_risk">☔ Chuva forte</button>
+              <button type="button" data-occ-type="hail">◌ Granizo</button>
+              <button type="button" data-occ-type="wind_damage">↝ Vendaval c/ danos</button>
+              <button type="button" data-occ-type="wind_no_damage">↝ Vendaval</button>
+            </div>
+            <select id="occurrenceType" hidden>
+              <option value=""></option>
+              <option value="avenue_flooding">Alagamento em avenida</option>
+              <option value="lakes_full">Lagos cheios</option>
+              <option value="heavy_rain_flood_risk">Chuva intensa / risco de alagamento</option>
+              <option value="hail">Granizo</option>
+              <option value="wind_damage">Vendaval com danos</option>
+              <option value="wind_no_damage">Vendaval sem danos</option>
+              <option value="river_level">Nível do Rio Biguaçu</option>
+              <option value="river_overflow">Transbordamento de rio</option>
+            </select>
+          </div>
+
+          <div class="compact-block" id="locationBlock" hidden>
+            <div class="compact-title-row">
+              <b id="locationBlockTitle">Onde?</b>
+              <small id="locationBlockHelper">Você pode marcar mais de um local.</small>
+            </div>
+            <div class="location-chip-list" id="locationChips"></div>
+            <select id="locationSelect" hidden><option value=""></option></select>
+            <label id="customLocationWrap" class="field-clean" hidden>Outro local<input id="customLocation" maxlength="100" placeholder="Descreva o local"></label>
+          </div>
+
+          <div class="compact-block damage-block" id="damageBlock" hidden>
+            <div class="compact-title-row">
+              <b>Danos observados</b>
+              <small>Selecione o que aconteceu.</small>
+            </div>
+            <div class="damage-chip-list" id="damageChips">
+              <button type="button" data-damage-type="tree">🌳 Árvore/galhos</button>
+              <button type="button" data-damage-type="roof">⌂ Telhado/estrutura</button>
+              <button type="button" data-damage-type="power">⚡ Energia/postes</button>
+              <button type="button" data-damage-type="vehicle">🚗 Veículos</button>
+              <button type="button" data-damage-type="other">＋ Outros danos</button>
+            </div>
+          </div>
+
+          <div class="compact-block" id="conditionBlock" hidden>
+            <label id="avenueConditionWrap" class="field-clean">Situação da via
+              <select id="avenueCondition">
+                <option value="">Selecionar</option>
+                <option value="water_accumulating">Água acumulando</option>
+                <option value="flooding">Alagamento</option>
+                <option value="partially_blocked">Via parcialmente bloqueada</option>
+                <option value="impassable">Via intransitável</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="compact-block">
+            <b>Gravidade</b>
+            <div class="severity severity-v4">
+              <label class="sev attention"><input type="radio" name="severity" value="attention" checked><span>Atenção</span></label>
+              <label class="sev alert"><input type="radio" name="severity" value="alert"><span>Alerta</span></label>
+              <label class="sev critical"><input type="radio" name="severity" value="critical"><span>Crítico</span></label>
+            </div>
+          </div>
+
+          <div class="compact-block map-tools-v4" id="mapToolsBlock">
+            <div class="compact-title-row">
+              <b>Mapa <em>opcional</em></b>
+              <small id="multiPointSummary">Nenhum ponto exato marcado.</small>
+            </div>
+            <div class="map-tool-actions">
+              <button type="button" class="secondary" id="goPickPointBtn">＋ Marcar pontos</button>
+              <button type="button" class="secondary" id="segmentPickBtn" hidden>↔ Delimitar trecho</button>
+            </div>
+            <button type="button" class="text-action" id="clearReportPointBtn" hidden>Limpar pontos</button>
+            <button type="button" class="text-action" id="clearSegmentBtn" hidden>Limpar trecho</button>
+          </div>
+
+          <label class="field-clean note-v4">Observação <em>opcional</em>
+            <textarea id="notes" maxlength="500" rows="2" placeholder="Só se houver algo importante a acrescentar"></textarea>
+          </label>
+        </section>
+
+        <div class="publish-summary" id="publishSummary" hidden></div>
+        <p class="error" id="reportError"></p>
+        <button class="primary wide publish-v4" type="submit" id="submitReport" disabled>Publicar</button>
+        <button class="delete-occurrence-btn wide" type="button" id="deleteOccurrenceBtn" hidden>Apagar ocorrência</button>
+        <p class="report-expiry-v4">O registro fica ativo por até 24 h ou até ser apagado.</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="overlay modal" id="profileModal" hidden>
+    <button class="backdrop" data-close="profile" aria-label="Fechar"></button>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="sheet-head"><div><p class="kicker">PERFIL</p><h2>Editar cadastro</h2></div><button class="icon-btn" data-close="profile">×</button></div>
+      <form id="editProfileForm" class="form">
+        <div class="grid2"><label>Nome<input id="editFirstName" required maxlength="60"></label><label>Sobrenome<input id="editLastName" required maxlength="80"></label></div>
+        <label>Condomínio<select id="editCondominium" required></select></label>
+        <label>Casa ou lote
+          <input id="editHouseLot" class="numeric-field" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" placeholder="Digite o número" required>
+        </label>
+        <p class="error" id="editProfileError"></p>
+        <button class="primary wide" type="submit">Salvar alterações</button>
+      </form>
+    </div>
+  </section>
+
+
+  <section class="overlay photo-viewer" id="photoViewer" hidden>
+    <button type="button" class="photo-viewer-backdrop" id="photoViewerClose" aria-label="Fechar foto"></button>
+    <div class="photo-viewer-stage">
+      <button type="button" class="photo-viewer-x" id="photoViewerX" aria-label="Fechar">×</button>
+      <img id="photoViewerImage" alt="Foto da ocorrência">
+    </div>
+  </section>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js?v=450"></script>
+</body>
+</html>
