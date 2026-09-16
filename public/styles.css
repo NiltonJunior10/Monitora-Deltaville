@@ -2349,268 +2349,304 @@ body.map-open [data-page="map"] select{
 
 
 /* =========================================================
-   v4.5 — experiência web/desktop menos mobile
+   v4.5.2 — desktop web UX (clean baseline)
+   Mobile/tablet behavior below 1100px remains unchanged.
    ========================================================= */
-@media (min-width: 1100px) and (pointer: fine){
+@media (min-width:1100px){
   html,body{
-    background:
-      radial-gradient(1200px 500px at top left, rgba(11,99,206,.08), transparent 60%),
-      linear-gradient(180deg,#F3F7FB 0%, #EEF4FA 100%);
+    background:#F3F7FB;
   }
 
   .app-shell{
-    max-width: 1440px;
-    margin: 0 auto;
-    min-height: 100vh;
-    background: transparent;
-    box-shadow: none;
-    padding: 24px;
-    display: grid;
-    grid-template-columns: 300px minmax(0,1fr);
+    width:min(1480px,calc(100% - 48px));
+    max-width:1480px;
+    margin:0 auto;
+    min-height:100vh;
+    padding:24px 0 40px;
+    background:transparent;
+    box-shadow:none;
+    display:grid;
+    grid-template-columns:260px minmax(0,1fr);
+    grid-template-rows:auto auto 1fr;
     grid-template-areas:
-      "topbar main"
-      "nav main";
-    gap: 22px;
-    align-items: start;
+      "side main"
+      "nav main"
+      ". main";
+    gap:16px 24px;
+    align-items:start;
   }
 
+  /* left rail */
   .topbar{
-    grid-area: topbar;
-    position: sticky;
-    top: 24px;
-    height: auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 18px;
-    padding: 22px;
-    border: 1px solid var(--line);
-    border-radius: 28px;
-    background: rgba(255,255,255,.92);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(18px);
+    grid-area:side;
+    position:sticky;
+    top:24px;
+    height:auto;
+    padding:20px;
+    border:1px solid #E0E8F1;
+    border-radius:24px;
+    background:#fff;
+    box-shadow:0 12px 32px rgba(15,43,89,.07);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:18px;
   }
 
   .brand{
-    width: 100%;
-    justify-content: flex-start;
+    width:100%;
+    justify-content:flex-start;
+    gap:12px;
   }
-  .brand img{
-    width: 48px;
-    height: 48px;
-  }
-  .brand span b{
-    font-size: 18px;
-  }
-  .brand span strong{
-    font-size: 18px;
-  }
+  .brand img{width:44px;height:44px}
+  .brand b,.brand strong{font-size:17px}
 
   .top-weather{
-    width: 100%;
-    margin: 0;
-    padding: 16px 16px 14px;
-    border-radius: 22px;
-    background: linear-gradient(180deg, #F8FBFF 0%, #F1F7FD 100%);
-    border: 1px solid #E2EAF3;
+    width:100%;
+    min-width:0;
+    margin:0;
+    padding:14px;
+    border-radius:18px;
+    box-shadow:none;
+    background:#F6FAFE;
   }
 
-  main{
-    grid-area: main;
-    padding: 0;
-    min-width: 0;
-  }
-
+  /* vertical desktop nav */
   .bottom-nav{
-    grid-area: nav;
-    position: sticky;
-    top: 328px;
-    left: auto;
-    transform: none;
-    width: auto;
-    margin: 0;
-    padding: 12px;
-    display: grid;
-    gap: 10px;
-    border-radius: 28px;
-    background: rgba(255,255,255,.96);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
+    grid-area:nav;
+    position:sticky;
+    top:250px;
+    left:auto;
+    bottom:auto;
+    transform:none;
+    width:100%;
+    height:auto;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    border:1px solid #E0E8F1;
+    border-radius:24px;
+    background:#fff;
+    box-shadow:0 12px 32px rgba(15,43,89,.07);
+  }
+
+  .bottom-nav button,
+  .bottom-nav .nav-item,
+  .bottom-nav .report{
+    width:100%;
+    height:52px;
+    min-height:52px;
+    padding:0 14px;
+    border-radius:15px;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    gap:12px;
+    margin:0;
   }
 
   .bottom-nav .nav-item{
-    min-height: 58px;
-    height: 58px;
-    padding: 0 14px;
-    border-radius: 18px;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 12px;
+    color:#66768B;
+    background:transparent;
+  }
+  .bottom-nav .nav-item:hover{background:#F4F8FC;color:#243D5A}
+  .bottom-nav .nav-item.active{background:#EDF5FF;color:var(--blue)}
+
+  .bottom-nav .nav-icon,
+  .bottom-nav .report-icon{
+    width:26px;
+    height:26px;
+    display:grid;
+    place-items:center;
+    flex:0 0 26px;
   }
 
-  .bottom-nav .nav-item b{
-    font-size: 14px;
-    line-height: 1;
+  .bottom-nav b{
+    font-size:13px;
+    line-height:1;
   }
 
   .bottom-nav .report{
-    margin: 0;
-    min-height: 58px;
-    height: 58px;
+    background:linear-gradient(135deg,var(--blue),#0876E6);
+    color:white;
+    box-shadow:0 7px 17px rgba(11,99,206,.17);
+  }
+  .bottom-nav .report span{
+    width:26px;
+    height:26px;
+    margin:0;
+    border-radius:9px;
+    background:rgba(255,255,255,.17);
+    color:white;
+    box-shadow:none;
+  }
+  .bottom-nav .report b{color:white}
+
+  /* main canvas */
+  main{
+    grid-area:main;
+    width:100%;
+    min-width:0;
+    padding:0;
   }
 
-  .bottom-nav .nav-icon{
-    width: 22px;
-    height: 22px;
-  }
-
-  .page-title,
-  .section-head{
-    margin-bottom: 12px;
-  }
-
+  /* home dashboard */
   .page[data-page="home"].active{
-    display: grid;
-    grid-template-columns: minmax(0,1.1fr) minmax(380px,.9fr);
-    gap: 18px;
-    align-items: start;
+    display:grid;
+    grid-template-columns:minmax(0,1.55fr) minmax(330px,.85fr);
+    grid-template-areas:
+      "hello action"
+      "status status"
+      "map events";
+    gap:18px;
+    align-items:start;
   }
-  .page[data-page="home"] > :nth-child(1){grid-column:1;grid-row:1}
-  .page[data-page="home"] > :nth-child(2){grid-column:2;grid-row:1 / span 2; margin-top:0}
-  .page[data-page="home"] > :nth-child(3){grid-column:1;grid-row:2; align-self:start}
-  .page[data-page="home"] > :nth-child(4){grid-column:1;grid-row:3}
-  .page[data-page="home"] > :nth-child(5){grid-column:2;grid-row:3}
 
-  .page[data-page="home"] .status-card,
-  .page[data-page="home"] .section,
-  .page[data-page="alerts"] .section,
-  .page[data-page="profile"] .profile-card,
-  .page[data-page="profile"] .info-card,
-  .page[data-page="profile"] .push-settings-card,
-  .page[data-page="profile"] .secondary.wide,
-  .page[data-page="map"] .map,
-  .page[data-page="map"] .map-card,
-  .page[data-page="alerts"] .cards{
-    box-shadow: var(--shadow);
+  .page[data-page="home"] > .hello{
+    grid-area:hello;
+    align-self:center;
+    padding:2px 0;
+  }
+  .page[data-page="home"] > .hello h1{
+    font-size:30px;
+  }
+
+  .page[data-page="home"] > #homeReport{
+    grid-area:action;
+    justify-self:end;
+    align-self:center;
+    width:auto;
+    min-width:240px;
+    padding:14px 22px;
+    border-radius:14px;
+  }
+
+  .page[data-page="home"] > .status-card{
+    grid-area:status;
+    margin:0;
+    padding:18px 20px;
+    display:grid;
+    grid-template-columns:minmax(260px,.9fr) minmax(0,1.5fr);
+    gap:20px;
+    align-items:center;
+    border-radius:22px;
+    box-shadow:0 10px 28px rgba(15,43,89,.06);
+  }
+  .page[data-page="home"] > .status-card > div:first-child{
+    padding-right:20px;
+    border-right:1px solid #E6EDF5;
+  }
+  .page[data-page="home"] .status-stats{
+    margin:0;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  /* first home .section = map */
+  .page[data-page="home"] > .section:nth-of-type(2){
+    grid-area:map;
+  }
+
+  /* second home .section = active occurrences */
+  .page[data-page="home"] > .section:nth-of-type(3){
+    grid-area:events;
+  }
+
+  .page[data-page="home"] > .section{
+    margin:0;
+    padding:18px;
+    border:1px solid #E0E8F1;
+    border-radius:22px;
+    background:#fff;
+    box-shadow:0 10px 28px rgba(15,43,89,.06);
+    min-width:0;
   }
 
   .page[data-page="home"] .map-preview{
-    height: 360px;
+    height:440px;
+    border-radius:18px;
   }
 
-  .cards{
-    gap: 12px;
+  #homeOccurrences .empty{
+    min-height:170px;
+    padding:24px;
+    display:grid;
+    place-items:center;
+    background:#F9FBFD;
+    border:1px dashed #D3DFEB;
+    line-height:1.45;
   }
 
-  .page[data-page="alerts"].active,
+  /* alerts */
+  .page[data-page="alerts"].active{
+    display:block;
+  }
+  #alertsPageList{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+
+  /* profile */
   .page[data-page="profile"].active{
-    max-width: 1100px;
+    display:grid;
+    grid-template-columns:390px minmax(0,1fr);
+    gap:18px;
+    align-items:start;
   }
-
-  .page[data-page="profile"].active{
-    display: grid;
-    grid-template-columns: minmax(320px, 420px) minmax(0,1fr);
-    gap: 18px;
-    align-items: start;
-  }
-
-  .page[data-page="profile"] .page-title{
-    grid-column: 1 / -1;
-  }
-
+  .page[data-page="profile"] .page-title{grid-column:1 / -1}
   .page[data-page="profile"] .profile-card{
-    grid-column: 1;
-    grid-row: 2 / span 2;
+    grid-column:1;
+    grid-row:2 / span 6;
+    position:sticky;
+    top:24px;
+    margin:0;
   }
-
-  .page[data-page="profile"] .push-settings-card{
-    grid-column: 2;
-    grid-row: 2;
-  }
-
+  .page[data-page="profile"] .push-settings-card,
   .page[data-page="profile"] .secondary.wide,
   .page[data-page="profile"] .danger.wide,
   .page[data-page="profile"] .info-card{
-    grid-column: 2;
+    grid-column:2;
+    width:100%;
+    margin-top:0;
   }
 
+  /* map */
   .page[data-page="map"].active{
-    display: block;
-    max-width: 1280px;
+    display:block;
   }
-
   .page[data-page="map"] .map-full{
-    height: calc(100vh - 170px);
-    min-height: 680px;
+    height:calc(100vh - 180px);
+    min-height:640px;
   }
 
-  .map-shell{
-    border-radius: 24px;
-  }
-
-  .sheet{
-    width: min(720px, calc(100vw - 64px));
-    border-radius: 28px 28px 0 0;
-  }
-
-  .toast{
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: auto;
-    min-width: 320px;
-    max-width: 640px;
-  }
-
-  /* No desktop, o mapa deixa de ser "fullscreen mobile" e vira uma tela completa dentro do layout. */
-  body.map-open .topbar{
-    display: flex !important;
-  }
-  body.map-open .bottom-nav{
-    display: grid !important;
-    z-index: auto !important;
-  }
+  /* cancel mobile fullscreen behavior on desktop */
+  body.map-open .topbar{display:flex!important}
+  body.map-open .bottom-nav{display:flex!important}
   body.map-open .app-shell{
-    height: auto !important;
-    min-height: 100vh !important;
-    padding-bottom: 24px !important;
+    height:auto!important;
+    min-height:100vh!important;
+    padding-bottom:40px!important;
   }
   body.map-open main{
-    height: auto !important;
-    min-height: 0 !important;
+    height:auto!important;
+    min-height:0!important;
   }
   body.map-open [data-page="map"].active{
-    position: static !important;
-    inset: auto !important;
-    width: auto !important;
-    height: auto !important;
-    overflow: visible !important;
-    z-index: auto !important;
+    position:static!important;
+    inset:auto!important;
+    width:auto!important;
+    height:auto!important;
+    overflow:visible!important;
+    z-index:auto!important;
   }
   body.map-open [data-page="map"] .map-shell,
   body.map-open [data-page="map"] .map-full{
-    height: calc(100vh - 170px) !important;
-    min-height: 680px !important;
+    height:calc(100vh - 180px)!important;
+    min-height:640px!important;
   }
-}
 
-/* Telas médias (tablet horizontal / notebook pequeno) */
-@media (min-width: 760px) and (max-width: 1099px){
-  .app-shell{
-    max-width: 980px;
+  .sheet{
+    width:min(760px,calc(100vw - 64px));
   }
-  .page[data-page="home"].active{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    align-items: start;
-  }
-  .page[data-page="home"] > :nth-child(1){grid-column:1}
-  .page[data-page="home"] > :nth-child(2){grid-column:2; margin-top:0}
-  .page[data-page="home"] > :nth-child(3){grid-column:1 / -1}
-  .page[data-page="home"] > :nth-child(4){grid-column:1}
-  .page[data-page="home"] > :nth-child(5){grid-column:2}
 }

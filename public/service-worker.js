@@ -1,9 +1,9 @@
-const CACHE="monitora-deltaville-v450-desktop-web";
+const CACHE="monitora-deltaville-v452-desktop-clean";
 const APP_SHELL=[
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js?v=450",
+  "./styles.css?v=452",
+  "./app.js?v=452",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
