@@ -232,6 +232,7 @@ function refreshFullMapLayout(){
     const rect=el.getBoundingClientRect();
     if(rect.width<120||rect.height<120)return false;
 
+    if(window.matchMedia("(pointer:fine)").matches)map.scrollWheelZoom.enable();
     map.invalidateSize({animate:false,pan:false});
     map.setMaxBounds(MAP_EXTENDED_BOUNDS);
 
@@ -618,7 +619,9 @@ function makeMap(id, preview=false){
     maxZoom:2.45,
     zoomControl:!preview,
     attributionControl:false,
-    scrollWheelZoom:false,
+    scrollWheelZoom:preview?false:window.matchMedia("(pointer:fine)").matches,
+    wheelDebounceTime:35,
+    wheelPxPerZoomLevel:90,
     maxBounds:MAP_EXTENDED_BOUNDS,
     maxBoundsViscosity:.97,
     zoomSnap:.1,
