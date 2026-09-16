@@ -185,6 +185,12 @@ function navigate(page){
     if(active)b.setAttribute("aria-current","page");
     else b.removeAttribute("aria-current");
   });
+  $$(".desktop-nav [data-nav]").forEach(b=>{
+    const active=b.dataset.nav===page;
+    b.classList.toggle("active",active);
+    if(active)b.setAttribute("aria-current","page");
+    else b.removeAttribute("aria-current");
+  });
   document.body.classList.toggle("map-open",page==="map");
   window.scrollTo({top:0,behavior:"smooth"});
   if(page==="map"){
@@ -1585,12 +1591,34 @@ function renderMapMarkers(){
   }
   renderOccurrencePointMarkers();
 }
+
+function desktopCategoryStatus(category){
+  const ids=new Set(state.locations.filter(l=>l.category===category).map(l=>String(l.id)));
+  const items=state.occurrences.filter(o=>o.location_id&&ids.has(String(o.location_id)));
+  return highestSeverity(items);
+}
+function renderDesktopMonitoring(){
+  const host=$("#desktopMonitoringList");
+  if(!host)return;
+  const rows=[
+    ["Lagos monitorados",desktopCategoryStatus("lake")],
+    ["Avenidas monitoradas",desktopCategoryStatus("avenue")],
+    ["Rio Biguaçu",desktopCategoryStatus("river")],
+    ["Condições climáticas",highestSeverity(state.occurrences.filter(o=>!o.location_id))]
+  ];
+  host.innerHTML=rows.map(([label,status])=>{
+    const st=status||"normal";
+    return `<div><span>${esc(label)}</span><b class="${st}"><i></i>${severityLabels[st]||"Normal"}</b></div>`;
+  }).join("");
+}
+
 function renderAll(){
   renderProfile();
   renderOccurrences();
   renderAlertsPage();
   renderLocations();
   renderStatus();
+  renderDesktopMonitoring();
   renderMapMarkers();
 }
 function renderProfile(){
@@ -1598,7 +1626,12 @@ function renderProfile(){
   if(!p){$("#residentLine").textContent="Entre para continuar.";return;}
   $("#helloTitle").textContent=`Olá, ${p.first_name}`;
   $("#residentLine").textContent=`${p.condominiums?.name||""} • ${p.house_or_lot}`;
+  if($("#desktopHelloTitle"))$("#desktopHelloTitle").textContent=`Olá, ${p.first_name}`;
+  if($("#desktopResidentLine"))$("#desktopResidentLine").textContent=`${p.condominiums?.name||""} • ${p.house_or_lot}`;
   const initials=(p.first_name[0]+p.last_name[0]).toUpperCase();
+  if($("#desktopAvatar"))$("#desktopAvatar").textContent=initials;
+  if($("#desktopAccountName"))$("#desktopAccountName").textContent=p.first_name;
+  if($("#desktopAccountRole"))$("#desktopAccountRole").textContent=p.condominiums?.name||"Morador";
   const legacy=state.user?.is_anonymous===true;
   $("#profileView").innerHTML=`<div class="initials">${esc(initials)}</div><h2>${esc(p.first_name)} ${esc(p.last_name)}</h2><p>${esc(p.condominiums?.name||"")}</p><small>Casa/lote ${esc(p.house_or_lot)}</small><span class="profile-access-state">${legacy?"Acesso antigo • sem PIN":"Acesso com PIN"}</span>`;
   $("#upgradeLegacyBtn").hidden=!legacy;
@@ -1649,12 +1682,20 @@ function renderOccurrences(){
 
   $("#homeCount").textContent=totalActive;
   $("#occurrenceCount").textContent=groups.length;
+  if($("#desktopAlertCount"))$("#desktopAlertCount").textContent=totalActive;
   if($("#desktopOccurrenceCount"))$("#desktopOccurrenceCount").textContent=groups.length;
   if($("#desktopCriticalCount"))$("#desktopCriticalCount").textContent=criticalActive;
 
+  const badgeText=totalActive>9?"9+":String(totalActive);
+  for(const id of ["desktopAlertBadge","desktopBellBadge"]){
+    const el=$("#"+id);
+    if(el){el.hidden=totalActive===0;el.textContent=badgeText;}
+  }
+
   $("#homeOccurrences").innerHTML=groups.length
     ?groups.slice(0,6).map(g=>occurrenceGroupCard(g,true)).join("")
-    :'<div class="empty"><b>Tudo tranquilo no momento</b><span>Nenhuma ocorrência comunitária ativa agora.</span></div>';
+    :'<div class="empty desktop-empty-state"><b>Tudo tranquilo no momento</b><span>Nenhuma ocorrência comunitária ativa agora.</span></div>';
+  renderDesktopMonitoring();
 }
 function renderAlertsPage(){
   let items=[...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -2444,13 +2485,22 @@ const WEATHER_CACHE_KEY="monitora_weather_v1";
 let weatherRefreshTimer=null;
 function renderWeatherSnapshot(snapshot){
   if(!snapshot)return;
-  $("#rain6h").textContent=`${Number(snapshot.rain||0).toFixed(1)} mm`;
-  if($("#rainChance"))$("#rainChance").textContent=`até ${Number(snapshot.prob||0)}% de chance`;
-  $("#weatherTemp").textContent=`${Math.round(Number(snapshot.temp)||0)}°`;
+  const rainText=`${Number(snapshot.rain||0).toFixed(1)} mm`;
+  const chanceText=`${Number(snapshot.prob||0)}%`;
+  const tempText=`${Math.round(Number(snapshot.temp)||0)}°`;
+  $("#rain6h").textContent=rainText;
+  if($("#rainChance"))$("#rainChance").textContent=`até ${chanceText} de chance`;
+  $("#weatherTemp").textContent=tempText;
   $("#weatherHeadline").textContent="Biguaçu agora";
-  $("#topWeatherRain").textContent=`${Number(snapshot.rain||0).toFixed(1)} mm`;
+  $("#topWeatherRain").textContent=rainText;
   $("#weatherDetail").textContent=snapshot.detail||"Previsão local";
   if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=snapshot.icon||"🌤️";
+  if($("#desktopRain6h"))$("#desktopRain6h").textContent=rainText;
+  if($("#desktopWeatherRain"))$("#desktopWeatherRain").textContent=rainText;
+  if($("#desktopWeatherChance"))$("#desktopWeatherChance").textContent=chanceText;
+  if($("#desktopWeatherTemp"))$("#desktopWeatherTemp").textContent=tempText;
+  if($("#desktopWeatherSummary"))$("#desktopWeatherSummary").textContent=snapshot.detail||"Previsão local";
+  if($("#desktopWeatherIcon"))$("#desktopWeatherIcon").textContent=snapshot.icon||"🌤️";
 }
 function loadCachedWeather(){
   try{
@@ -2500,6 +2550,12 @@ async function loadWeather(){
     const weatherIcon=weatherIconForCode(w.current.weather_code,w.current.is_day);
     $("#weatherDetail").textContent=weatherDetail;
     if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=weatherIcon;
+    if($("#desktopRain6h"))$("#desktopRain6h").textContent=`${rain.toFixed(1)} mm`;
+    if($("#desktopWeatherRain"))$("#desktopWeatherRain").textContent=`${rain.toFixed(1)} mm`;
+    if($("#desktopWeatherChance"))$("#desktopWeatherChance").textContent=`${prob}%`;
+    if($("#desktopWeatherTemp"))$("#desktopWeatherTemp").textContent=`${temp}°`;
+    if($("#desktopWeatherSummary"))$("#desktopWeatherSummary").textContent=weatherDetail;
+    if($("#desktopWeatherIcon"))$("#desktopWeatherIcon").textContent=weatherIcon;
     try{
       localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify({
         saved_at:Date.now(),rain,prob,temp,detail:weatherDetail,icon:weatherIcon
@@ -2775,7 +2831,7 @@ document.addEventListener("click",e=>{
   const removePhoto=e.target.closest("[data-remove-report-photo]");
   if(removePhoto){e.stopPropagation();removeReportPhotoAt(Number(removePhoto.dataset.removeReportPhoto));return;}
   const nav=e.target.closest("[data-nav]");if(nav){navigate(nav.dataset.nav);return;}
-  if(e.target.closest("#homeReport,#navReport")){openReport();return;}
+  if(e.target.closest("#homeReport,#navReport,[data-desktop-report]")){openReport();return;}
   if(e.target.closest("#mapReport")){openReport("map");return;}
   if(e.target.closest("#reportHereBtn")){if(state.multiPointMode){state.multiPointMode=false;setPointPickMode(false,{multi:false});openReport("map");}else{prefillOccurrenceFromSelectedPoint();openReport("map");}return;}
   if(e.target.closest("#reportSegmentBtn")){openReport("map");return;}

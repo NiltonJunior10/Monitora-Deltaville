@@ -18,12 +18,62 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=460">
+  <link rel="stylesheet" href="styles.css?v=470">
   <title>Monitora Deltaville</title>
 </head>
 <body>
   <div class="app-shell" id="app">
+    <aside class="desktop-sidebar" aria-label="Navegação desktop">
+      <button class="desktop-brand" data-nav="home" aria-label="Ir para o início">
+        <img src="assets/brand-mark.svg" alt="">
+        <span><b>Monitora</b><strong>Deltaville</strong></span>
+      </button>
+
+      <nav class="desktop-nav">
+        <button data-nav="home" class="desktop-nav-item active">
+          <span class="desktop-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7v9a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1Z"/></svg>
+          </span><b>Início</b>
+        </button>
+        <button data-nav="map" class="desktop-nav-item">
+          <span class="desktop-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5.2 5-2 8 2.6 5-2v14.9l-5 2-8-2.6-5 2Z"/><path d="M8 3.2v14.9M16 5.8v14.9"/></svg>
+          </span><b>Mapa</b>
+        </button>
+        <button type="button" class="desktop-nav-item" data-desktop-report>
+          <span class="desktop-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg>
+          </span><b>Registrar</b>
+        </button>
+        <button data-nav="alerts" class="desktop-nav-item">
+          <span class="desktop-nav-icon desktop-nav-alert">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+            <i class="desktop-alert-badge" id="desktopAlertBadge" hidden>0</i>
+          </span><b>Alertas</b>
+        </button>
+        <button data-nav="profile" class="desktop-nav-item">
+          <span class="desktop-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.4 19.5c.8-3.8 3-5.7 6.6-5.7s5.8 1.9 6.6 5.7"/></svg>
+          </span><b>Perfil</b>
+        </button>
+      </nav>
+
+      <div class="desktop-sidebar-spacer"></div>
+      <div class="desktop-community-note">
+        <div class="desktop-hills" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </div>
+        <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
+        <small>Monitora Deltaville<br>v4.7</small>
+      </div>
+    </aside>
     <header class="topbar">
+      <div class="desktop-greeting">
+        <p>MONITORA DELTAVILLE</p>
+        <h1 id="desktopHelloTitle">Olá</h1>
+        <span id="desktopResidentLine">Carregando seu cadastro…</span>
+      </div>
+
       <button class="brand" data-nav="home" aria-label="Ir para o início">
         <img src="assets/brand-mark.svg" alt="">
         <span><b>Monitora</b><strong>Deltaville</strong></span>
@@ -44,6 +94,19 @@
         </div>
         <small class="top-weather-summary" id="weatherDetail" aria-live="polite">Carregando previsão…</small>
       </section>
+
+      <div class="desktop-account">
+        <button type="button" class="desktop-bell" data-nav="alerts" aria-label="Abrir alertas">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          <i id="desktopBellBadge" hidden>0</i>
+        </button>
+        <span class="desktop-account-divider"></span>
+        <div class="desktop-avatar" id="desktopAvatar">—</div>
+        <div class="desktop-account-copy">
+          <b id="desktopAccountName">Morador</b>
+          <small id="desktopAccountRole">Deltaville</small>
+        </div>
+      </div>
     </header>
 
     <main>
@@ -78,9 +141,25 @@
               <b id="homeCount">0</b>
               <small class="notify-inline-copy" id="notifyInlineCopy">Ver alertas</small>
             </article>
-            <article class="desktop-only-stat"><span>Ocorrências ativas</span><b id="desktopOccurrenceCount">0</b><small>registros da comunidade</small></article>
-            <article class="desktop-only-stat"><span>Críticas</span><b id="desktopCriticalCount">0</b><small>situações críticas ativas</small></article>
             <article><span>Chuva próxima 6h</span><b id="rain6h">—</b><small id="rainChance">—</small></article>
+          </div>
+          <div class="desktop-status-metrics">
+            <article>
+              <span class="desktop-metric-icon shield">◇</span>
+              <div><b id="desktopAlertCount">0</b><small>Alertas ativos</small></div>
+            </article>
+            <article>
+              <span class="desktop-metric-icon doc">▤</span>
+              <div><b id="desktopOccurrenceCount">0</b><small>Ocorrências ativas</small></div>
+            </article>
+            <article>
+              <span class="desktop-metric-icon critical">!</span>
+              <div><b id="desktopCriticalCount">0</b><small>Críticas</small></div>
+            </article>
+            <article>
+              <span class="desktop-metric-icon rain">◉</span>
+              <div><b id="desktopRain6h">—</b><small>Chuva próxima 6h</small></div>
+            </article>
           </div>
         </section>
 
@@ -111,6 +190,30 @@
             <span class="count" id="occurrenceCount">0</span>
           </div>
           <div id="homeOccurrences" class="cards"></div>
+        </section>
+
+        <section class="desktop-bottom-grid">
+          <article class="desktop-summary-card">
+            <div class="desktop-card-head">
+              <div><span class="desktop-card-icon">☂</span><b>Previsão local</b></div>
+              <small id="desktopWeatherSummary">Carregando previsão…</small>
+            </div>
+            <div class="desktop-weather-row">
+              <div class="desktop-weather-main">
+                <span id="desktopWeatherIcon">🌤️</span>
+                <div><small>Agora</small><strong id="desktopWeatherTemp">—</strong></div>
+              </div>
+              <div class="desktop-weather-mini"><small>Próx. 6h</small><b id="desktopWeatherRain">—</b></div>
+              <div class="desktop-weather-mini"><small>Chance</small><b id="desktopWeatherChance">—</b></div>
+            </div>
+          </article>
+
+          <article class="desktop-summary-card">
+            <div class="desktop-card-head">
+              <div><span class="desktop-card-icon bars">▥</span><b>Status de monitoramento</b></div>
+            </div>
+            <div id="desktopMonitoringList" class="desktop-monitoring-list"></div>
+          </article>
         </section>
       </section>
 
@@ -355,11 +458,6 @@
         </span>
         <b>Perfil</b>
       </button>
-
-      <div class="desktop-sidebar-footer" aria-hidden="true">
-        <span>Juntos por um Deltaville mais seguro e bem cuidado.</span>
-        <small>Monitora Deltaville • v4.6</small>
-      </div>
     </nav>
   </div>
 
@@ -664,6 +762,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=460"></script>
+  <script src="app.js?v=470"></script>
 </body>
 </html>
