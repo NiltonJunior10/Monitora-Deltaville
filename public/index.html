@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=452">
+  <link rel="stylesheet" href="styles.css?v=460">
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -78,15 +78,17 @@
               <b id="homeCount">0</b>
               <small class="notify-inline-copy" id="notifyInlineCopy">Ver alertas</small>
             </article>
+            <article class="desktop-only-stat"><span>Ocorrências ativas</span><b id="desktopOccurrenceCount">0</b><small>registros da comunidade</small></article>
+            <article class="desktop-only-stat"><span>Críticas</span><b id="desktopCriticalCount">0</b><small>situações críticas ativas</small></article>
             <article><span>Chuva próxima 6h</span><b id="rain6h">—</b><small id="rainChance">—</small></article>
           </div>
         </section>
 
         <button class="primary wide" id="homeReport">＋ Registrar ocorrência</button>
 
-        <section class="section">
+        <section class="section home-map-section">
           <div class="section-head">
-            <div><p class="kicker">VISÃO RÁPIDA</p><h2>Mapa do Deltaville</h2></div>
+            <div><p class="kicker">MONITORAMENTO</p><h2>Mapa do Deltaville</h2></div>
             <button class="link" data-nav="map">Abrir mapa</button>
           </div>
           <div class="home-map-shell">
@@ -103,7 +105,7 @@
           <p class="map-source-note">Base visual: mapa ilustrado do Deltaville, expandido e suavizado a partir da implantação real do empreendimento.</p>
         </section>
 
-        <section class="section">
+        <section class="section home-events-section">
           <div class="section-head">
             <div><p class="kicker">AGORA</p><h2>Ocorrências ativas</h2></div>
             <span class="count" id="occurrenceCount">0</span>
@@ -353,6 +355,11 @@
         </span>
         <b>Perfil</b>
       </button>
+
+      <div class="desktop-sidebar-footer" aria-hidden="true">
+        <span>Juntos por um Deltaville mais seguro e bem cuidado.</span>
+        <small>Monitora Deltaville • v4.6</small>
+      </div>
     </nav>
   </div>
 
@@ -657,6 +664,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=452"></script>
+  <script src="app.js?v=460"></script>
 </body>
 </html>

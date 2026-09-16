@@ -1642,8 +1642,19 @@ function alertCard(a){
 }
 function renderOccurrences(){
   const groups=groupOccurrences(state.occurrences);
-  $("#homeCount").textContent=groups.length+state.alerts.length;$("#occurrenceCount").textContent=groups.length;
-  $("#homeOccurrences").innerHTML=groups.length?groups.slice(0,4).map(g=>occurrenceGroupCard(g,true)).join(""):'<div class="empty">Nenhuma ocorrência comunitária ativa agora.</div>';
+  const totalActive=groups.length+state.alerts.length;
+  const criticalActive=
+    groups.filter(g=>highestSeverity(g.items)==="critical").length+
+    state.alerts.filter(a=>a.severity==="critical").length;
+
+  $("#homeCount").textContent=totalActive;
+  $("#occurrenceCount").textContent=groups.length;
+  if($("#desktopOccurrenceCount"))$("#desktopOccurrenceCount").textContent=groups.length;
+  if($("#desktopCriticalCount"))$("#desktopCriticalCount").textContent=criticalActive;
+
+  $("#homeOccurrences").innerHTML=groups.length
+    ?groups.slice(0,6).map(g=>occurrenceGroupCard(g,true)).join("")
+    :'<div class="empty"><b>Tudo tranquilo no momento</b><span>Nenhuma ocorrência comunitária ativa agora.</span></div>';
 }
 function renderAlertsPage(){
   let items=[...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
