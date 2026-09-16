@@ -28,7 +28,7 @@ document.addEventListener("touchend",e=>{
 },{passive:false});
 
 const state = {
-  user:null, profile:null, condominiums:[], locations:[], occurrences:[], alerts:[],
+  user:null, profile:null, condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[],
   maps:{}, markers:{home:[],full:[]}, filter:"all", alertFilter:"all",
   installPrompt:null, initialized:false, realtimeChannel:null,
   avenueLayers:{home:[],full:[]}, lakeLayers:{home:[],full:[]}, riverLayers:{home:[],full:[]},
@@ -68,6 +68,11 @@ const condominiumAnchors={
 };
 const neighborhoodAnchor=[800,500];
 const WEATHER_SCOPE_TYPES=new Set(["heavy_rain_flood_risk","hail","wind_damage","wind_no_damage"]);
+const COMMUNITY_PROBLEM_TYPES=new Set([
+  "public_lighting","drainage_clogged","tree_hazard","road_damage","power_outage",
+  "sewer_issue","waste_accumulation","signage_issue","sidewalk_obstruction",
+  "water_supply","infrastructure_damage","other_neighborhood_issue"
+]);
 const DAMAGE_LABELS={
   tree:"Árvore/galhos",
   roof:"Telhado/estrutura",
@@ -76,6 +81,7 @@ const DAMAGE_LABELS={
   other:"Outros danos"
 };
 function isWeatherScopeType(type){return WEATHER_SCOPE_TYPES.has(type);}
+function isCommunityProblemType(type){return COMMUNITY_PROBLEM_TYPES.has(type);}
 function condominiumToken(id){return `condo:${id}`;}
 function isCondominiumToken(id){return String(id||"").startsWith("condo:");}
 function condominiumIdFromToken(id){return String(id||"").slice(6);}
@@ -104,7 +110,13 @@ const occurrenceLabels = {
   avenue_flooding:"Alagamento em avenida", lakes_full:"Lagos cheios",
   heavy_rain_flood_risk:"Chuva intensa / risco de alagamento", hail:"Granizo",
   wind_damage:"Vendaval com danos", wind_no_damage:"Vendaval sem danos",
-  river_level:"Nível do Rio Biguaçu", river_overflow:"Transbordamento de rio"
+  river_level:"Nível do Rio Biguaçu", river_overflow:"Transbordamento de rio",
+  public_lighting:"Iluminação pública", drainage_clogged:"Bueiro / drenagem",
+  tree_hazard:"Árvore / galhos", road_damage:"Buraco / pavimento",
+  power_outage:"Energia / poste", sewer_issue:"Esgoto / vazamento",
+  waste_accumulation:"Lixo / entulho", signage_issue:"Sinalização",
+  sidewalk_obstruction:"Calçada / obstrução", water_supply:"Abastecimento de água",
+  infrastructure_damage:"Estrutura danificada", other_neighborhood_issue:"Outro problema"
 };
 const conditionLabels = {
   water_accumulating:"Água acumulando", flooding:"Alagamento",
@@ -112,6 +124,15 @@ const conditionLabels = {
 };
 const severityLabels = {attention:"Atenção",alert:"Alerta",critical:"Crítico"};
 const severityRank = {normal:0,attention:1,alert:2,critical:3};
+const occurrenceIcons = {
+  avenue_flooding:"💧", lakes_full:"≈", heavy_rain_flood_risk:"☔", hail:"◌",
+  wind_damage:"↝", wind_no_damage:"↝", river_level:"≋", river_overflow:"≋",
+  public_lighting:"💡", drainage_clogged:"◉", tree_hazard:"🌳", road_damage:"▰",
+  power_outage:"⚡", sewer_issue:"≈", waste_accumulation:"◆", signage_issue:"⚑",
+  sidewalk_obstruction:"↥", water_supply:"🚰", infrastructure_damage:"▦",
+  other_neighborhood_issue:"!"
+};
+function occurrenceIcon(type){return occurrenceIcons[type]||"!";}
 
 const META_PREFIX = "[[MDMETA]]";
 const META_SUFFIX = "[[/MDMETA]]";
@@ -193,6 +214,7 @@ function navigate(page){
   });
   document.body.classList.toggle("map-open",page==="map");
   window.scrollTo({top:0,behavior:"smooth"});
+  if(page==="reports")renderReports();
   if(page==="map"){
     [30,100,260,520].forEach(delay=>setTimeout(()=>ensureMapLayout(state.maps.full,true),delay));
     setTimeout(syncMapBottomUI,40);
@@ -358,6 +380,13 @@ async function loadData(){
   state.occurrences=(occRes.data||[]).filter(activeOccurrence).map(hydrateOccurrence);
   await loadOccurrencePhotos();
 
+  const recentRes = await db.from("occurrences")
+    .select("*, monitored_locations(name,category)")
+    .eq("status","resolved")
+    .order("resolved_at",{ascending:false})
+    .limit(8);
+  state.recentResolved=recentRes.error?[]:(recentRes.data||[]).map(hydrateOccurrence);
+
   // Filtra validade dos alertas no cliente. É mais tolerante entre versões do PostgREST.
   const alertRes = await db.from("alerts")
     .select("*, monitored_locations(name,category)")
@@ -378,6 +407,7 @@ async function loadDataSafe(){
   }catch(e){
     console.error("Falha ao carregar ocorrências/alertas:", e);
     state.occurrences=[];
+    state.recentResolved=[];
     state.alerts=[];
     toast("Ocorrências temporariamente indisponíveis. Cadastro e mapa continuam funcionando.");
   }
@@ -1592,24 +1622,77 @@ function renderMapMarkers(){
   renderOccurrencePointMarkers();
 }
 
-function desktopCategoryStatus(category){
-  const ids=new Set(state.locations.filter(l=>l.category===category).map(l=>String(l.id)));
-  const items=state.occurrences.filter(o=>o.location_id&&ids.has(String(o.location_id)));
-  return highestSeverity(items);
+function statusForTypes(types){
+  const set=new Set(types);
+  return highestSeverity(state.occurrences.filter(o=>set.has(o.occurrence_type)));
 }
 function renderDesktopMonitoring(){
   const host=$("#desktopMonitoringList");
   if(!host)return;
   const rows=[
-    ["Lagos monitorados",desktopCategoryStatus("lake")],
-    ["Avenidas monitoradas",desktopCategoryStatus("avenue")],
-    ["Rio Biguaçu",desktopCategoryStatus("river")],
-    ["Condições climáticas",highestSeverity(state.occurrences.filter(o=>!o.location_id))]
+    ["Condições climáticas",statusForTypes(["heavy_rain_flood_risk","hail","wind_damage","wind_no_damage"])],
+    ["Rio Biguaçu",statusForTypes(["river_level","river_overflow"])],
+    ["Drenagem e alagamentos",statusForTypes(["avenue_flooding","lakes_full","drainage_clogged"])],
+    ["Iluminação pública",statusForTypes(["public_lighting"])],
+    ["Vias e acesso",statusForTypes(["road_damage","signage_issue","sidewalk_obstruction"])],
+    ["Áreas verdes",statusForTypes(["tree_hazard"])],
+    ["Infraestrutura e serviços",statusForTypes(["power_outage","water_supply","sewer_issue","waste_accumulation","infrastructure_damage"])]
   ];
   host.innerHTML=rows.map(([label,status])=>{
     const st=status||"normal";
     return `<div><span>${esc(label)}</span><b class="${st}"><i></i>${severityLabels[st]||"Normal"}</b></div>`;
   }).join("");
+}
+function severitySummary(){
+  const grouped=groupOccurrences(state.occurrences).map(g=>({severity:highestSeverity(g.items)}));
+  const all=[...grouped,...state.alerts];
+  return {
+    attention:all.filter(x=>x.severity==="attention").length,
+    alert:all.filter(x=>x.severity==="alert").length,
+    critical:all.filter(x=>x.severity==="critical").length
+  };
+}
+function renderDesktopSeverity(){
+  const s=severitySummary();
+  if($("#desktopAttentionCount"))$("#desktopAttentionCount").textContent=s.attention;
+  if($("#desktopAlertSeverityCount"))$("#desktopAlertSeverityCount").textContent=s.alert;
+  if($("#desktopCriticalSeverityCount"))$("#desktopCriticalSeverityCount").textContent=s.critical;
+}
+function recentOccurrenceRow(o){
+  const when=o.resolved_at||o.created_at;
+  return `<div class="desktop-recent-row">
+    <span class="desktop-recent-icon">${esc(occurrenceIcon(o.occurrence_type))}</span>
+    <div><b>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</b><small>${esc(locationName(o))} • ${age(when)}</small></div>
+    <em>Resolvida</em>
+  </div>`;
+}
+function renderDesktopRecent(){
+  const host=$("#desktopRecentList");if(!host)return;
+  host.innerHTML=state.recentResolved.length
+    ?state.recentResolved.slice(0,3).map(recentOccurrenceRow).join("")
+    :'<div class="desktop-recent-empty">Nenhuma ocorrência resolvida recentemente.</div>';
+}
+function renderReports(){
+  const groups=groupOccurrences(state.occurrences);
+  const s=severitySummary();
+  if($("#reportsActiveCount"))$("#reportsActiveCount").textContent=groups.length;
+  if($("#reportsAttentionCount"))$("#reportsAttentionCount").textContent=s.attention;
+  if($("#reportsAlertCount"))$("#reportsAlertCount").textContent=s.alert;
+  if($("#reportsCriticalCount"))$("#reportsCriticalCount").textContent=s.critical;
+  if($("#reportsResolvedCount"))$("#reportsResolvedCount").textContent=state.recentResolved.length;
+
+  const items=[...state.occurrences,...state.recentResolved];
+  const counts={};
+  for(const o of items)counts[o.occurrence_type]=(counts[o.occurrence_type]||0)+1;
+  const ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(1,...ranked.map(x=>x[1]));
+  const host=$("#reportsTypeList");
+  if(host)host.innerHTML=ranked.length?ranked.map(([type,count])=>`
+    <div class="reports-type-row">
+      <span>${esc(occurrenceIcon(type))}</span>
+      <div><b>${esc(occurrenceLabels[type]||type)}</b><i><u style="width:${Math.max(8,Math.round(count/max*100))}%"></u></i></div>
+      <strong>${count}</strong>
+    </div>`).join(""):'<div class="empty">Ainda não há registros suficientes para o relatório.</div>';
 }
 
 function renderAll(){
@@ -1619,6 +1702,9 @@ function renderAll(){
   renderLocations();
   renderStatus();
   renderDesktopMonitoring();
+  renderDesktopSeverity();
+  renderDesktopRecent();
+  renderReports();
   renderMapMarkers();
 }
 function renderProfile(){
@@ -1665,7 +1751,7 @@ function occurrenceGroupCard(group,allowEdit=false){
   const locLine=names.length<=2?names.join(" + "):`${names.slice(0,2).join(" + ")} +${names.length-2}`;
   const photos=occurrencePhotoList(items).filter(ph=>ph?.url);
   const photoStrip=photos.length?`<div class="event-photo-strip">${photos.slice(0,3).map((ph,i)=>`<button type="button" class="event-photo-thumb" data-view-photo="${esc(ph.url)}" aria-label="Abrir foto ${i+1}"><img src="${esc(ph.url)}" alt="" loading="lazy"></button>`).join("")}</div>`:"";
-  return `<article class="event-card occurrence-clickable" data-open-occurrence="${o.id}" role="button" tabindex="0" aria-label="Abrir ocorrência no mapa"><div class="event-icon ${severity}">!</div><div><h3>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h3><p><b>${esc(locLine||"Local informado")}</b>${o.avenue_condition?` • ${esc(conditionLabels[o.avenue_condition])}`:""}</p>${noteText(o)?`<p>${esc(noteText(o))}</p>`:""}${photoStrip}${modeTag}<small>${person} • ${age(o.created_at)}</small></div>${allowEdit&&own?`<button class="edit-occurrence-btn" data-edit-occurrence="${o.id}">Editar</button>`:""}</article>`;
+  return `<article class="event-card occurrence-clickable" data-open-occurrence="${o.id}" role="button" tabindex="0" aria-label="Abrir ocorrência no mapa"><div class="event-icon ${severity}">${esc(occurrenceIcon(o.occurrence_type))}</div><div><h3>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h3><p><b>${esc(locLine||"Local informado")}</b>${o.avenue_condition?` • ${esc(conditionLabels[o.avenue_condition])}`:""}</p>${noteText(o)?`<p>${esc(noteText(o))}</p>`:""}${photoStrip}${modeTag}<small>${person} • ${age(o.created_at)}</small></div>${allowEdit&&own?`<button class="edit-occurrence-btn" data-edit-occurrence="${o.id}">Editar</button>`:""}</article>`;
 }
 function occurrenceCard(o,allowEdit=false){return occurrenceGroupCard({id:groupIdOf(o),items:[o]},allowEdit);}
 function alertCard(a){
@@ -1696,6 +1782,9 @@ function renderOccurrences(){
     ?groups.slice(0,6).map(g=>occurrenceGroupCard(g,true)).join("")
     :'<div class="empty desktop-empty-state"><b>Tudo tranquilo no momento</b><span>Nenhuma ocorrência comunitária ativa agora.</span></div>';
   renderDesktopMonitoring();
+  renderDesktopSeverity();
+  renderDesktopRecent();
+  renderReports();
 }
 function renderAlertsPage(){
   let items=[...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -1720,6 +1809,11 @@ function renderStatus(){
   $("#overallPill").className=`status-pill ${st}`; $("#overallPill").textContent=`● ${text}`;
   const reasons={normal:"Nenhuma ocorrência crítica ativa.",attention:"Há registros que pedem atenção.",alert:"Há situação de alerta ativa.",critical:"Há ocorrência crítica ativa."};
   $("#statusReason").textContent=reasons[st];
+  if($("#desktopOverallStatus")){
+    $("#desktopOverallStatus").textContent=text;
+    $("#desktopOverallStatus").className=st;
+  }
+  if($("#desktopStatusReason"))$("#desktopStatusReason").textContent=reasons[st];
 }
 
 
@@ -1727,6 +1821,7 @@ function allowedLocationsForType(type){
   if(type==="avenue_flooding")return state.locations.filter(l=>l.category==="avenue");
   if(type==="lakes_full")return state.locations.filter(l=>l.category==="lake");
   if(type==="river_level"||type==="river_overflow")return state.locations.filter(l=>l.category==="river");
+  if(isCommunityProblemType(type))return [...state.locations];
   return [];
 }
 function allowedReportLocationIds(type){
@@ -1734,6 +1829,13 @@ function allowedReportLocationIds(type){
     return new Set([
       ...state.condominiums.filter(c=>c.active!==false).map(c=>condominiumToken(c.id)),
       "whole"
+    ]);
+  }
+  if(isCommunityProblemType(type)){
+    return new Set([
+      ...state.locations.map(l=>String(l.id)),
+      ...state.condominiums.filter(c=>c.active!==false).map(c=>condominiumToken(c.id)),
+      "whole","other"
     ]);
   }
   return new Set([
@@ -1801,6 +1903,37 @@ function renderLocationChips(){
 
     // Fenômenos gerais não precisam de ponto exato; evita complexidade desnecessária.
     if($("#mapToolsBlock"))$("#mapToolsBlock").hidden=true;
+  }else if(isCommunityProblemType(type)){
+    const condos=state.condominiums.filter(c=>c.active!==false);
+    const locs=allowedLocationsForType(type);
+    if(title)title.textContent="Onde está o problema?";
+    if(helper)helper.textContent="Escolha um local, condomínio, bairro inteiro ou marque o ponto exato no mapa.";
+
+    wrap.innerHTML=
+      `<button type="button" class="location-chip whole-neighborhood ${state.reportLocationIds.includes("whole")?"selected":""}" data-report-location="whole"><span>⌂</span>Bairro inteiro</button>`+
+      condos.map(c=>{
+        const id=condominiumToken(c.id),selected=state.reportLocationIds.includes(id);
+        return `<button type="button" class="location-chip condo-chip ${selected?"selected":""}" data-report-location="${esc(id)}"><span>⌂</span>${esc(c.name)}</button>`;
+      }).join("")+
+      locs.map(loc=>{
+        const selected=state.reportLocationIds.some(id=>String(id)===String(loc.id));
+        const icon=loc.category==="avenue"?"⌁":loc.category==="lake"?"≈":"≋";
+        return `<button type="button" class="location-chip ${selected?"selected":""}" data-report-location="${esc(loc.id)}"><span>${icon}</span>${esc(loc.name)}</button>`;
+      }).join("")+
+      `<button type="button" class="location-chip ${state.reportLocationIds.includes("other")?"selected":""}" data-report-location="other"><span>＋</span>Outro local</button>`;
+
+    $("#locationSelect").innerHTML='<option value=""></option>'+
+      condos.map(c=>`<option value="${esc(condominiumToken(c.id))}">${esc(c.name)}</option>`).join("")+
+      locs.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join("")+
+      '<option value="whole">Bairro inteiro</option><option value="other">Outro</option>';
+    $("#locationSelect").value=state.reportLocationIds[0]||"";
+    const other=state.reportLocationIds.includes("other");
+    $("#customLocationWrap").hidden=!other;
+    if(other&&state.reportCustomLocation&&!$("#customLocation").value)$("#customLocation").value=state.reportCustomLocation;
+    $("#conditionBlock").hidden=true;
+    $("#avenueConditionWrap").hidden=true;
+    $("#segmentPickBtn").hidden=true;
+    if($("#mapToolsBlock"))$("#mapToolsBlock").hidden=false;
   }else{
     const locs=allowedLocationsForType(type);
     wrap.innerHTML=locs.map(loc=>{
@@ -1892,6 +2025,9 @@ function locationMatchesFromText(text,type){
   if(isWeatherScopeType(type))return condominiumMatchesFromText(text);
 
   const n=normText(text),ids=[];
+  if(isCommunityProblemType(type)){
+    for(const id of condominiumMatchesFromText(text))if(!ids.includes(id))ids.push(id);
+  }
   const addName=fragment=>{const loc=state.locations.find(l=>normText(l.name).includes(fragment));if(loc&&!ids.includes(loc.id))ids.push(loc.id);};
   if(/wilson/.test(n))addName("wilson castelo branco");
   if(/beira rio/.test(n))addName("beira rio");
@@ -1946,7 +2082,17 @@ function damageTypesFromText(text){
 function smartParseDescription(text){
   const n=normText(text);let type="";
   if(/granizo/.test(n))type="hail";
-  else if(/arvore caiu|arvore caida|queda de arvore/.test(n))type="wind_damage";
+  else if(/lampada|luminaria|iluminacao|poste apagado|sem luz na rua|luz da rua/.test(n))type="public_lighting";
+  else if(/bueiro|boca de lobo|drenagem|ralo entup/.test(n))type="drainage_clogged";
+  else if(/buraco|asfalto|pavimento|pista quebrada/.test(n))type="road_damage";
+  else if(/placa|sinalizacao|sinalização|faixa apagada/.test(n))type="signage_issue";
+  else if(/calcada|calçada|passeio|obstrucao na calcada|obstrução na calçada/.test(n))type="sidewalk_obstruction";
+  else if(/falta de energia|sem energia|poste caido|poste caiu|fiacao|fiação|fio caido|fio caiu/.test(n))type="power_outage";
+  else if(/esgoto|mau cheiro|vazamento de esgoto/.test(n))type="sewer_issue";
+  else if(/lixo|entulho|descarte irregular|sujeira acumulada/.test(n))type="waste_accumulation";
+  else if(/falta de agua|falta d agua|sem agua|vazamento de agua|cano rompido/.test(n))type="water_supply";
+  else if(/muro quebrado|estrutura danificada|guarda corpo|equipamento quebrado|estrutura quebrada/.test(n))type="infrastructure_damage";
+  else if(/arvore caiu|arvore caida|queda de arvore|galho caido|galho quebrado|arvore inclinada/.test(n)&&!/vendaval|vento forte|rajada/.test(n))type="tree_hazard";
   else if(/vendaval|vento forte|rajada/.test(n))type=/dano|estrago|danific|destelh|arvore caiu|queda de arvore|poste caiu|sem energia/.test(n)?"wind_damage":"wind_no_damage";
   else if(/rio/.test(n)&&/transbord/.test(n))type="river_overflow";
   else if(/rio|biguacu/.test(n)&&/subindo|nivel|cheio|enchendo/.test(n))type="river_level";
@@ -2305,6 +2451,17 @@ function buildReportTargets(){
   });
   for(const raw of state.reportLocationIds){
     const id=String(raw);
+    if(id==="whole"){
+      const n=neighborhoodNormalized();
+      targets.push({location_id:null,custom_location:"Bairro Deltaville",exact_map_x:n.map_x,exact_map_y:n.map_y,scope:"whole"});
+      continue;
+    }
+    if(isCondominiumToken(id)){
+      const condo=condominiumByToken(id);if(!condo)continue;
+      const n=condominiumNormalized(condo.name);
+      targets.push({location_id:null,custom_location:condo.name,exact_map_x:n.map_x,exact_map_y:n.map_y,scope:"condominium",condominiumId:condo.id});
+      continue;
+    }
     if(id==="other"){targets.push({location_id:null,custom_location:$("#customLocation").value.trim()||state.reportCustomLocation||"Deltaville",exact_map_x:null,exact_map_y:null});continue;}
     if(represented.has(id))continue;const loc=locationById(id);if(!loc||!locationCompatibleWithType(type,loc))continue;targets.push({location_id:id,custom_location:null,exact_map_x:null,exact_map_y:null});represented.add(id);
   }
@@ -2496,11 +2653,6 @@ function renderWeatherSnapshot(snapshot){
   $("#weatherDetail").textContent=snapshot.detail||"Previsão local";
   if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=snapshot.icon||"🌤️";
   if($("#desktopRain6h"))$("#desktopRain6h").textContent=rainText;
-  if($("#desktopWeatherRain"))$("#desktopWeatherRain").textContent=rainText;
-  if($("#desktopWeatherChance"))$("#desktopWeatherChance").textContent=chanceText;
-  if($("#desktopWeatherTemp"))$("#desktopWeatherTemp").textContent=tempText;
-  if($("#desktopWeatherSummary"))$("#desktopWeatherSummary").textContent=snapshot.detail||"Previsão local";
-  if($("#desktopWeatherIcon"))$("#desktopWeatherIcon").textContent=snapshot.icon||"🌤️";
 }
 function loadCachedWeather(){
   try{
@@ -2551,11 +2703,6 @@ async function loadWeather(){
     $("#weatherDetail").textContent=weatherDetail;
     if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=weatherIcon;
     if($("#desktopRain6h"))$("#desktopRain6h").textContent=`${rain.toFixed(1)} mm`;
-    if($("#desktopWeatherRain"))$("#desktopWeatherRain").textContent=`${rain.toFixed(1)} mm`;
-    if($("#desktopWeatherChance"))$("#desktopWeatherChance").textContent=`${prob}%`;
-    if($("#desktopWeatherTemp"))$("#desktopWeatherTemp").textContent=`${temp}°`;
-    if($("#desktopWeatherSummary"))$("#desktopWeatherSummary").textContent=weatherDetail;
-    if($("#desktopWeatherIcon"))$("#desktopWeatherIcon").textContent=weatherIcon;
     try{
       localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify({
         saved_at:Date.now(),rain,prob,temp,detail:weatherDetail,icon:weatherIcon

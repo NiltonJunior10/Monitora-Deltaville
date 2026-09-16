@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=470">
+  <link rel="stylesheet" href="styles.css?v=480">
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -56,6 +56,11 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.4 19.5c.8-3.8 3-5.7 6.6-5.7s5.8 1.9 6.6 5.7"/></svg>
           </span><b>Perfil</b>
         </button>
+        <button data-nav="reports" class="desktop-nav-item">
+          <span class="desktop-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          </span><b>Relatórios</b>
+        </button>
       </nav>
 
       <div class="desktop-sidebar-spacer"></div>
@@ -64,7 +69,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v4.7</small>
+        <small>Monitora Deltaville<br>v4.8</small>
       </div>
     </aside>
     <header class="topbar">
@@ -143,27 +148,42 @@
             </article>
             <article><span>Chuva próxima 6h</span><b id="rain6h">—</b><small id="rainChance">—</small></article>
           </div>
-          <div class="desktop-status-metrics">
-            <article>
-              <span class="desktop-metric-icon shield">◇</span>
-              <div><b id="desktopAlertCount">0</b><small>Alertas ativos</small></div>
-            </article>
-            <article>
-              <span class="desktop-metric-icon doc">▤</span>
-              <div><b id="desktopOccurrenceCount">0</b><small>Ocorrências ativas</small></div>
-            </article>
-            <article>
-              <span class="desktop-metric-icon critical">!</span>
-              <div><b id="desktopCriticalCount">0</b><small>Críticas</small></div>
-            </article>
-            <article>
-              <span class="desktop-metric-icon rain">◉</span>
-              <div><b id="desktopRain6h">—</b><small>Chuva próxima 6h</small></div>
-            </article>
-          </div>
         </section>
 
-        <button class="primary wide" id="homeReport">＋ Registrar ocorrência</button>
+        <section class="desktop-kpi-row" aria-label="Resumo da comunidade">
+          <article class="desktop-kpi desktop-kpi-status">
+            <span class="desktop-kpi-shield" aria-hidden="true">⬟</span>
+            <div>
+              <small>Situação atual</small>
+              <strong id="desktopOverallStatus">Normal</strong>
+              <p id="desktopStatusReason">Nenhuma ocorrência crítica ativa no momento.</p>
+            </div>
+          </article>
+          <article class="desktop-kpi">
+            <span class="desktop-kpi-icon blue" aria-hidden="true">▤</span>
+            <div><strong id="desktopAlertCount">0</strong><small>Alertas ativos</small></div>
+          </article>
+          <article class="desktop-kpi">
+            <span class="desktop-kpi-icon cyan" aria-hidden="true">◉</span>
+            <div><strong id="desktopOccurrenceCount">0</strong><small>Ocorrências ativas</small></div>
+          </article>
+          <article class="desktop-kpi">
+            <span class="desktop-kpi-icon red" aria-hidden="true">!</span>
+            <div><strong id="desktopCriticalCount">0</strong><small>Críticas</small></div>
+          </article>
+          <article class="desktop-kpi">
+            <span class="desktop-kpi-icon rain" aria-hidden="true">☂</span>
+            <div><strong id="desktopRain6h">—</strong><small>Chuva próxima 6h</small></div>
+          </article>
+        </section>
+
+        <button class="primary wide" id="homeReport">
+          <span class="home-report-plus" aria-hidden="true">＋</span>
+          <span class="home-report-copy">
+            <b>Registrar ocorrência</b>
+            <small>Ajude a manter o Deltaville seguro</small>
+          </span>
+        </button>
 
         <section class="section home-map-section">
           <div class="section-head">
@@ -193,27 +213,50 @@
         </section>
 
         <section class="desktop-bottom-grid">
-          <article class="desktop-summary-card">
+          <article class="desktop-summary-card desktop-severity-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon">☂</span><b>Previsão local</b></div>
-              <small id="desktopWeatherSummary">Carregando previsão…</small>
+              <div><span class="desktop-card-icon bars">▥</span><b>Alertas por grau</b></div>
             </div>
-            <div class="desktop-weather-row">
-              <div class="desktop-weather-main">
-                <span id="desktopWeatherIcon">🌤️</span>
-                <div><small>Agora</small><strong id="desktopWeatherTemp">—</strong></div>
-              </div>
-              <div class="desktop-weather-mini"><small>Próx. 6h</small><b id="desktopWeatherRain">—</b></div>
-              <div class="desktop-weather-mini"><small>Chance</small><b id="desktopWeatherChance">—</b></div>
+            <div class="desktop-severity-grid">
+              <div class="attention"><span>△</span><b id="desktopAttentionCount">0</b><small>Atenção</small></div>
+              <div class="alert"><span>!</span><b id="desktopAlertSeverityCount">0</b><small>Alerta</small></div>
+              <div class="critical"><span>!</span><b id="desktopCriticalSeverityCount">0</b><small>Crítico</small></div>
             </div>
           </article>
 
-          <article class="desktop-summary-card">
+          <article class="desktop-summary-card desktop-recent-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon bars">▥</span><b>Status de monitoramento</b></div>
+              <div><span class="desktop-card-icon">▤</span><b>Ocorrências recentes</b></div>
+              <button type="button" class="desktop-text-link" data-nav="reports">Ver todas →</button>
+            </div>
+            <div id="desktopRecentList" class="desktop-recent-list"></div>
+          </article>
+
+          <article class="desktop-summary-card desktop-monitor-card">
+            <div class="desktop-card-head">
+              <div><span class="desktop-card-icon pulse">⌁</span><b>Status de monitoramento</b></div>
             </div>
             <div id="desktopMonitoringList" class="desktop-monitoring-list"></div>
           </article>
+        </section>
+      </section>
+
+      <section class="page" data-page="reports">
+        <div class="page-title desktop-reports-title">
+          <div><p class="kicker">COMUNIDADE</p><h1>Relatórios</h1><p class="muted">Visão consolidada dos registros recentes do Deltaville.</p></div>
+        </div>
+        <section class="reports-summary-grid">
+          <article><small>Ativas</small><b id="reportsActiveCount">0</b></article>
+          <article><small>Atenção</small><b id="reportsAttentionCount">0</b></article>
+          <article><small>Alerta</small><b id="reportsAlertCount">0</b></article>
+          <article><small>Críticas</small><b id="reportsCriticalCount">0</b></article>
+          <article><small>Resolvidas recentes</small><b id="reportsResolvedCount">0</b></article>
+        </section>
+        <section class="reports-panel">
+          <div class="section-head">
+            <div><p class="kicker">POR TIPO</p><h2>Principais registros</h2></div>
+          </div>
+          <div id="reportsTypeList" class="reports-type-list"></div>
         </section>
       </section>
 
@@ -639,7 +682,9 @@
           <div class="compact-block">
             <b>O que aconteceu?</b>
             <div class="type-chip-grid" id="typeChips">
+              <span class="type-group-title">Clima e água</span>
               <button type="button" data-occ-type="avenue_flooding">🌊 Alagamento</button>
+              <button type="button" data-occ-type="drainage_clogged">🕳️ Bueiro / drenagem</button>
               <button type="button" data-occ-type="lakes_full">≈ Lago cheio</button>
               <button type="button" data-occ-type="river_level">↟ Rio subindo</button>
               <button type="button" data-occ-type="river_overflow">⚠ Rio transbordou</button>
@@ -647,17 +692,42 @@
               <button type="button" data-occ-type="hail">◌ Granizo</button>
               <button type="button" data-occ-type="wind_damage">↝ Vendaval c/ danos</button>
               <button type="button" data-occ-type="wind_no_damage">↝ Vendaval</button>
+
+              <span class="type-group-title">Infraestrutura e manutenção</span>
+              <button type="button" data-occ-type="public_lighting">💡 Iluminação pública</button>
+              <button type="button" data-occ-type="tree_hazard">🌳 Árvore / galhos</button>
+              <button type="button" data-occ-type="road_damage">🛣️ Buraco / pavimento</button>
+              <button type="button" data-occ-type="signage_issue">🚧 Sinalização</button>
+              <button type="button" data-occ-type="sidewalk_obstruction">🚶 Calçada / obstrução</button>
+              <button type="button" data-occ-type="power_outage">⚡ Energia / poste</button>
+              <button type="button" data-occ-type="water_supply">🚰 Abastecimento de água</button>
+              <button type="button" data-occ-type="sewer_issue">🧪 Esgoto / vazamento</button>
+              <button type="button" data-occ-type="waste_accumulation">🗑️ Lixo / entulho</button>
+              <button type="button" data-occ-type="infrastructure_damage">🏗️ Estrutura danificada</button>
+              <button type="button" data-occ-type="other_neighborhood_issue">＋ Outro problema</button>
             </div>
             <select id="occurrenceType" hidden>
               <option value=""></option>
               <option value="avenue_flooding">Alagamento em avenida</option>
+              <option value="drainage_clogged">Bueiro / drenagem</option>
               <option value="lakes_full">Lagos cheios</option>
+              <option value="river_level">Nível do Rio Biguaçu</option>
+              <option value="river_overflow">Transbordamento de rio</option>
               <option value="heavy_rain_flood_risk">Chuva intensa / risco de alagamento</option>
               <option value="hail">Granizo</option>
               <option value="wind_damage">Vendaval com danos</option>
               <option value="wind_no_damage">Vendaval sem danos</option>
-              <option value="river_level">Nível do Rio Biguaçu</option>
-              <option value="river_overflow">Transbordamento de rio</option>
+              <option value="public_lighting">Iluminação pública</option>
+              <option value="tree_hazard">Árvore / galhos</option>
+              <option value="road_damage">Buraco / pavimento</option>
+              <option value="signage_issue">Sinalização</option>
+              <option value="sidewalk_obstruction">Calçada / obstrução</option>
+              <option value="power_outage">Energia / poste</option>
+              <option value="water_supply">Abastecimento de água</option>
+              <option value="sewer_issue">Esgoto / vazamento</option>
+              <option value="waste_accumulation">Lixo / entulho</option>
+              <option value="infrastructure_damage">Estrutura danificada</option>
+              <option value="other_neighborhood_issue">Outro problema</option>
             </select>
           </div>
 
@@ -762,6 +832,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=470"></script>
+  <script src="app.js?v=480"></script>
 </body>
 </html>
