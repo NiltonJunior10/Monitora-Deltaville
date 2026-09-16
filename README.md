@@ -17,3 +17,4 @@ Este repositório está preparado para publicar no Worker existente:
 - Deploy command: `npx wrangler deploy`
 - Production branch: `main`
 - Root directory: `/`
+Deploy inicial
