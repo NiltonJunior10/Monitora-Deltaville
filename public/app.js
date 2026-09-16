@@ -620,6 +620,10 @@ function makeMap(id, preview=false){
     zoomControl:!preview,
     attributionControl:false,
     scrollWheelZoom:preview?false:window.matchMedia("(pointer:fine)").matches,
+    touchZoom:true,
+    doubleClickZoom:true,
+    dragging:true,
+    tap:true,
     wheelDebounceTime:35,
     wheelPxPerZoomLevel:90,
     maxBounds:MAP_EXTENDED_BOUNDS,
@@ -1334,6 +1338,7 @@ function attachMapResizeObserver(){
   window.addEventListener("resize",()=>{
     if(document.body.classList.contains("map-open"))setTimeout(()=>refreshFullMapLayout(),90);
     else setTimeout(()=>ensureMapLayout(state.maps.home,false),80);
+    if(!$("#reportModal")?.hidden)showMobileReportCategories();
   });
 }
 function renderLakeZones(which){
@@ -2170,7 +2175,7 @@ function applySmartParse(result){
     return `<span>⌖ ${esc(reportLocationName(id)||"Local")}${detail?` <i>${esc(detail)}</i>`:""}</span>`;
   }).join(""):'<span class="smart-needs-location">Local não identificado — toque em Ajustar.</span>';
   $("#smartResult").hidden=false;
-  $("#manualReportFields").hidden=true;
+  $("#manualReportFields").hidden=mobileReportLayout()?false:true;
   renderDamageUI();
   updateReportReadyState();
   if(!state.reportLocationIds.length||(result.type==="wind_damage"&&!state.reportDamageTypes.length)){
@@ -2180,6 +2185,19 @@ function applySmartParse(result){
     renderDamageUI();
   }
 }
+function mobileReportLayout(){
+  return window.matchMedia("(max-width:1179px)").matches;
+}
+function showMobileReportCategories(){
+  if(!mobileReportLayout())return;
+  const manual=$("#manualReportFields");
+  if(manual){
+    manual.hidden=false;
+    renderLocationChips();
+    updateReportReadyState();
+  }
+}
+
 function analyzeSmartDescription(){
   const text=$("#smartDescription").value.trim();
   if(text.length<4){$("#reportError").textContent="Descreva rapidamente o que está acontecendo.";return;}
@@ -2241,7 +2259,9 @@ function openReport(source="general"){
     if(state.selectedSegment){if(!state.reportLocationIds.includes(state.selectedSegment.avenueId))state.reportLocationIds.push(state.selectedSegment.avenueId);setOccurrenceType("avenue_flooding",{keepLocations:true});}
     $("#manualReportFields").hidden=false;renderLocationChips();
   }
-  $("#reportModal").hidden=false;updateReportReadyState();
+  $("#reportModal").hidden=false;
+  showMobileReportCategories();
+  updateReportReadyState();
 }
 function openEditOccurrence(id){
   const first=state.occurrences.find(x=>String(x.id)===String(id));if(!first||first.reporter_id!==state.user?.id){toast("Você só pode editar suas próprias ocorrências.");return;}

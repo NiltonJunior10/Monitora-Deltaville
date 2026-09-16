@@ -3486,3 +3486,313 @@ body.map-open [data-page="map"] select{
     white-space:nowrap;
   }
 }
+
+
+/* =========================================================
+   v4.8.5 — refinamento UX mobile
+   Mantém a identidade visual, melhora respiro, rolagem e mapa.
+   ========================================================= */
+@media (max-width:1179px){
+  html,body{
+    min-height:100%;
+    overflow-x:hidden;
+  }
+
+  body{
+    background:#F4F8FC;
+  }
+
+  .app-shell{
+    min-height:100dvh;
+    padding-bottom:calc(var(--app-nav-h,78px) + env(safe-area-inset-bottom));
+  }
+
+  main{
+    padding-bottom:18px;
+  }
+
+  .page.active{
+    min-height:0;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:950;
+    background:rgba(244,248,252,.92);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(215,226,237,.9);
+  }
+
+  .top-weather{
+    min-width:0;
+    overflow:hidden;
+  }
+
+  .top-weather-summary{
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+
+  .status-card,
+  .section,
+  .profile-card,
+  .push-settings-card,
+  .info-card{
+    box-shadow:0 8px 22px rgba(15,43,89,.055);
+  }
+
+  .section{
+    margin-top:18px;
+  }
+
+  .home-map-shell{
+    border-radius:20px;
+  }
+
+  .map-preview{
+    border-radius:20px;
+  }
+
+  .cards{
+    gap:9px;
+  }
+
+  .event-card{
+    border-radius:17px;
+    padding:12px;
+  }
+
+  .bottom-nav{
+    padding-bottom:max(10px,env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav button{
+    min-width:0;
+  }
+
+  .bottom-nav b{
+    max-width:62px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+
+  /* Áreas tocáveis mais confortáveis */
+  .chips button,
+  .location-chip,
+  .type-chip-grid button,
+  .map-chip-btn,
+  .small-btn{
+    min-height:42px;
+  }
+
+  .primary,
+  .secondary,
+  .danger{
+    min-height:46px;
+  }
+
+  /* Página do mapa no celular: gestos ficam somente no mapa */
+  body.map-open{
+    overscroll-behavior:none;
+  }
+
+  body.map-open [data-page="map"] .map-full,
+  body.map-open [data-page="map"] .map-shell,
+  body.map-open [data-page="map"] .leaflet-container{
+    touch-action:none!important;
+  }
+
+  body.map-open [data-page="map"] .page-title{
+    max-width:calc(100vw - 16px);
+  }
+
+  body.map-open [data-page="map"] #mapFilters{
+    max-width:calc(100vw - 16px);
+  }
+
+  body.map-open [data-page="map"] .map-floating-toolbar{
+    max-width:calc(100vw - 20px);
+  }
+
+  body.map-open [data-page="map"] #pickPointBtn{
+    width:min(320px,calc(100vw - 24px))!important;
+  }
+
+  body.map-open [data-page="map"] .map-bottom-action{
+    left:8px!important;
+    right:8px!important;
+  }
+
+  .sheet{
+    max-height:88dvh;
+    overflow:auto;
+    padding-bottom:max(20px,env(safe-area-inset-bottom));
+  }
+
+  .type-chip-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .type-group-title{
+    margin-top:8px;
+  }
+}
+
+@media (max-width:430px){
+  main{
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .topbar{
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .hello h1,
+  .page-title h1{
+    font-size:23px;
+  }
+
+  .status-card{
+    padding:15px;
+  }
+
+  .status-stats{
+    gap:8px;
+  }
+
+  .status-stats article{
+    min-height:84px;
+  }
+
+  .map-preview{
+    height:255px;
+  }
+
+  .event-card{
+    grid-template-columns:38px minmax(0,1fr) auto;
+    gap:9px;
+  }
+
+  .event-icon{
+    width:38px;
+    height:38px;
+  }
+
+  .type-chip-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+
+/* =========================================================
+   v4.8.6 — categorias completas visíveis no mobile
+   Infraestrutura e manutenção aparece diretamente no registro.
+   ========================================================= */
+@media (max-width:1179px){
+  #manualReportToggle{
+    display:none!important;
+  }
+
+  .report-v4{
+    display:flex;
+    flex-direction:column;
+  }
+
+  .smart-composer{order:1}
+  .smart-result{order:2}
+  .manual-report{
+    order:3;
+    display:grid;
+    gap:12px;
+  }
+  .report-photo-card{order:4}
+  .publish-summary{order:5}
+  #reportError{order:6}
+  #submitReport{order:7}
+  #deleteOccurrenceBtn{order:8}
+  .report-expiry-v4{order:9}
+
+  .manual-report[hidden]{
+    display:grid!important;
+  }
+
+  .manual-report>.compact-block:first-child{
+    padding:13px;
+    border:1px solid #DCE6F0;
+    border-radius:18px;
+    background:#F8FBFE;
+  }
+
+  .manual-report>.compact-block:first-child>b{
+    display:block;
+    margin-bottom:10px;
+    font-size:13px;
+    color:#173A64;
+  }
+
+  .type-group-title{
+    grid-column:1/-1;
+    margin:8px 0 2px;
+    padding-top:8px;
+    border-top:1px solid #E7EEF5;
+    color:#71839A;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.08em;
+  }
+
+  .type-group-title:first-child{
+    margin-top:0;
+    padding-top:0;
+    border-top:0;
+  }
+
+  .type-chip-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .type-chip-grid button{
+    width:100%;
+    min-width:0;
+    min-height:48px;
+    padding:9px 10px;
+    border-radius:14px;
+    justify-content:flex-start;
+    text-align:left;
+    line-height:1.2;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    font-size:10.5px;
+  }
+
+  .type-chip-grid button.selected{
+    box-shadow:0 0 0 2px rgba(11,99,206,.10);
+  }
+
+  .compact-block{
+    scroll-margin-top:90px;
+  }
+
+  .report-photo-card{
+    margin-top:2px;
+  }
+}
+
+@media (max-width:390px){
+  .type-chip-grid{
+    grid-template-columns:1fr;
+  }
+
+  .type-chip-grid button{
+    min-height:46px;
+  }
+}
