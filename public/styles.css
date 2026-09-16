@@ -2705,3 +2705,200 @@ body.map-open [data-page="map"] select{
   .page[data-page="home"].active{grid-template-columns:minmax(0,1fr) 390px}
   .page[data-page="home"] .map-preview{height:455px}
 }
+
+
+/* =========================================================
+   v4.8.1 — ajuste fino desktop
+   Corrige sobreposição do clima/CTA e faz a home caber
+   na viewport sem exigir rolagem vertical da página.
+   ========================================================= */
+@media (min-width:1180px) and (pointer:fine){
+  :root{
+    --desktop-sidebar-w:216px;
+    --desktop-topbar-h:78px;
+    --desktop-main-gap:12px;
+    --desktop-row-top:92px;
+    --desktop-row-bottom:146px;
+  }
+
+  html,body{height:100%;overflow:hidden}
+  .app-shell{
+    height:100vh;
+    padding:0 20px 16px calc(var(--desktop-sidebar-w) + 20px);
+    overflow:hidden;
+  }
+  .desktop-sidebar{
+    width:var(--desktop-sidebar-w);
+    padding:22px 14px 16px;
+    overflow:hidden;
+  }
+  .desktop-community-note{padding-top:8px}
+  .desktop-hills{height:72px;margin-bottom:10px}
+  .desktop-community-note p{margin-bottom:16px;font-size:10px}
+
+  .topbar{
+    height:var(--desktop-topbar-h);
+    padding:12px 0 8px;
+    grid-template-columns:minmax(280px,1fr) minmax(320px,420px) auto;
+    gap:14px;
+  }
+  .desktop-greeting h1{font-size:24px}
+  .desktop-greeting span{font-size:10px;margin-top:3px}
+  .top-weather{
+    justify-self:end;
+    max-width:420px;
+    padding:9px 14px;
+    border-radius:16px;
+  }
+  .top-weather-main{min-height:42px}
+  .desktop-account{min-width:152px;gap:8px}
+
+  main{
+    height:calc(100vh - var(--desktop-topbar-h) - 16px);
+    padding:0;
+    overflow:auto;
+    min-width:0;
+  }
+
+  .page[data-page="home"].active{
+    height:100%;
+    overflow:hidden;
+    grid-template-columns:minmax(0,1fr) 340px;
+    grid-template-rows:var(--desktop-row-top) minmax(0,1fr) var(--desktop-row-bottom);
+    gap:var(--desktop-main-gap);
+  }
+
+  .desktop-kpi-row{
+    height:100%;
+    grid-template-columns:minmax(230px,1.25fr) repeat(4,minmax(96px,.7fr));
+    gap:8px;
+  }
+  .desktop-kpi,
+  .page[data-page="home"]>#homeReport{
+    height:100%;
+    min-height:0;
+  }
+  .desktop-kpi{padding:12px 12px;border-radius:15px}
+  .desktop-kpi strong{font-size:18px}
+  .desktop-kpi small{font-size:8.5px;margin-top:5px}
+  .desktop-kpi-status strong{font-size:24px}
+  .desktop-kpi-status p{font-size:8.5px;line-height:1.25;max-width:190px}
+  .desktop-kpi-shield{width:42px;height:42px;flex-basis:42px}
+  .desktop-kpi-icon{width:32px;height:32px;flex-basis:32px;font-size:14px}
+
+  .page[data-page="home"]>#homeReport{
+    padding:0 18px;
+    border-radius:16px;
+    align-items:center;
+    justify-content:center;
+  }
+  .home-report-plus{width:44px;height:44px;flex-basis:44px;font-size:22px}
+  .home-report-copy b{font-size:13px}
+  .home-report-copy small{font-size:8.5px;margin-top:3px}
+
+  .home-map-section,
+  .home-events-section,
+  .desktop-summary-card{
+    box-shadow:0 6px 18px rgba(15,43,89,.03);
+  }
+
+  .home-map-section{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    padding:11px 11px 9px;
+    border-radius:18px;
+    min-height:0;
+  }
+  .home-map-section .section-head{margin-bottom:8px;flex:0 0 auto}
+  .home-map-section .section-head h2{font-size:15px}
+  .home-map-section .link{font-size:10px}
+  .home-map-shell{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .page[data-page="home"] .map-preview{
+    height:100%;
+    min-height:0;
+  }
+  .home-map-hint{bottom:10px;font-size:10px;padding:7px 12px}
+  .map-legend-card{margin-top:7px;padding:7px 10px;gap:8px;font-size:10px;flex:0 0 auto}
+
+  .home-events-section{
+    height:100%;
+    max-height:none;
+    min-height:0;
+    padding:11px;
+    border-radius:18px;
+  }
+  .home-events-section .section-head{margin-bottom:8px}
+  .home-events-section .section-head h2{font-size:15px}
+  .home-events-section #homeOccurrences{min-height:0;overflow:auto}
+  .home-events-section .event-card{padding:9px 58px 9px 9px}
+  .home-events-section .event-icon{width:34px;height:34px;font-size:14px}
+  .home-events-section .event-card h3{font-size:11.5px}
+  .home-events-section .event-card p{font-size:9.5px;line-height:1.3}
+  .home-events-section .event-card small{font-size:8.5px;line-height:1.25}
+  .home-events-section .edit-occurrence-btn{right:8px;top:8px;font-size:8.5px;padding:6px 8px}
+
+  .desktop-bottom-grid{
+    height:100%;
+    grid-template-columns:.9fr 1.25fr 1fr;
+    gap:var(--desktop-main-gap);
+    min-height:0;
+  }
+  .desktop-summary-card{
+    height:100%;
+    min-height:0;
+    padding:11px;
+    border-radius:16px;
+    display:flex;
+    flex-direction:column;
+  }
+  .desktop-card-head{height:22px;margin-bottom:6px;flex:0 0 auto}
+  .desktop-card-head b{font-size:11px}
+  .desktop-text-link{font-size:8.5px}
+
+  .desktop-severity-grid{height:100%;min-height:0;gap:7px}
+  .desktop-severity-grid>div{border-radius:12px}
+  .desktop-severity-grid span{width:28px;height:28px;font-size:13px}
+  .desktop-severity-grid b{font-size:16px;margin-top:6px}
+  .desktop-severity-grid small{font-size:8px}
+
+  .desktop-recent-list,
+  .desktop-monitoring-list{height:auto;flex:1 1 auto;min-height:0;overflow:auto}
+  .desktop-recent-row{height:35px;grid-template-columns:26px minmax(0,1fr) auto;gap:7px}
+  .desktop-recent-icon{width:24px;height:24px;font-size:11px;border-radius:8px}
+  .desktop-recent-row b{font-size:9px}
+  .desktop-recent-row small{font-size:7.5px}
+  .desktop-recent-row em{font-size:7.5px;padding:4px 7px}
+  .desktop-monitoring-list>div{height:16px;font-size:7.5px}
+  .desktop-monitoring-list b{font-size:7.5px}
+  .desktop-monitoring-list b i{width:5px;height:5px}
+
+  .reports-summary-grid article{height:86px}
+}
+
+@media (min-width:1180px) and (max-height:920px) and (pointer:fine){
+  :root{
+    --desktop-topbar-h:72px;
+    --desktop-row-top:84px;
+    --desktop-row-bottom:132px;
+    --desktop-main-gap:10px;
+  }
+  .app-shell{padding-right:16px;padding-bottom:12px}
+  .topbar{padding-top:8px;padding-bottom:6px}
+  .desktop-greeting h1{font-size:22px}
+  .top-weather{padding:8px 12px}
+  .desktop-kpi{padding:10px 11px}
+  .desktop-kpi strong{font-size:17px}
+  .desktop-kpi-status strong{font-size:22px}
+  .page[data-page="home"] .map-preview{min-height:0}
+  .desktop-summary-card{padding:10px}
+}
+
+@media (min-width:1500px) and (pointer:fine){
+  .page[data-page="home"].active{grid-template-columns:minmax(0,1fr) 360px}
+}
