@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=487">
+  <link rel="stylesheet" href="styles.css?v=490">
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -147,6 +147,42 @@
               <small class="notify-inline-copy" id="notifyInlineCopy">Ver alertas</small>
             </article>
             <article><span>Chuva próxima 6h</span><b id="rain6h">—</b><small id="rainChance">—</small></article>
+          </div>
+        </section>
+
+        <section class="river-level-card" id="riverLevelCard" aria-labelledby="riverLevelTitle">
+          <div class="river-level-head">
+            <div>
+              <p class="kicker">MONITORAMENTO OFICIAL</p>
+              <h2 id="riverLevelTitle">NÍVEL DO RIO BIGUAÇU</h2>
+            </div>
+            <span class="river-status-badge unknown" id="riverStatusBadge">SEM COTA OFICIAL</span>
+          </div>
+
+          <div class="river-level-body">
+            <div class="river-level-primary">
+              <strong id="riverLevelValue">—</strong>
+              <span class="river-trend unknown" id="riverTrend">Aguardando dados</span>
+              <p id="riverVariation">Variação em 1 hora: —</p>
+              <small id="riverUpdated">Integração da fonte oficial em validação.</small>
+            </div>
+
+            <div class="river-chart-wrap">
+              <div class="river-chart-head">
+                <b>Evolução do nível</b>
+                <div class="river-window-chips" aria-hidden="true">
+                  <span>1h</span><span>3h</span><span>6h</span><span>12h</span><span>24h</span><span>7d</span>
+                </div>
+              </div>
+              <div class="river-chart" id="riverChart">
+                <div class="river-chart-empty">Histórico ainda não disponível.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="river-level-foot">
+            <span id="riverFreshness">Nenhuma medição armazenada.</span>
+            <span>Fonte: <a href="https://ciram.epagri.sc.gov.br/index.php/serv-casan-bigua/" target="_blank" rel="noopener noreferrer">Epagri/Ciram</a></span>
           </div>
         </section>
 
@@ -838,6 +874,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=487"></script>
+  <script src="app.js?v=490"></script>
 </body>
 </html>

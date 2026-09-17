@@ -3873,3 +3873,225 @@ body.map-open [data-page="map"] select{
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* =========================================================
+   v4.9.0 — módulo Nível do Rio Biguaçu
+   ========================================================= */
+.river-level-card{
+  margin-top:18px;
+  padding:16px;
+  border:1px solid #DCE7F1;
+  border-radius:20px;
+  background:linear-gradient(180deg,#FFFFFF 0%,#F8FBFF 100%);
+  box-shadow:0 8px 24px rgba(15,43,89,.055);
+}
+.river-level-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.river-level-head h2{
+  margin:0;
+  font-family:Poppins,Inter,sans-serif;
+  color:#173A64;
+  font-size:18px;
+  line-height:1.15;
+}
+.river-status-badge{
+  flex:0 0 auto;
+  padding:7px 9px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.04em;
+  background:#EDF3F8;
+  color:#6D7F92;
+}
+.river-status-badge.normal{background:#E8F8F2;color:#07885F}
+.river-status-badge.attention{background:#FFF6D8;color:#8E6500}
+.river-status-badge.alert{background:#FFF0E7;color:#C45412}
+.river-status-badge.critical{background:#FDECEF;color:#B32336}
+.river-level-body{
+  display:grid;
+  grid-template-columns:minmax(150px,.7fr) minmax(0,1.5fr);
+  gap:16px;
+  margin-top:14px;
+  align-items:stretch;
+}
+.river-level-primary{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  justify-content:center;
+  padding:14px;
+  border:1px solid #E2EBF3;
+  border-radius:16px;
+  background:#F7FAFD;
+}
+.river-level-primary>strong{
+  font-family:Poppins,Inter,sans-serif;
+  font-size:34px;
+  line-height:1;
+  color:#12335B;
+}
+.river-trend{
+  display:block;
+  margin-top:8px;
+  font-size:13px;
+  font-weight:900;
+  color:#526B84;
+}
+.river-trend.rising{color:#D66718}
+.river-trend.falling{color:#0D77C7}
+.river-trend.stable{color:#0B9C70}
+.river-level-primary p{
+  margin:10px 0 0;
+  color:#173A64;
+  font-size:11px;
+  font-weight:800;
+}
+.river-level-primary small{
+  margin-top:6px;
+  color:#74859A;
+  font-size:9.5px;
+  line-height:1.35;
+}
+.river-chart-wrap{
+  min-width:0;
+  padding:12px;
+  border:1px solid #E2EBF3;
+  border-radius:16px;
+  background:#FFF;
+}
+.river-chart-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:7px;
+}
+.river-chart-head b{font-size:11px;color:#29445F}
+.river-window-chips{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.river-window-chips span{
+  padding:4px 6px;
+  border-radius:999px;
+  background:#F0F5F9;
+  color:#718297;
+  font-size:7.5px;
+  font-weight:800;
+}
+.river-chart{
+  position:relative;
+  min-height:145px;
+  overflow:hidden;
+  border-radius:12px;
+  background:linear-gradient(180deg,#F9FCFF,#F5FAFE);
+}
+.river-chart svg{display:block;width:100%;height:145px}
+.river-chart-line{
+  fill:none;
+  stroke:#1681EF;
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.river-grid-line{stroke:#DCE8F2;stroke-width:1;stroke-dasharray:4 6}
+.river-chart-scale{
+  position:absolute;
+  inset:7px 8px auto auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  height:128px;
+  color:#7890A6;
+  font-size:7.5px;
+  pointer-events:none;
+}
+.river-chart-empty{
+  min-height:145px;
+  display:grid;
+  place-items:center;
+  padding:14px;
+  text-align:center;
+  color:#7B8D9F;
+  font-size:10px;
+}
+.river-level-foot{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:10px;
+  color:#7A8B9E;
+  font-size:8.5px;
+  line-height:1.35;
+}
+.river-level-foot a{
+  color:#0B70DD;
+  font-weight:800;
+  text-decoration:none;
+}
+
+@media (min-width:1180px) and (pointer:fine){
+  .page[data-page="home"].active{
+    grid-template-areas:
+      "kpis action"
+      "map events"
+      "river river"
+      "bottom bottom"!important;
+    grid-template-rows:
+      var(--desktop-row-top,92px)
+      minmax(360px,1fr)
+      178px
+      var(--desktop-row-bottom,132px)!important;
+    height:auto!important;
+    min-height:100%;
+    overflow:visible!important;
+  }
+  .river-level-card{
+    grid-area:river;
+    margin-top:0;
+    height:178px;
+    padding:12px 14px;
+  }
+  .river-level-head h2{font-size:14px}
+  .river-level-body{
+    grid-template-columns:260px minmax(0,1fr);
+    gap:12px;
+    margin-top:8px;
+  }
+  .river-level-primary{padding:10px 12px}
+  .river-level-primary>strong{font-size:28px}
+  .river-chart-wrap{padding:9px 10px}
+  .river-chart{min-height:88px}
+  .river-chart svg{height:88px}
+  .river-chart-scale{height:74px}
+  .river-chart-empty{min-height:88px}
+  .river-level-foot{margin-top:6px}
+}
+
+@media (max-width:1179px){
+  .river-level-card{
+    margin-top:18px;
+    padding:14px;
+  }
+  .river-level-body{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .river-level-primary{
+    min-height:128px;
+  }
+  .river-level-primary>strong{font-size:32px}
+  .river-chart-head{
+    align-items:flex-start;
+  }
+  .river-window-chips{
+    max-width:145px;
+  }
+  .river-level-foot{
+    flex-direction:column;
+    gap:4px;
+  }
+}

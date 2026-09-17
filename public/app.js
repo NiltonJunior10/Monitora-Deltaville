@@ -28,7 +28,7 @@ document.addEventListener("touchend",e=>{
 },{passive:false});
 
 const state = {
-  user:null, profile:null, condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[],
+  user:null, profile:null, condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null,
   maps:{}, markers:{home:[],full:[]}, filter:"all", alertFilter:"all",
   installPrompt:null, initialized:false, realtimeChannel:null,
   avenueLayers:{home:[],full:[]}, lakeLayers:{home:[],full:[]}, riverLayers:{home:[],full:[]},
@@ -315,6 +315,8 @@ async function startSignedInApp(){
   loadCachedWeather();
   loadWeather();
   scheduleWeatherRefresh();
+  loadRiverStatus();
+  scheduleRiverRefresh();
   state.pushMinSeverity=localStorage.getItem("monitora_push_level")||"attention";
   loadPushSettings();
   state.initialized=true;
@@ -2673,6 +2675,118 @@ async function deleteEditingOccurrence(){
     btn.disabled=false;
   }
 }
+
+let riverRefreshTimer=null;
+
+function riverTrendLabel(value){
+  return value==="rising"?"↑ Subindo":value==="falling"?"↓ Baixando":value==="stable"?"→ Estável":"Tendência indisponível";
+}
+function riverStatusLabel(value){
+  return value==="normal"?"NORMAL":value==="attention"?"ATENÇÃO":value==="alert"?"ALERTA":value==="critical"?"CRÍTICO":"SEM COTA OFICIAL";
+}
+function riverFreshnessText(latest){
+  if(!latest)return "Nenhuma medição armazenada.";
+  const mins=Number(latest.stale_minutes||0);
+  if(mins<1)return "Medição recebida agora.";
+  if(mins<60)return `Última medição recebida há ${mins} min.`;
+  const h=Math.floor(mins/60), m=mins%60;
+  return `Última medição recebida há ${h}h${m?` ${m}min`:""}.`;
+}
+function formatRiverDelta(delta){
+  if(delta===null || delta===undefined || !Number.isFinite(Number(delta)))return "—";
+  const cm=Math.round(Number(delta)*100);
+  return `${cm>0?"+":""}${cm} cm`;
+}
+function formatRiverTime(iso){
+  if(!iso)return "—";
+  try{
+    return new Intl.DateTimeFormat("pt-BR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit",timeZone:"America/Sao_Paulo"}).format(new Date(iso));
+  }catch(_){return "—";}
+}
+function renderRiverChart(series=[]){
+  const host=$("#riverChart");if(!host)return;
+  if(!Array.isArray(series)||series.length<2){
+    host.innerHTML='<div class="river-chart-empty">Histórico ainda não disponível.</div>';
+    return;
+  }
+  const pts=series.slice(-196);
+  const vals=pts.map(x=>Number(x.v)).filter(Number.isFinite);
+  if(vals.length<2){
+    host.innerHTML='<div class="river-chart-empty">Histórico ainda não disponível.</div>';
+    return;
+  }
+  const min=Math.min(...vals),max=Math.max(...vals),span=Math.max(.01,max-min);
+  const width=600,height=145,pad=12;
+  const coords=pts.map((x,i)=>{
+    const v=Number(x.v);
+    const px=pad+(i/(pts.length-1))*(width-pad*2);
+    const py=height-pad-((v-min)/span)*(height-pad*2);
+    return `${px.toFixed(1)},${py.toFixed(1)}`;
+  }).join(" ");
+  const area=`${pad},${height-pad} ${coords} ${width-pad},${height-pad}`;
+  host.innerHTML=`<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico do nível do Rio Biguaçu">
+    <defs><linearGradient id="riverFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1681EF" stop-opacity=".24"/><stop offset="100%" stop-color="#1681EF" stop-opacity=".02"/></linearGradient></defs>
+    <line x1="${pad}" y1="${height-pad}" x2="${width-pad}" y2="${height-pad}" class="river-grid-line"/>
+    <line x1="${pad}" y1="${pad}" x2="${width-pad}" y2="${pad}" class="river-grid-line"/>
+    <polygon points="${area}" fill="url(#riverFill)"/>
+    <polyline points="${coords}" class="river-chart-line"/>
+  </svg>
+  <div class="river-chart-scale"><span>${max.toFixed(2)} m</span><span>${min.toFixed(2)} m</span></div>`;
+}
+function renderRiverStatus(){
+  const d=state.riverStatus;
+  const badge=$("#riverStatusBadge");
+  const value=$("#riverLevelValue"),trend=$("#riverTrend"),variation=$("#riverVariation"),updated=$("#riverUpdated"),fresh=$("#riverFreshness");
+  if(!badge||!value)return;
+
+  const connection=d?.connection_state||"source_not_configured";
+  const latest=d?.latest||null;
+  const status=d?.status||"unknown";
+  badge.className=`river-status-badge ${status}`;
+  badge.textContent=riverStatusLabel(status);
+
+  if(latest){
+    value.textContent=`${Number(latest.level_m).toFixed(2).replace(".",",")} m`;
+    trend.className=`river-trend ${d?.trend||"unknown"}`;
+    trend.textContent=riverTrendLabel(d?.trend);
+    variation.textContent=`Variação em 1 hora: ${formatRiverDelta(d?.variation_1h_m)}`;
+    updated.textContent=latest.stale
+      ?`Dado desatualizado • medição de ${formatRiverTime(latest.measured_at)}`
+      :`Atualizado: ${formatRiverTime(latest.measured_at)}`;
+    fresh.textContent=riverFreshnessText(latest);
+    renderRiverChart(d?.series||[]);
+  }else{
+    value.textContent="—";
+    trend.className="river-trend unknown";
+    trend.textContent=connection==="source_not_configured"?"Fonte estruturada ainda não confirmada":"Sem medição disponível";
+    variation.textContent="Variação em 1 hora: —";
+    updated.textContent=connection==="source_not_configured"
+      ?"Backend pronto; ingestão automática permanece desativada até validar o endpoint oficial."
+      :"Aguardando nova medição.";
+    fresh.textContent="Nenhuma medição armazenada.";
+    renderRiverChart([]);
+  }
+}
+async function loadRiverStatus(){
+  if(!state.user)return;
+  try{
+    const {data,error}=await db.functions.invoke("river-biguacu-status",{method:"GET"});
+    if(error)throw error;
+    state.riverStatus=data||null;
+  }catch(e){
+    console.warn("Rio Biguaçu:",e);
+    state.riverStatus={connection_state:"unavailable",latest:null,status:"unknown",trend:"unknown",series:[]};
+  }
+  renderRiverStatus();
+}
+function scheduleRiverRefresh(){
+  clearTimeout(riverRefreshTimer);
+  riverRefreshTimer=setTimeout(async()=>{
+    if(document.visibilityState==="visible")await loadRiverStatus();
+    scheduleRiverRefresh();
+  },15*60*1000);
+}
+
 function weatherIconForCode(code,isDay=1){
   const c=Number(code), day=Number(isDay)===1;
   if(c===0) return day?"☀️":"🌙";
@@ -2723,6 +2837,7 @@ document.addEventListener("visibilitychange",()=>{
       const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
       if(!cached||Date.now()-Number(cached.saved_at||0)>10*60*1000)loadWeather();
     }catch(_){loadWeather();}
+    loadRiverStatus();
   }
 });
 

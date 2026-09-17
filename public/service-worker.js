@@ -1,9 +1,9 @@
-const CACHE="monitora-deltaville-v487-mobile-grid";
+const CACHE="monitora-deltaville-v490-rio-biguacu";
 const APP_SHELL=[
   "./",
   "./index.html",
-  "./styles.css?v=487",
-  "./app.js?v=487",
+  "./styles.css?v=490",
+  "./app.js?v=490",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
