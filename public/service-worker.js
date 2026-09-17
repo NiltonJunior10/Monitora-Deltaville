@@ -1,9 +1,9 @@
-const CACHE="monitora-deltaville-v486-mobile-categories";
+const CACHE="monitora-deltaville-v487-mobile-grid";
 const APP_SHELL=[
   "./",
   "./index.html",
-  "./styles.css?v=486",
-  "./app.js?v=486",
+  "./styles.css?v=487",
+  "./app.js?v=487",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
