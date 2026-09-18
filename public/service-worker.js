@@ -1,9 +1,9 @@
-const CACHE="monitora-deltaville-v490-rio-biguacu";
+const CACHE="monitora-deltaville-v491-river-chart";
 const APP_SHELL=[
   "./",
   "./index.html",
-  "./styles.css?v=490",
-  "./app.js?v=490",
+  "./styles.css?v=491",
+  "./app.js?v=491",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",

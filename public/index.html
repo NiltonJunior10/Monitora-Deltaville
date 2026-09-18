@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=490">
+  <link rel="stylesheet" href="styles.css?v=491">
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -169,11 +169,26 @@
 
             <div class="river-chart-wrap">
               <div class="river-chart-head">
-                <b>Evolução do nível</b>
-                <div class="river-window-chips" aria-hidden="true">
-                  <span>1h</span><span>3h</span><span>6h</span><span>12h</span><span>24h</span><span>7d</span>
+                <div>
+                  <b>Evolução do nível</b>
+                  <small id="riverPeriodLabel">Últimas 24 horas</small>
+                </div>
+                <div class="river-window-chips" id="riverWindowChips" aria-label="Período do gráfico">
+                  <button type="button" data-river-window="1">1h</button>
+                  <button type="button" data-river-window="3">3h</button>
+                  <button type="button" data-river-window="6">6h</button>
+                  <button type="button" data-river-window="12">12h</button>
+                  <button type="button" data-river-window="24" class="active" aria-pressed="true">24h</button>
+                  <button type="button" data-river-window="168">7d</button>
                 </div>
               </div>
+
+              <div class="river-chart-metrics" id="riverChartMetrics">
+                <div><span>Variação</span><strong id="riverMetricDelta">—</strong></div>
+                <div><span>Máximo</span><strong id="riverMetricMax">—</strong></div>
+                <div><span>Mínimo</span><strong id="riverMetricMin">—</strong></div>
+              </div>
+
               <div class="river-chart" id="riverChart">
                 <div class="river-chart-empty">Histórico ainda não disponível.</div>
               </div>
@@ -874,6 +889,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=490"></script>
+  <script src="app.js?v=491"></script>
 </body>
 </html>

@@ -4095,3 +4095,253 @@ body.map-open [data-page="map"] select{
     gap:4px;
   }
 }
+
+
+/* =========================================================
+   v4.9.1 — gráfico do Rio Biguaçu aprimorado
+   ========================================================= */
+.river-chart-head>div:first-child{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.river-chart-head small{
+  color:#8392A4;
+  font-size:8px;
+  font-weight:700;
+}
+.river-window-chips{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.river-window-chips button{
+  appearance:none;
+  border:1px solid transparent;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#F0F5F9;
+  color:#718297;
+  font:800 8px/1 Poppins,Inter,sans-serif;
+  cursor:pointer;
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease;
+}
+.river-window-chips button.active{
+  background:#1478E6;
+  border-color:#1478E6;
+  color:#FFF;
+  box-shadow:0 3px 10px rgba(20,120,230,.18);
+}
+.river-window-chips button:active{transform:scale(.96)}
+
+.river-chart-metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:7px 0 8px;
+}
+.river-chart-metrics>div{
+  min-width:0;
+  padding:7px 9px;
+  border:1px solid #E4ECF3;
+  border-radius:11px;
+  background:#F8FBFD;
+}
+.river-chart-metrics span{
+  display:block;
+  color:#8494A6;
+  font-size:7px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+}
+.river-chart-metrics strong{
+  display:block;
+  margin-top:2px;
+  color:#234361;
+  font-size:10px;
+  line-height:1.2;
+}
+
+.river-chart{
+  min-height:190px;
+  overflow:hidden;
+  touch-action:pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.river-chart svg{
+  display:block;
+  width:100%;
+  height:190px;
+  overflow:visible;
+}
+.river-chart-line{
+  stroke-width:3.2;
+}
+.river-axis-label{
+  fill:#7C8FA3;
+  font:700 10px Inter,Arial,sans-serif;
+}
+.river-grid-line{
+  stroke:#DDE8F1;
+  stroke-width:1;
+  stroke-dasharray:4 7;
+}
+.river-last-dot{
+  fill:#FFFFFF;
+  stroke:#1681EF;
+  stroke-width:4;
+}
+.river-hover-dot{
+  fill:#FFFFFF;
+  stroke:#0B6FD8;
+  stroke-width:4;
+  pointer-events:none;
+}
+.river-crosshair{
+  stroke:#5A94CD;
+  stroke-width:1.2;
+  stroke-dasharray:4 5;
+  opacity:.58;
+  pointer-events:none;
+}
+.river-current-label{
+  position:absolute;
+  z-index:3;
+  transform:translate(-50%,-145%);
+  padding:4px 7px;
+  border:1px solid #CFE4F8;
+  border-radius:8px;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 3px 10px rgba(16,57,96,.08);
+  color:#0D6DCA;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.river-tooltip{
+  position:absolute;
+  z-index:8;
+  transform:translate(-50%,-100%);
+  min-width:92px;
+  padding:7px 9px;
+  border:1px solid #D4E3EF;
+  border-radius:10px;
+  background:rgba(17,48,79,.95);
+  box-shadow:0 8px 22px rgba(13,43,73,.18);
+  color:#FFF;
+  text-align:center;
+  pointer-events:none;
+}
+.river-tooltip strong{
+  display:block;
+  font-size:11px;
+  line-height:1.1;
+}
+.river-tooltip span{
+  display:block;
+  margin-top:3px;
+  color:#DCEAF7;
+  font-size:7.5px;
+  white-space:nowrap;
+}
+
+@media (min-width:1180px) and (pointer:fine){
+  .page[data-page="home"].active{
+    grid-template-rows:
+      var(--desktop-row-top,92px)
+      minmax(360px,1fr)
+      220px
+      var(--desktop-row-bottom,132px)!important;
+  }
+  .river-level-card{
+    height:220px;
+  }
+  .river-chart{
+    min-height:125px;
+  }
+  .river-chart svg{
+    height:125px;
+  }
+  .river-chart-metrics{
+    margin:5px 0 5px;
+  }
+  .river-chart-metrics>div{
+    padding:5px 8px;
+  }
+  .river-current-label{
+    font-size:7px;
+  }
+}
+
+@media (max-width:1179px){
+  .river-chart-wrap{
+    padding:14px;
+  }
+  .river-chart-head{
+    gap:8px;
+  }
+  .river-chart-head b{
+    font-size:13px;
+  }
+  .river-chart-head small{
+    font-size:9px;
+  }
+  .river-window-chips{
+    max-width:none;
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    width:100%;
+    margin-top:8px;
+    gap:5px;
+  }
+  .river-chart-head{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .river-window-chips button{
+    min-height:32px;
+    padding:7px 4px;
+    font-size:9px;
+  }
+  .river-chart-metrics{
+    gap:6px;
+    margin:10px 0 10px;
+  }
+  .river-chart-metrics>div{
+    padding:8px 7px;
+  }
+  .river-chart-metrics span{
+    font-size:7.5px;
+  }
+  .river-chart-metrics strong{
+    font-size:10.5px;
+  }
+  .river-chart{
+    min-height:210px;
+    border:1px solid #EAF0F5;
+    background:linear-gradient(180deg,#FCFEFF 0%,#F5FAFE 100%);
+  }
+  .river-chart svg{
+    height:210px;
+  }
+  .river-current-label{
+    font-size:8.5px;
+  }
+}
+
+@media (max-width:390px){
+  .river-window-chips{
+    gap:4px;
+  }
+  .river-window-chips button{
+    min-height:30px;
+    font-size:8.5px;
+  }
+  .river-chart-wrap{
+    padding:11px;
+  }
+}
