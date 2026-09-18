@@ -214,3 +214,32 @@ A versão web passa a ter uma estrutura própria, sem reutilizar visualmente o m
 - iluminação, árvores, buracos, sinalização, calçada, energia, água, esgoto, lixo, estrutura e outros problemas aparecem sem precisar abrir "manual";
 - grid responsivo em 2 colunas e 1 coluna em telas muito estreitas;
 - fotos foram deslocadas abaixo das categorias para priorizar o tipo de ocorrência.
+
+
+## v4.8.7 — categorias mobile em duas colunas
+
+- categorias do registro ficam lado a lado em telas mobile;
+- mantém duas colunas até 330 px de largura;
+- reduz altura, padding e espaçamento sem prejudicar toque;
+- somente telas extremamente estreitas voltam para uma coluna.
+
+
+## v4.9.0 — módulo Rio Biguaçu
+
+- card "NÍVEL DO RIO BIGUAÇU" no mobile e desktop;
+- backend Supabase preparado para medições, histórico, tendência, desatualização e limites configuráveis;
+- integração do frontend com a Edge Function `river-biguacu-status`;
+- nenhum valor, cota ou endpoint da Epagri foi inventado;
+- enquanto o endpoint estruturado oficial não for confirmado, o card informa que a ingestão automática está em validação.
+
+
+## v4.9.1 — gráfico do Rio Biguaçu aprimorado
+
+- períodos 1h, 3h, 6h, 12h, 24h e 7d agora são selecionáveis;
+- período padrão: 24 horas;
+- eixo X contextual com horários/datas;
+- eixo Y dinâmico com escala em metros e margem automática;
+- destaque do último ponto e etiqueta do nível atual;
+- tooltip interativo ao tocar/mover sobre o gráfico;
+- métricas do período: variação, máximo e mínimo;
+- mantém as cotas de risco desativadas até existirem valores oficiais.
