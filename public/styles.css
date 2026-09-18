@@ -4345,3 +4345,373 @@ body.map-open [data-page="map"] select{
     padding:11px;
   }
 }
+
+
+/* =========================================================
+   v4.9.2 — refinamento de layout home (web + mobile)
+   Corrige sobreposição e melhora distribuição do módulo do rio.
+   ========================================================= */
+@media (min-width:1180px) and (pointer:fine){
+  main{
+    padding:8px 0 20px!important;
+    overflow:auto!important;
+  }
+
+  .topbar{
+    grid-template-columns:minmax(210px,1fr) minmax(300px,430px) 190px!important;
+    gap:14px!important;
+    align-items:center!important;
+  }
+
+  .top-weather{
+    width:100%;
+    max-width:none!important;
+  }
+
+  .desktop-account{
+    min-width:185px;
+    justify-self:end;
+  }
+
+  .page[data-page="home"].active{
+    height:auto!important;
+    min-height:max-content!important;
+    overflow:visible!important;
+    align-items:start!important;
+    gap:16px!important;
+    padding-bottom:18px!important;
+    grid-template-columns:minmax(0,1fr) 360px!important;
+    grid-template-areas:
+      "kpis action"
+      "map events"
+      "river river"
+      "bottom bottom"!important;
+    grid-template-rows:auto auto auto auto!important;
+  }
+
+  .desktop-kpi-row,
+  .page[data-page="home"]>#homeReport,
+  .home-map-section,
+  .home-events-section,
+  .river-level-card,
+  .desktop-bottom-grid{
+    height:auto!important;
+    min-height:0!important;
+    align-self:start!important;
+  }
+
+  .page[data-page="home"]>#homeReport{
+    min-height:108px!important;
+  }
+
+  .home-map-section{
+    padding:14px 14px 12px!important;
+  }
+
+  .page[data-page="home"] .map-preview{
+    height:400px!important;
+  }
+
+  .home-events-section{
+    max-height:none!important;
+    min-height:400px!important;
+  }
+
+  .river-level-card{
+    padding:18px 18px 16px!important;
+    border-radius:22px!important;
+  }
+
+  .river-level-head{
+    align-items:flex-start!important;
+    gap:12px!important;
+  }
+
+  .river-level-head h2{
+    font-size:17px!important;
+  }
+
+  .river-level-body{
+    grid-template-columns:minmax(240px,300px) minmax(0,1fr)!important;
+    gap:14px!important;
+    margin-top:14px!important;
+    align-items:start!important;
+  }
+
+  .river-level-primary{
+    min-height:100%!important;
+    justify-content:flex-start!important;
+    padding:16px 15px!important;
+  }
+
+  .river-level-primary>strong{
+    font-size:34px!important;
+  }
+
+  .river-chart-wrap{
+    padding:14px 14px 12px!important;
+    border-radius:18px!important;
+  }
+
+  .river-chart-head{
+    align-items:flex-start!important;
+    gap:10px!important;
+    margin-bottom:8px!important;
+  }
+
+  .river-chart-head b{
+    font-size:13px!important;
+  }
+
+  .river-chart-head small{
+    font-size:9px!important;
+  }
+
+  .river-window-chips{
+    display:flex!important;
+    width:auto!important;
+    max-width:none!important;
+    flex-wrap:wrap!important;
+    justify-content:flex-end!important;
+    gap:6px!important;
+    margin-top:0!important;
+  }
+
+  .river-window-chips button{
+    min-height:28px!important;
+    padding:6px 9px!important;
+    font-size:8.5px!important;
+  }
+
+  .river-chart-metrics{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:10px 0 10px!important;
+  }
+
+  .river-chart-metrics>div{
+    padding:8px 10px!important;
+  }
+
+  .river-chart{
+    min-height:195px!important;
+  }
+
+  .river-chart svg{
+    height:195px!important;
+  }
+
+  .river-level-foot{
+    margin-top:12px!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+  }
+
+  .desktop-bottom-grid{
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr) minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+
+  .desktop-summary-card{
+    height:auto!important;
+    min-height:176px!important;
+  }
+}
+
+@media (min-width:1180px) and (max-width:1360px) and (pointer:fine){
+  .page[data-page="home"].active{
+    grid-template-columns:minmax(0,1fr) 340px!important;
+  }
+
+  .desktop-kpi-row{
+    grid-template-columns:minmax(220px,1.2fr) repeat(4,minmax(95px,.75fr))!important;
+  }
+
+  .desktop-kpi{
+    padding:13px 11px!important;
+  }
+
+  .desktop-kpi strong{
+    font-size:18px!important;
+  }
+
+  .desktop-kpi-status strong{
+    font-size:24px!important;
+  }
+
+  .page[data-page="home"] .map-preview{
+    height:380px!important;
+  }
+
+  .home-events-section{
+    min-height:380px!important;
+  }
+}
+
+@media (min-width:1180px) and (max-height:900px) and (pointer:fine){
+  .page[data-page="home"].active{
+    grid-template-rows:auto auto auto auto!important;
+    min-height:max-content!important;
+  }
+
+  .page[data-page="home"] .map-preview{
+    height:360px!important;
+  }
+
+  .home-events-section{
+    min-height:360px!important;
+  }
+}
+
+@media (max-width:1179px){
+  main{
+    padding-bottom:20px!important;
+  }
+
+  .river-level-card{
+    margin-top:18px!important;
+    padding:16px 14px 14px!important;
+    border-radius:22px!important;
+  }
+
+  .river-level-head{
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:8px!important;
+  }
+
+  .river-status-badge{
+    align-self:flex-start!important;
+  }
+
+  .river-level-head h2{
+    font-size:16px!important;
+    line-height:1.15!important;
+  }
+
+  .river-level-body{
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    margin-top:12px!important;
+  }
+
+  .river-level-primary{
+    padding:14px 14px 12px!important;
+    min-height:auto!important;
+  }
+
+  .river-level-primary>strong{
+    font-size:31px!important;
+  }
+
+  .river-level-primary p{
+    margin-top:10px!important;
+    line-height:1.35!important;
+  }
+
+  .river-level-primary small{
+    line-height:1.45!important;
+  }
+
+  .river-chart-wrap{
+    padding:14px 12px!important;
+    border-radius:18px!important;
+  }
+
+  .river-chart-head{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    margin-bottom:8px!important;
+  }
+
+  .river-window-chips{
+    width:100%!important;
+    max-width:none!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin-top:0!important;
+  }
+
+  .river-window-chips button{
+    min-height:34px!important;
+    padding:8px 4px!important;
+    font-size:9px!important;
+  }
+
+  .river-chart-metrics{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
+    margin:10px 0 10px!important;
+  }
+
+  .river-chart-metrics>div{
+    padding:8px 8px!important;
+  }
+
+  .river-chart{
+    min-height:206px!important;
+  }
+
+  .river-chart svg{
+    height:206px!important;
+  }
+
+  .river-current-label{
+    top:auto;
+    transform:translate(-50%,-135%);
+  }
+
+  .river-level-foot{
+    margin-top:12px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:6px!important;
+  }
+}
+
+@media (max-width:640px){
+  .section,
+  .river-level-card,
+  .desktop-bottom-grid{
+    margin-top:16px!important;
+  }
+
+  .river-chart-wrap{
+    padding:13px 11px!important;
+  }
+
+  .river-chart-metrics{
+    grid-template-columns:1fr!important;
+  }
+
+  .river-chart svg{
+    height:194px!important;
+  }
+
+  .river-chart{
+    min-height:194px!important;
+  }
+}
+
+@media (max-width:420px){
+  .river-level-card{
+    padding:14px 12px 13px!important;
+  }
+
+  .river-level-primary>strong{
+    font-size:28px!important;
+  }
+
+  .river-window-chips button{
+    min-height:32px!important;
+    font-size:8.5px!important;
+  }
+
+  .river-chart-head b{
+    font-size:12px!important;
+  }
+}

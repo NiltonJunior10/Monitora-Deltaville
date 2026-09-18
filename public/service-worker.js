@@ -1,9 +1,9 @@
-const CACHE="monitora-deltaville-v491-river-chart";
+const CACHE="monitora-deltaville-v492-layout-refinado";
 const APP_SHELL=[
   "./",
   "./index.html",
-  "./styles.css?v=491",
-  "./app.js?v=491",
+  "./styles.css?v=492",
+  "./app.js?v=492",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
