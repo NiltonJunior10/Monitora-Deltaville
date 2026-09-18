@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0B63CE">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Monitora">
@@ -18,7 +18,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=492">
+  <link rel="stylesheet" href="styles.css?v=500">
+  <script>
+    (function(){
+      try{
+        var t=localStorage.getItem("monitora_theme");
+        document.documentElement.dataset.theme=t==="dark"?"dark":"light";
+      }catch(_){document.documentElement.dataset.theme="light";}
+    })();
+  </script>
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -61,6 +69,11 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
           </span><b>Relatórios</b>
         </button>
+        <button type="button" class="desktop-nav-item desktop-theme-toggle" id="themeToggleDesktop" role="switch" aria-checked="false">
+          <span class="desktop-nav-icon theme-nav-icon">
+            <svg class="theme-moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"/></svg>
+          </span><b id="themeToggleDesktopLabel">Tema escuro</b>
+        </button>
       </nav>
 
       <div class="desktop-sidebar-spacer"></div>
@@ -69,7 +82,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v4.9.2</small>
+        <small>Monitora Deltaville<br>v5.0.0</small>
       </div>
     </aside>
     <header class="topbar">
@@ -203,28 +216,28 @@
 
         <section class="desktop-kpi-row" aria-label="Resumo da comunidade">
           <article class="desktop-kpi desktop-kpi-status">
-            <span class="desktop-kpi-shield" aria-hidden="true">⬟</span>
+            <span class="desktop-kpi-shield" aria-hidden="true">✓</span>
             <div>
-              <small>Situação atual</small>
+              <small>Situação geral</small>
               <strong id="desktopOverallStatus">Normal</strong>
               <p id="desktopStatusReason">Nenhuma ocorrência crítica ativa no momento.</p>
             </div>
           </article>
-          <article class="desktop-kpi">
+          <article class="desktop-kpi metric-active">
             <span class="desktop-kpi-icon blue" aria-hidden="true">▤</span>
-            <div><strong id="desktopAlertCount">0</strong><small>Alertas ativos</small></div>
-          </article>
-          <article class="desktop-kpi">
-            <span class="desktop-kpi-icon cyan" aria-hidden="true">◉</span>
             <div><strong id="desktopOccurrenceCount">0</strong><small>Ocorrências ativas</small></div>
           </article>
-          <article class="desktop-kpi">
-            <span class="desktop-kpi-icon red" aria-hidden="true">!</span>
-            <div><strong id="desktopCriticalCount">0</strong><small>Críticas</small></div>
+          <article class="desktop-kpi metric-attention">
+            <span class="desktop-kpi-icon attention" aria-hidden="true">△</span>
+            <div><strong id="topAttentionCount">0</strong><small>Atenção</small></div>
           </article>
-          <article class="desktop-kpi">
-            <span class="desktop-kpi-icon rain" aria-hidden="true">☂</span>
-            <div><strong id="desktopRain6h">—</strong><small>Chuva próxima 6h</small></div>
+          <article class="desktop-kpi metric-alert">
+            <span class="desktop-kpi-icon alert" aria-hidden="true">!</span>
+            <div><strong id="topAlertCount">0</strong><small>Alerta</small></div>
+          </article>
+          <article class="desktop-kpi metric-critical">
+            <span class="desktop-kpi-icon critical" aria-hidden="true">!</span>
+            <div><strong id="topCriticalCount">0</strong><small>Crítico</small></div>
           </article>
         </section>
 
@@ -448,6 +461,14 @@
           <div><p class="kicker">CADASTRO</p><h1>Meu perfil</h1></div>
         </div>
         <section class="profile-card" id="profileView"></section>
+
+        <section class="theme-settings-card" id="themeSettingsCard">
+          <div class="theme-settings-copy">
+            <span class="theme-settings-icon" aria-hidden="true">◐</span>
+            <div><b>Aparência</b><small id="themeStatusText">Tema claro</small></div>
+          </div>
+          <button type="button" class="settings-switch" id="themeToggleMobile" role="switch" aria-checked="false" aria-label="Ativar tema escuro"><span></span></button>
+        </section>
 
         <section class="push-settings-card" id="pushSettingsCard">
           <div class="push-settings-top">
@@ -889,6 +910,6 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=492"></script>
+  <script src="app.js?v=500"></script>
 </body>
 </html>

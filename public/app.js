@@ -8,6 +8,34 @@ const PUSH_VAPID_PUBLIC_KEY = "BEkQekx8hC3NmenxXq2SS0U-tomj4Mnh9ZSWIWg3pGT7a-R0N
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
+const THEME_STORAGE_KEY="monitora_theme";
+function currentTheme(){return document.documentElement.dataset.theme==="dark"?"dark":"light";}
+function applyTheme(theme,{persist=true}={}){
+  const next=theme==="dark"?"dark":"light";
+  document.documentElement.dataset.theme=next;
+  if(persist){try{localStorage.setItem(THEME_STORAGE_KEY,next);}catch(_){}}
+  const dark=next==="dark";
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute("content",dark?"#0B1625":"#0B63CE");
+  const desk=$("#themeToggleDesktop"), mobile=$("#themeToggleMobile");
+  [desk,mobile].filter(Boolean).forEach(btn=>{
+    btn.setAttribute("aria-checked",String(dark));
+    btn.classList.toggle("on",dark);
+  });
+  if($("#themeToggleDesktopLabel"))$("#themeToggleDesktopLabel").textContent=dark?"Tema claro":"Tema escuro";
+  if($("#themeStatusText"))$("#themeStatusText").textContent=dark?"Tema escuro ativado":"Tema claro";
+  document.body?.classList.toggle("theme-dark",dark);
+}
+function toggleTheme(){applyTheme(currentTheme()==="dark"?"light":"dark");}
+function initTheme(){
+  let stored="light";
+  try{stored=localStorage.getItem(THEME_STORAGE_KEY)==="dark"?"dark":"light";}catch(_){}
+  applyTheme(stored,{persist:false});
+  $("#themeToggleDesktop")?.addEventListener("click",toggleTheme);
+  $("#themeToggleMobile")?.addEventListener("click",toggleTheme);
+}
+
+
 function isMapGestureTarget(target){
   return !!target?.closest?.(".leaflet-container,.map-shell,.map-preview,.map-full");
 }
@@ -1694,6 +1722,9 @@ function renderDesktopSeverity(){
   if($("#desktopAttentionCount"))$("#desktopAttentionCount").textContent=s.attention;
   if($("#desktopAlertSeverityCount"))$("#desktopAlertSeverityCount").textContent=s.alert;
   if($("#desktopCriticalSeverityCount"))$("#desktopCriticalSeverityCount").textContent=s.critical;
+  if($("#topAttentionCount"))$("#topAttentionCount").textContent=s.attention;
+  if($("#topAlertCount"))$("#topAlertCount").textContent=s.alert;
+  if($("#topCriticalCount"))$("#topCriticalCount").textContent=s.critical;
 }
 function recentOccurrenceRow(o){
   const when=o.resolved_at||o.created_at;
@@ -1808,6 +1839,7 @@ function renderOccurrences(){
   if($("#desktopAlertCount"))$("#desktopAlertCount").textContent=totalActive;
   if($("#desktopOccurrenceCount"))$("#desktopOccurrenceCount").textContent=groups.length;
   if($("#desktopCriticalCount"))$("#desktopCriticalCount").textContent=criticalActive;
+  if($("#topCriticalCount"))$("#topCriticalCount").textContent=criticalActive;
 
   const badgeText=totalActive>9?"9+":String(totalActive);
   for(const id of ["desktopAlertBadge","desktopBellBadge"]){
@@ -2845,9 +2877,9 @@ function renderRiverChart(series=[]){
     <div class="river-current-label" style="left:${(last.x/width*100).toFixed(2)}%;top:${(last.y/height*100).toFixed(2)}%">
       ${last.v.toFixed(2).replace(".",",")} m
     </div>
-    <div class="river-tooltip" id="riverTooltip" hidden>
-      <strong id="riverTooltipLevel">—</strong>
-      <span id="riverTooltipTime">—</span>
+    <div class="river-tooltip" id="riverTooltip">
+      <strong id="riverTooltipLevel">${last.v.toFixed(2).replace(".",",")} m</strong>
+      <span id="riverTooltipTime">${formatRiverTooltipTime(last.t)}</span>
     </div>`;
 
   riverChartView={pts:xy,width,height,pad};
@@ -2860,6 +2892,20 @@ function bindRiverChartInteraction(){
   const tooltip=$("#riverTooltip");
   const cross=$("#riverCrosshair");
   const dot=$("#riverHoverDot");
+  const latest=view.pts[view.pts.length-1];
+
+  function paintPoint(nearest,active=true){
+    if(!nearest)return;
+    cross?.setAttribute("x1",nearest.x);
+    cross?.setAttribute("x2",nearest.x);
+    cross?.setAttribute("visibility",active?"visible":"hidden");
+    dot?.setAttribute("cx",nearest.x);
+    dot?.setAttribute("cy",nearest.y);
+    dot?.setAttribute("visibility",active?"visible":"hidden");
+    if($("#riverTooltipLevel"))$("#riverTooltipLevel").textContent=`${nearest.v.toFixed(2).replace(".",",")} m`;
+    if($("#riverTooltipTime"))$("#riverTooltipTime").textContent=formatRiverTooltipTime(nearest.t);
+    if(tooltip)tooltip.hidden=false;
+  }
 
   function showAt(clientX){
     const rect=host.getBoundingClientRect();
@@ -2870,34 +2916,19 @@ function bindRiverChartInteraction(){
       const d=Math.abs(p.x-svgX);
       if(d<dist){dist=d;nearest=p;}
     }
-
-    cross?.setAttribute("x1",nearest.x);
-    cross?.setAttribute("x2",nearest.x);
-    cross?.setAttribute("visibility","visible");
-    dot?.setAttribute("cx",nearest.x);
-    dot?.setAttribute("cy",nearest.y);
-    dot?.setAttribute("visibility","visible");
-
-    if(tooltip){
-      $("#riverTooltipLevel").textContent=`${nearest.v.toFixed(2).replace(".",",")} m`;
-      $("#riverTooltipTime").textContent=formatRiverTooltipTime(nearest.t);
-      tooltip.hidden=false;
-      const left=(nearest.x/view.width)*rect.width;
-      const top=(nearest.y/view.height)*rect.height;
-      tooltip.style.left=`${Math.max(58,Math.min(rect.width-58,left))}px`;
-      tooltip.style.top=`${Math.max(8,top-8)}px`;
-    }
-  }
-  function hide(){
-    if(tooltip)tooltip.hidden=true;
-    cross?.setAttribute("visibility","hidden");
-    dot?.setAttribute("visibility","hidden");
+    paintPoint(nearest,true);
   }
 
-  host.onpointermove=e=>showAt(e.clientX);
+  function reset(){paintPoint(latest,false);}
+
+  host.onpointermove=e=>{
+    if(e.pointerType==="touch")return;
+    showAt(e.clientX);
+  };
   host.onpointerdown=e=>showAt(e.clientX);
-  host.onpointerleave=hide;
-  host.onpointercancel=hide;
+  host.onpointerleave=reset;
+  host.onpointercancel=reset;
+  reset();
 }
 function bindRiverWindowControls(){
   const wrap=$("#riverWindowChips");
@@ -3424,4 +3455,5 @@ $("#deleteOccurrenceBtn").addEventListener("click",deleteEditingOccurrence);
 
 
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(console.warn));
+initTheme();
 bootstrap();
