@@ -5009,6 +5009,46 @@ html[data-theme="dark"] .count{background:#172B41!important;color:#67B2FF!import
 html[data-theme="dark"] .overlay{background:rgba(2,8,16,.68)!important}
 html[data-theme="dark"] .leaflet-control-zoom a{background:#132235!important;color:#DDEEFF!important;border-color:#30475C!important}
 
+
+/* v5.0.1 UX hotfix */
+.desktop-profile-trigger{appearance:none;border:0;background:transparent;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:14px;cursor:pointer;min-width:0;transition:background .18s ease,transform .18s ease,box-shadow .18s ease}
+.desktop-profile-trigger:hover{background:rgba(11,99,206,.06)}
+.desktop-profile-trigger:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(20,120,230,.18)}
+.desktop-profile-trigger .desktop-avatar{flex:0 0 auto}
+.desktop-profile-trigger .desktop-account-copy{min-width:0;align-items:flex-start;text-align:left}
+html[data-theme="dark"] .desktop-profile-trigger:hover{background:rgba(104,174,255,.12)}
+
+@media (min-width:1180px) and (pointer:fine){
+  .desktop-account{min-width:188px!important;justify-content:flex-end!important;gap:10px!important}
+  .desktop-profile-trigger{padding:7px 10px!important;border:1px solid transparent}
+  .desktop-profile-trigger:hover{border-color:var(--line-strong)!important;background:var(--surface-2)!important}
+  .desktop-bottom-grid{align-items:start!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important}
+  .desktop-summary-card{align-self:start!important;min-height:0!important}
+  .desktop-recent-card,.desktop-monitor-card{display:flex!important;flex-direction:column!important;gap:10px!important}
+  .desktop-card-head{margin-bottom:0!important}
+  .desktop-recent-list,.desktop-monitoring-list{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+  .desktop-recent-list{display:flex!important;flex-direction:column!important;gap:8px!important}
+  .desktop-recent-row{min-height:0!important;padding:10px 12px!important;border:1px solid var(--line-strong)!important;border-radius:14px!important;background:var(--surface-2)!important}
+  .desktop-recent-row div{gap:2px!important}
+  .desktop-recent-row b{font-size:12.5px!important;line-height:1.3!important}
+  .desktop-recent-row small{font-size:10.5px!important;line-height:1.4!important}
+  .desktop-recent-row em{align-self:center!important}
+  .desktop-monitoring-list{display:flex!important;flex-direction:column!important;gap:2px!important}
+  .desktop-monitoring-list>div{min-height:0!important;padding:11px 0!important}
+  .desktop-monitoring-list span{font-size:11px!important;white-space:normal!important;line-height:1.35!important}
+  .desktop-monitoring-list b{font-size:10px!important;white-space:nowrap!important}
+}
+
+@media (max-width:1179px){
+  .desktop-profile-trigger{padding:6px 0!important;border-radius:0!important}
+  .desktop-profile-trigger:hover{background:transparent!important}
+  .desktop-bottom-grid{gap:10px!important}
+  .desktop-recent-list{display:flex!important;flex-direction:column!important;gap:8px!important;height:auto!important;overflow:visible!important}
+  .desktop-recent-row{padding:10px 11px!important;border:1px solid var(--line-strong)!important;border-radius:14px!important;background:var(--surface-2)!important}
+  .desktop-monitoring-list{height:auto!important;overflow:visible!important}
+  .desktop-monitoring-list>div{padding:10px 0!important;min-height:0!important}
+}
+
 /* v5.0.0 readability pass */
 @media (min-width:1180px) and (pointer:fine){
   .desktop-kpi small{font-size:12px!important}
@@ -5025,4 +5065,108 @@ html[data-theme="dark"] .leaflet-control-zoom a{background:#132235!important;col
 @media (max-width:1179px){
   .desktop-kpi small{font-size:9.3px!important}
   .desktop-kpi strong{font-size:19px!important}
+}
+
+
+/* v5.0.2 — UX review pass */
+:root{--control-text:#16324F;--control-bg:#FFFFFF;--control-placeholder:#7F8EA3}
+.form input,.form select,.form textarea,select,input,textarea{color:var(--control-text)}
+.form select,select{appearance:auto;-webkit-appearance:menulist}
+.form select option,select option,.form select optgroup,select optgroup{color:#16324F;background:#FFFFFF}
+.form select:invalid{color:var(--control-placeholder)}
+html[data-theme="dark"] .form select option,
+html[data-theme="dark"] select option,
+html[data-theme="dark"] .form select optgroup,
+html[data-theme="dark"] select optgroup{color:#EEF5FC;background:#102032}
+html[data-theme="dark"] .form input,
+html[data-theme="dark"] .form select,
+html[data-theme="dark"] .form textarea{color:#EEF5FC}
+
+.river-chart{overflow:hidden}
+.river-tooltip{pointer-events:none!important;z-index:3!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+@media (min-width:1180px) and (pointer:fine){
+  .topbar{align-items:center!important}
+  .top-weather{position:relative!important;z-index:1!important;max-width:400px!important}
+  .desktop-account{position:relative!important;z-index:6!important;min-width:210px!important}
+  .desktop-profile-trigger{position:relative!important;z-index:7!important;pointer-events:auto!important;touch-action:manipulation!important;min-height:52px!important;min-width:138px!important}
+  .desktop-profile-trigger .desktop-account-copy b{font-size:14px!important;line-height:1.2!important}
+  .desktop-profile-trigger .desktop-account-copy small{font-size:11px!important;line-height:1.3!important}
+  .desktop-bell{position:relative!important;z-index:7!important}
+
+  main{padding:8px 18px 30px!important}
+  .page[data-page="home"].active{grid-template-columns:minmax(0,1.5fr) minmax(370px,.86fr)!important;gap:14px!important}
+  .desktop-kpi-row{grid-template-columns:minmax(250px,1.3fr) repeat(4,minmax(126px,.8fr))!important;gap:10px!important}
+  .desktop-kpi{height:auto!important;min-height:108px!important}
+  .desktop-kpi strong{font-size:24px!important}
+  .desktop-kpi small{font-size:12px!important;line-height:1.35!important}
+  .desktop-kpi-status strong{font-size:28px!important}
+  .desktop-kpi-status p{font-size:11px!important;max-width:240px!important}
+
+  .river-level-card{padding:15px!important}
+  .river-level-head{align-items:flex-start!important}
+  .river-level-foot{row-gap:5px!important}
+
+  .home-events-section{min-height:250px!important;max-height:340px!important}
+  .home-events-section .section-head h2{font-size:17px!important}
+  .home-events-section .event-card h3{font-size:13px!important;line-height:1.3!important}
+  .home-events-section .event-card p{font-size:11px!important;line-height:1.45!important}
+  .home-events-section .event-card small{font-size:10px!important}
+
+  .desktop-bottom-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;gap:14px!important;align-items:start!important}
+  .desktop-summary-card{min-height:154px!important;height:auto!important;padding:14px 15px!important;align-content:start!important}
+  .desktop-card-head{margin-bottom:8px!important}
+  .desktop-card-head b{font-size:14px!important}
+  .desktop-recent-list,.desktop-monitoring-list{gap:8px!important;align-content:start!important}
+  .desktop-recent-row{padding:11px 12px!important}
+  .desktop-recent-row b{font-size:13px!important;line-height:1.3!important}
+  .desktop-recent-row small{font-size:10.5px!important;line-height:1.4!important}
+  .desktop-recent-row em{font-size:9px!important;padding:5px 8px!important}
+  .desktop-monitoring-list>div{padding:10px 0!important;min-height:0!important}
+  .desktop-monitoring-list span{font-size:12px!important;line-height:1.4!important}
+  .desktop-monitoring-list b{font-size:11px!important}
+}
+
+@media (min-width:1180px) and (max-width:1380px) and (pointer:fine){
+  .topbar{grid-template-columns:minmax(220px,1fr) minmax(300px,390px) auto!important;gap:14px!important}
+  .top-weather{max-width:360px!important}
+  .page[data-page="home"].active{grid-template-columns:minmax(0,1.42fr) minmax(350px,.9fr)!important}
+  .desktop-kpi-row{grid-template-columns:minmax(210px,1.18fr) repeat(4,minmax(112px,.78fr))!important}
+}
+
+@media (max-width:1179px){
+  .top-weather{margin-bottom:12px!important}
+  .desktop-kpi-row{margin-bottom:14px!important}
+  .desktop-kpi{min-height:88px!important;padding:11px 8px!important}
+  .desktop-kpi small{font-size:9.5px!important;line-height:1.35!important}
+  .desktop-kpi strong{font-size:20px!important}
+  .river-level-card{padding:14px!important}
+  .river-level-head{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:8px!important}
+  .river-level-head h2{font-size:16px!important;line-height:1.2!important}
+  .river-status-badge{align-self:flex-start!important}
+  .river-level-body{gap:12px!important}
+  .river-level-primary{padding:14px!important}
+  .river-level-primary>strong{font-size:44px!important;line-height:1!important}
+  .river-level-primary p{font-size:14px!important;line-height:1.4!important}
+  .river-level-primary small{font-size:12px!important}
+  .river-chart-wrap{padding:14px!important}
+  .river-chart-head{gap:10px!important;align-items:flex-start!important}
+  .river-chart-head b{font-size:18px!important}
+  .river-chart-head small{font-size:12px!important}
+  .river-window-chips{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+  .river-window-chips button{min-height:34px!important;font-size:12px!important}
+  .river-chart-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .river-chart-metrics span{font-size:10px!important}
+  .river-chart-metrics strong{font-size:13px!important}
+  .river-chart{min-height:220px!important}
+  .river-chart svg{height:220px!important}
+  .river-level-foot{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:6px!important;font-size:12px!important}
+
+  .desktop-bottom-grid{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}
+  .desktop-summary-card{padding:14px!important}
+  .desktop-card-head b{font-size:15px!important}
+  .desktop-recent-row b{font-size:14px!important}
+  .desktop-recent-row small{font-size:12px!important}
+  .desktop-monitoring-list span{font-size:13px!important}
+  .desktop-monitoring-list b{font-size:12px!important}
 }

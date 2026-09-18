@@ -3457,3 +3457,24 @@ $("#deleteOccurrenceBtn").addEventListener("click",deleteEditingOccurrence);
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(console.warn));
 initTheme();
 bootstrap();
+
+
+/* v5.0.2 — UX review hotfixes */
+(function(){
+  const bindProfileShortcut=()=>{
+    const trigger=document.querySelector('.desktop-profile-trigger');
+    if(!trigger||trigger.dataset.boundProfileNav==='1')return;
+    trigger.dataset.boundProfileNav='1';
+    const open=(e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      navigate('profile');
+    };
+    trigger.addEventListener('click',open);
+    trigger.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){ open(e); }
+    });
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindProfileShortcut,{once:true});
+  else bindProfileShortcut();
+})();
