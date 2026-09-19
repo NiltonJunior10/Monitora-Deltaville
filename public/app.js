@@ -813,7 +813,7 @@ function setPointPickMode(enabled,options={}){
   const btn=$("#pickPointBtn");if(btn)btn.classList.toggle("active",enabled);
   $("#fullMap")?.classList.toggle("point-pick-active",enabled);
   if($("#pickPointText"))$("#pickPointText").textContent=enabled?(state.multiPointMode?"Adicionar pontos":"Toque no mapa"):"Marcar ponto";
-  if($("#mapPickHelp"))$("#mapPickHelp").textContent=enabled?(state.multiPointMode?"Marque quantos pontos precisar. Depois toque em “Concluir”.":"Modo de marcação ativo: toque uma vez no ponto exato."):"Pressione e segure no mapa para marcar uma ocorrência.";
+  if($("#mapPickHelp"))$("#mapPickHelp").textContent=enabled?(state.multiPointMode?"Marque quantos pontos precisar. Depois toque em “Concluir”.":"Modo de marcação ativo: toque uma vez no ponto exato."):"Segure e arraste sobre uma via para delimitar um trecho.";
 }
 function renderSelectedPointMarkers(){
   state.selectedPointMarkers.forEach(m=>m.remove());state.selectedPointMarkers=[];
@@ -1754,7 +1754,7 @@ function renderAvenues(which){
       locationId:loc.id,
       typeLabel:"Avenida monitorada",
       timeLabel:latest?age(latest.created_at):"Sem ocorrência ativa",
-      description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Via em monitoramento. Pressione e segure para marcar um ponto exato."
+      description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Via monitorada. Segure e arraste sobre ela para delimitar um trecho."
     };
 
     hit.on("click",()=>{
