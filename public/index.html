@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0B63CE">
   <meta name="color-scheme" content="light dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,18 +18,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=502">
-  <script>
-    (function(){
-      try{
-        var t=localStorage.getItem("monitora_theme");
-        document.documentElement.dataset.theme=t==="dark"?"dark":"light";
-      }catch(_){document.documentElement.dataset.theme="light";}
-    })();
-  </script>
+  <link rel="stylesheet" href="styles.css?v=510">
+  <link rel="stylesheet" href="stability.css?v=510">
+  <script src="theme-init.js?v=510"></script>
   <title>Monitora Deltaville</title>
 </head>
 <body>
+  <div id="connectionNotice" role="status" aria-live="polite" hidden></div>
   <div class="app-shell" id="app">
     <aside class="desktop-sidebar" aria-label="Navegação desktop">
       <button class="desktop-brand" data-nav="home" aria-label="Ir para o início">
@@ -82,7 +77,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v5.0.2</small>
+        <small>Monitora Deltaville<br>v5.1.0</small>
       </div>
     </aside>
     <header class="topbar">
@@ -142,9 +137,9 @@
 
         <section class="status-card">
           <div>
-            <span class="label">Situação atual</span>
-            <strong id="overallStatus">Normal</strong>
-            <small id="statusReason">Nenhuma ocorrência crítica ativa.</small>
+            <span class="label">Situação da comunidade</span>
+            <strong id="overallStatus">Verificando dados</strong>
+            <small id="statusReason">Consultando relatos da comunidade.</small>
           </div>
           <div class="status-stats">
             <article class="status-alerts-tile">
@@ -220,9 +215,9 @@
           <article class="desktop-kpi desktop-kpi-status">
             <span class="desktop-kpi-shield" aria-hidden="true">✓</span>
             <div>
-              <small>Situação geral</small>
-              <strong id="desktopOverallStatus">Normal</strong>
-              <p id="desktopStatusReason">Nenhuma ocorrência crítica ativa no momento.</p>
+              <small>Situação da comunidade</small>
+              <strong id="desktopOverallStatus">Verificando dados</strong>
+              <p id="desktopStatusReason">Consultando relatos da comunidade.</p>
             </div>
           </article>
           <article class="desktop-kpi metric-active">
@@ -300,9 +295,9 @@
 
           <article class="desktop-summary-card desktop-monitor-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon pulse">⌁</span><b>Status de monitoramento</b></div>
+              <div><span class="desktop-card-icon pulse">⌁</span><b>Relatos da comunidade</b></div>
             </div>
-            <div id="desktopMonitoringList" class="desktop-monitoring-list"></div>
+            <div id="desktopMonitoringList" class="desktop-monitoring-list"></div><h3>Fontes de monitoramento</h3><div id="homeMonitoringSources"></div>
           </article>
         </section>
       </section>
@@ -514,7 +509,8 @@
         <button class="danger wide" id="logoutBtn">Sair / trocar usuário</button>
         <section class="info-card subtle" id="backendStatusCard">
           <b>Conexão com a comunidade</b>
-          <p id="backendStatus">Verificando Supabase…</p>
+          <p id="backendStatus">Verificando conexão…</p>
+          <h3>Fontes de monitoramento</h3><div id="monitoringSources"></div>
         </section>
         <section class="info-card">
           <b>Sobre seu acesso</b>
@@ -912,6 +908,12 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=502"></script>
+  <script src="stability-core.js?v=510"></script>
+  <script src="auth.js?v=510"></script>
+  <script src="river.js?v=510"></script>
+  <script src="weather.js?v=510"></script>
+  <script src="push.js?v=510"></script>
+  <script src="app.js?v=510"></script>
 </body>
 </html>
+

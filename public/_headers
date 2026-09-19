@@ -1,0 +1,5 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://wdyvfuzmntqbldxxzokd.supabase.co https://unpkg.com; connect-src 'self' https://wdyvfuzmntqbldxxzokd.supabase.co wss://wdyvfuzmntqbldxxzokd.supabase.co https://api.open-meteo.com https://unpkg.com; worker-src 'self'; manifest-src 'self'
+

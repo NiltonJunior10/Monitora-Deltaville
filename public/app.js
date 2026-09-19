@@ -3,7 +3,7 @@ const SUPABASE_URL = "https://wdyvfuzmntqbldxxzokd.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ubslwFZZ-XN8CTS1C6Dyiw_umpyC99W";
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const PUSH_VAPID_PUBLIC_KEY = "BEkQekx8hC3NmenxXq2SS0U-tomj4Mnh9ZSWIWg3pGT7a-R0NCWUNsSRvkcwRWZKYVTyfUinmLH6S-34kjKx0l4";
+let PUSH_VAPID_PUBLIC_KEY = null;
 
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
@@ -27,6 +27,53 @@ function applyTheme(theme,{persist=true}={}){
   document.body?.classList.toggle("theme-dark",dark);
 }
 function toggleTheme(){applyTheme(currentTheme()==="dark"?"light":"dark");}
+function snapshotKey(){return `monitora_snapshot_v1_${state.user?.id||"none"}`;}
+function saveSnapshot(){
+  if(!state.user||!state.profile)return;
+  try{
+    const {profile,condominiums,locations,occurrences,recentResolved,alerts,riverStatus,sourceUpdatedAt}=state;
+    localStorage.setItem(snapshotKey(),JSON.stringify({savedAt:Date.now(),profile,condominiums,locations,occurrences,recentResolved,alerts,riverStatus,sourceUpdatedAt}));
+  }catch(_){/* Storage may be disabled or full; live use still works. */}
+}
+function restoreSnapshot(){
+  try{
+    const cached=JSON.parse(localStorage.getItem(snapshotKey())||"null");
+    if(!cached||cached.profile?.user_id!==state.user?.id||Date.now()-cached.savedAt>7*86400000)return;
+    for(const key of ["profile","condominiums","locations","occurrences","recentResolved","alerts","riverStatus","sourceUpdatedAt"]){
+      if(cached[key]!=null)state[key]=cached[key];
+    }
+    state.connectionDegraded=true;
+    fillCondoSelects();
+  }catch(_){}
+}
+function renderConnection(){
+  const pending=!navigator.onLine||state.connectionDegraded;
+  const message=!navigator.onLine?"Sem conexão • últimos dados salvos; sua sessão foi preservada.":pending?"Conexão parcial • alguns dados podem estar desatualizados.":"Conectado • dados da comunidade sincronizados.";
+  const banner=$("#connectionNotice");
+  if(banner){banner.hidden=!pending;banner.textContent=message;}
+  if($("#backendStatus"))$("#backendStatus").textContent=message;
+  renderSources();
+}
+function renderSources(){
+  const hosts=[$("#monitoringSources"),$("#homeMonitoringSources")].filter(Boolean);if(!hosts.length)return;
+  const river=state.riverStatus;
+  const sourceText=river?.connection_state==='ok'?"Medição disponível":river?.connection_state==='stale'?"Medição desatualizada":river?.connection_state==='degraded'?"Fonte com falha recente":"Consulta indisponível ou pendente";
+  let weatherText="Consulta pendente";
+  try{const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");if(cached?.saved_at){const mins=Math.max(0,Math.floor((Date.now()-cached.saved_at)/60000));weatherText=(state.weatherUnavailable||mins>60?"Desatualizado":"Online")+" • atualização há "+mins+" min";}}catch(_){}
+  const pushText=state.pushEnabled?"Ativas neste aparelho":"Desativadas ou não confirmadas neste aparelho";
+  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>Previsão · Open-Meteo</b> — ${weatherText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
+}
+async function loadPushConfig(){
+  const {data,error}=await db.functions.invoke("app-config",{method:"GET"});
+  if(error||!data?.push_vapid_public_key)throw new Error("PUSH_CONFIG_UNAVAILABLE");
+  PUSH_VAPID_PUBLIC_KEY=data.push_vapid_public_key;
+}
+function pushKeyMatches(subscription){
+  const raw=subscription.options?.applicationServerKey;
+  if(!raw||!PUSH_VAPID_PUBLIC_KEY)return false;
+  const actual=new Uint8Array(raw),expected=base64UrlToUint8Array(PUSH_VAPID_PUBLIC_KEY);
+  return actual.length===expected.length&&actual.every((byte,i)=>byte===expected[i]);
+}
 function initTheme(){
   let stored="light";
   try{stored=localStorage.getItem(THEME_STORAGE_KEY)==="dark"?"dark":"light";}catch(_){}
@@ -39,21 +86,6 @@ function initTheme(){
 function isMapGestureTarget(target){
   return !!target?.closest?.(".leaflet-container,.map-shell,.map-preview,.map-full");
 }
-
-/* Safari/iOS: impede zoom da página, mas libera os gestos dentro do mapa. */
-["gesturestart","gesturechange","gestureend"].forEach(type=>{
-  document.addEventListener(type,e=>{
-    if(!isMapGestureTarget(e.target))e.preventDefault();
-  },{passive:false});
-});
-
-let lastNonMapTouchEnd=0;
-document.addEventListener("touchend",e=>{
-  if(isMapGestureTarget(e.target))return;
-  const now=Date.now();
-  if(now-lastNonMapTouchEnd<=300)e.preventDefault();
-  lastNonMapTouchEnd=now;
-},{passive:false});
 
 const state = {
   user:null, profile:null, condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null,
@@ -301,19 +333,18 @@ function shortLakeName(name){
 async function bootstrap(){
   showLoading(true);
   try{
-    // Condomínios podem ser lidos antes do login para montar a tela de acesso.
-    await loadPublicCondominiums();
-
     const {data:{session},error}=await db.auth.getSession();
     if(error)throw error;
 
     if(!session){
       state.user=null; state.profile=null;
+      await loadPublicCondominiums();
       showAccess("login");
       return;
     }
 
     state.user=session.user;
+    restoreSnapshot();
     await loadLookups();
     await loadProfile();
 
@@ -328,8 +359,13 @@ async function bootstrap(){
     await startSignedInApp();
   }catch(e){
     console.error("Falha ao iniciar app:",e);
-    toast("Não foi possível iniciar o aplicativo. Tente novamente.");
-    showAccess("login");
+    if(state.user && state.profile){
+      state.connectionDegraded=true;
+      await startSignedInApp();
+    }else{
+      toast("Sem conexão para carregar seu acesso. Sua sessão foi preservada; tente novamente quando a conexão voltar.");
+      showAccess("login");
+    }
   }finally{
     showLoading(false);
   }
@@ -347,9 +383,11 @@ async function startSignedInApp(){
   scheduleRiverRefresh();
   state.pushMinSeverity=localStorage.getItem("monitora_push_level")||"attention";
   loadPushSettings();
+  saveSnapshot();
+  renderConnection();
   state.initialized=true;
   $("#accessOverlay").hidden=true;
-  if($("#backendStatus")) $("#backendStatus").textContent="Online • ocorrências compartilhadas em tempo real.";
+  renderConnection();
   handlePushDeepLink();
 }
 
@@ -423,50 +461,36 @@ async function loadOccurrencePhotos(){
   state.occurrences=state.occurrences.map(o=>({...o,_photos:byOccurrence.get(o.id)||[]}));
 }
 
-async function loadData(){
-  const now=new Date();
-
-  const occRes = await db.from("occurrences")
-    .select("*, monitored_locations(name,category)")
-    .eq("status","active")
-    .order("created_at",{ascending:false});
-
-  if(occRes.error) throw occRes.error;
-  state.occurrences=(occRes.data||[]).filter(activeOccurrence).map(hydrateOccurrence);
-  await loadOccurrencePhotos();
-
-  const recentRes = await db.from("occurrences")
-    .select("*, monitored_locations(name,category)")
-    .eq("status","resolved")
-    .order("resolved_at",{ascending:false})
-    .limit(8);
-  state.recentResolved=recentRes.error?[]:(recentRes.data||[]).map(hydrateOccurrence);
-
-  // Filtra validade dos alertas no cliente. É mais tolerante entre versões do PostgREST.
-  const alertRes = await db.from("alerts")
-    .select("*, monitored_locations(name,category)")
-    .eq("active",true)
-    .order("created_at",{ascending:false});
-
-  if(alertRes.error) throw alertRes.error;
-  state.alerts=(alertRes.data||[]).filter(a=>{
-    const startOk=!a.starts_at || new Date(a.starts_at)<=now;
-    const endOk=!a.ends_at || new Date(a.ends_at)>now;
-    return startOk && endOk;
-  });
+// Each source commits only a successful response; failures retain its last snapshot.
+let dataLoadInFlight=null;
+async function loadData(keys=["occurrences","recentResolved","alerts"]){
+  const now=new Date().toISOString();
+  const jobs=[
+    ['occurrences',()=>db.from("occurrences").select("*, monitored_locations(name,category)").eq("status","active").gt("expires_at",now).order("created_at",{ascending:false})],
+    ['recentResolved',()=>db.from("occurrences").select("*, monitored_locations(name,category)").eq("status","resolved").order("resolved_at",{ascending:false}).limit(8)],
+    ['alerts',()=>db.from("alerts").select("*, monitored_locations(name,category)").eq("active",true).or("starts_at.is.null,starts_at.lte."+now).or("ends_at.is.null,ends_at.gt."+now).order("created_at",{ascending:false})]
+  ].filter(([key])=>keys.includes(key));
+  const results=await Promise.allSettled(jobs.map(async([key,query])=>{
+    const {data,error}=await query();
+    if(error)throw error;
+    state[key]=key==='alerts'?(data||[]):(data||[]).map(hydrateOccurrence);
+    state.sourceUpdatedAt={...state.sourceUpdatedAt,[key]:Date.now()};
+    return key;
+  }));
+  state.sourceFailures=state.sourceFailures||{};
+  results.forEach((result,i)=>{state.sourceFailures[jobs[i][0]]=result.status==='rejected';});
+  state.connectionDegraded=Object.values(state.sourceFailures).some(Boolean);
+  for(let i=0;i<results.length;i++)if(results[i].status==='rejected')console.warn('Fonte indisponível:',jobs[i][0]);
+  if(results.some((result,i)=>jobs[i][0]==='occurrences'&&result.status==='fulfilled'))await loadOccurrencePhotos().catch(()=>{});
+  saveSnapshot();
+  renderConnection();
+}
+async function loadDataSafe(keys){
+  if(dataLoadInFlight)return dataLoadInFlight;
+  dataLoadInFlight=loadData(keys).catch(e=>{state.connectionDegraded=true;renderConnection();console.warn('Carregamento indisponível',e);}).finally(()=>{dataLoadInFlight=null;});
+  return dataLoadInFlight;
 }
 
-async function loadDataSafe(){
-  try{
-    await loadData();
-  }catch(e){
-    console.error("Falha ao carregar ocorrências/alertas:", e);
-    state.occurrences=[];
-    state.recentResolved=[];
-    state.alerts=[];
-    toast("Ocorrências temporariamente indisponíveis. Cadastro e mapa continuam funcionando.");
-  }
-}
 function fillCondoSelects(){
   const ids=["condominium","editCondominium","loginCondominium","registerCondominium","legacyCondominium"];
   for(const id of ids){
@@ -1705,7 +1729,7 @@ function renderDesktopMonitoring(){
   ];
   host.innerHTML=rows.map(([label,status])=>{
     const st=status||"normal";
-    return `<div><span>${esc(label)}</span><b class="${st}"><i></i>${severityLabels[st]||"Normal"}</b></div>`;
+    return `<div><span>${esc(label)}</span><b class="${st}"><i></i>${st==="normal"?"Sem relatos ativos":severityLabels[st]}</b></div>`;
   }).join("");
 }
 function severitySummary(){
@@ -1764,11 +1788,11 @@ function renderReports(){
 }
 
 function renderAll(){
+  renderStatus();
   renderProfile();
   renderOccurrences();
   renderAlertsPage();
   renderLocations();
-  renderStatus();
   renderDesktopMonitoring();
   renderDesktopSeverity();
   renderDesktopRecent();
@@ -1870,19 +1894,22 @@ function renderLocations(){
   }).join("");
 }
 function renderStatus(){
+  state.occurrences=state.occurrences.filter(activeOccurrence);
+  state.alerts=state.alerts.filter(a=>(!a.starts_at||new Date(a.starts_at)<=new Date())&&(!a.ends_at||new Date(a.ends_at)>new Date()));
   const all=[...state.occurrences,...state.alerts];
   const st=highestSeverity(all);
-  const text=severityLabels[st]||"Normal";
+  const incomplete=!navigator.onLine||state.connectionDegraded||!state.sourceUpdatedAt?.occurrences||!state.sourceUpdatedAt?.alerts;
+  const text=incomplete?(st==="normal"?"Dados não confirmados":`${severityLabels[st]} • último registro`):(severityLabels[st]||"Normal");
   $("#overallStatus").textContent=text;
   $("#overallStatus").style.color=st==="normal"?"#10B981":st==="attention"?"#B17D00":st==="alert"?"#D45E18":"#C52F42";
   $("#overallPill").className=`status-pill ${st}`; $("#overallPill").textContent=`● ${text}`;
-  const reasons={normal:"Nenhuma ocorrência crítica ativa.",attention:"Há registros que pedem atenção.",alert:"Há situação de alerta ativa.",critical:"Há ocorrência crítica ativa."};
-  $("#statusReason").textContent=reasons[st];
+  const reasons={normal:"Nenhuma ocorrência ou alerta ativo informado.",attention:"Há registros que pedem atenção.",alert:"Há situação de alerta ativa.",critical:"Há ocorrência crítica ativa."};
+  $("#statusReason").textContent=incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st];
   if($("#desktopOverallStatus")){
     $("#desktopOverallStatus").textContent=text;
     $("#desktopOverallStatus").className=st;
   }
-  if($("#desktopStatusReason"))$("#desktopStatusReason").textContent=reasons[st];
+  if($("#desktopStatusReason"))$("#desktopStatusReason").textContent=incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st];
 }
 
 
@@ -2330,159 +2357,6 @@ async function submitProfile(e){
   }catch(err){console.error(err);errEl.textContent="Não foi possível salvar. Tente novamente.";}
 }
 
-function showAccess(mode="login"){
-  $("#accessOverlay").hidden=false;
-  switchAccessMode(mode);
-}
-function switchAccessMode(mode){
-  maskAllPins();
-  $$("[data-access-panel]").forEach(p=>p.hidden=p.dataset.accessPanel!==mode);
-  $$("[data-access-mode]").forEach(b=>b.classList.toggle("selected",b.dataset.accessMode===mode));
-  $("#accessTabs").hidden=mode==="legacy";
-  const titles={
-    login:["Entrar no aplicativo","Sem e-mail. Use seu condomínio, casa/lote e PIN."],
-    register:["Criar cadastro","Cadastre-se uma vez e use o mesmo acesso no navegador ou app instalado."],
-    legacy:["Recuperar cadastro anterior","Crie um PIN para continuar usando o cadastro que já existe."]
-  };
-  $("#accessTitle").textContent=titles[mode][0];
-  $("#accessSubtitle").textContent=titles[mode][1];
-}
-function normalizeHouseLotInput(value){
-  return String(value||"").replace(/\D/g,"");
-}
-function validHouseLot(value){
-  const raw=normalizeHouseLotInput(value);
-  if(!raw)return false;
-  const n=Number(raw);
-  return Number.isInteger(n)&&n>=1&&n<=500;
-}
-function houseLotError(){
-  return "Informe um número de casa/lote entre 1 e 500.";
-}
-function maskAllPins(){
-  $$(".pin-field").forEach(input=>input.type="password");
-  $$(".password-eye").forEach(btn=>{
-    btn.setAttribute("aria-pressed","false");
-    btn.setAttribute("aria-label","Mostrar PIN");
-    btn.classList.remove("showing");
-  });
-}
-function togglePinVisibility(button){
-  const id=button?.dataset?.toggleSecret;
-  const input=id?$("#"+id):null;
-  if(!input)return;
-  const show=input.type==="password";
-  input.type=show?"text":"password";
-  button.setAttribute("aria-pressed",show?"true":"false");
-  button.setAttribute("aria-label",show?"Ocultar PIN":"Mostrar PIN");
-  button.classList.toggle("showing",show);
-  input.focus({preventScroll:true});
-  try{input.setSelectionRange(input.value.length,input.value.length);}catch(_){}
-}
-
-function accessErrorMessage(code){
-  const m={
-    ACCOUNT_NOT_FOUND:"Cadastro não encontrado para esse condomínio e casa/lote.",
-    PIN_INCORRECT:"PIN incorreto.",
-    PIN_INVALID:"O PIN deve ter exatamente 6 números.",
-    ACCOUNT_EXISTS:"Este morador já possui um acesso com PIN. Use “Já tenho cadastro”.",
-    UNIT_FULL:"Esta casa/lote já possui 2 moradores cadastrados.",
-    PIN_ALREADY_USED:"O outro morador desta casa/lote já usa esse PIN. Escolha um PIN diferente.",
-    LEGACY_ACCOUNT:"Encontramos um cadastro da versão anterior. Use “Meu cadastro foi feito antes do PIN”.",
-    LEGACY_NOT_MATCHED:"Não encontramos um cadastro antigo com esses dados. Confira nome, sobrenome, condomínio e casa/lote.",
-    NAME_INVALID:"Informe nome e sobrenome corretamente.",
-    MISSING_FIELDS:"Preencha todos os campos.",
-    ACCOUNT_SETUP_FAILED:"Não foi possível finalizar o acesso. Tente novamente.",
-    CREATE_USER_FAILED:"Não foi possível criar o acesso agora."
-  };
-  return m[code]||"Não foi possível concluir. Confira os dados e tente novamente.";
-}
-async function residentAccess(payload){
-  const {data,error}=await db.functions.invoke("resident-access",{body:payload});
-  if(error){
-    let code;
-    try{ code=(await error.context?.json())?.error; }catch(_){}
-    throw new Error(code||"REQUEST_FAILED");
-  }
-  if(data?.error)throw new Error(data.error);
-  return data;
-}
-async function applyReturnedSession(session){
-  if(!session?.access_token||!session?.refresh_token)throw new Error("SESSION_INVALID");
-  const {data,error}=await db.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});
-  if(error)throw error;
-  state.user=data.user;
-  await loadLookups();
-  await loadProfile();
-  await startSignedInApp();
-}
-async function handleLogin(e){
-  e.preventDefault(); const err=$("#loginError");err.textContent="";
-  const house=$("#loginHouseLot").value.trim();
-  if(!validHouseLot(house)){err.textContent=houseLotError();$("#loginHouseLot").focus();return;}
-  try{
-    const payload={action:"login",condominium_id:$("#loginCondominium").value,house_or_lot:String(Number(normalizeHouseLotInput(house))),pin:$("#loginPin").value.trim()};
-    const data=await residentAccess(payload);
-    await applyReturnedSession(data.session);
-    toast("Acesso realizado.");
-  }catch(e){
-    if(e.message==="LEGACY_ACCOUNT")switchAccessMode("legacy");
-    err.textContent=accessErrorMessage(e.message);
-  }
-}
-async function handleRegister(e){
-  e.preventDefault();const err=$("#registerError");err.textContent="";
-  const pin=$("#registerPin").value.trim(),pin2=$("#registerPin2").value.trim();
-  const house=$("#registerHouseLot").value.trim();
-  if(!validHouseLot(house)){err.textContent=houseLotError();$("#registerHouseLot").focus();return;}
-  if(pin!==pin2){err.textContent="Os PINs não são iguais.";return;}
-  try{
-    const payload={action:"register",first_name:$("#registerFirstName").value.trim(),last_name:$("#registerLastName").value.trim(),condominium_id:$("#registerCondominium").value,house_or_lot:String(Number(normalizeHouseLotInput(house))),pin};
-    const data=await residentAccess(payload);
-    await applyReturnedSession(data.session);
-    toast("Cadastro criado. Guarde seu PIN.");
-  }catch(e){
-    if(e.message==="LEGACY_ACCOUNT"){prefillLegacyFromRegister();switchAccessMode("legacy");}
-    err.textContent=accessErrorMessage(e.message);
-  }
-}
-function prefillLegacyFromRegister(){
-  $("#legacyFirstName").value=$("#registerFirstName").value;
-  $("#legacyLastName").value=$("#registerLastName").value;
-  $("#legacyCondominium").value=$("#registerCondominium").value;
-  setHouseValue("legacyHouseLot",$("#registerHouseLot").value);
-}
-function prefillLegacyFromProfile(){
-  const p=state.profile;if(!p)return;
-  $("#legacyFirstName").value=p.first_name;
-  $("#legacyLastName").value=p.last_name;
-  $("#legacyCondominium").value=p.condominium_id;
-  setHouseValue("legacyHouseLot",p.house_or_lot);
-}
-async function handleLegacyClaim(e){
-  e.preventDefault();const err=$("#legacyError");err.textContent="";
-  const pin=$("#legacyPin").value.trim(),pin2=$("#legacyPin2").value.trim();
-  const house=$("#legacyHouseLot").value.trim();
-  if(!validHouseLot(house)){err.textContent=houseLotError();$("#legacyHouseLot").focus();return;}
-  if(pin!==pin2){err.textContent="Os PINs não são iguais.";return;}
-  try{
-    const payload={action:"claim_legacy",first_name:$("#legacyFirstName").value.trim(),last_name:$("#legacyLastName").value.trim(),condominium_id:$("#legacyCondominium").value,house_or_lot:String(Number(normalizeHouseLotInput(house))),pin};
-    const data=await residentAccess(payload);
-    await applyReturnedSession(data.session);
-    toast("Cadastro recuperado. Agora você pode usar o mesmo PIN em outros aparelhos.");
-  }catch(e){err.textContent=accessErrorMessage(e.message);}
-}
-async function logoutAndSwitch(){
-  const legacy=state.user?.is_anonymous===true;
-  const msg=legacy?"Este cadastro ainda não tem PIN. Se sair, para recuperá-lo depois você deverá usar a opção de cadastro anterior. Deseja sair?":"Sair deste usuário e voltar para a tela de acesso?";
-  if(!confirm(msg))return;
-  try{await disablePushNotifications({silent:true});}catch(e){console.warn("Falha ao remover push:",e);}
-  try{
-    if(state.realtimeChannel)await db.removeChannel(state.realtimeChannel);
-    await db.auth.signOut({scope:"local"});
-  }catch(e){console.warn(e);}
-  location.reload();
-}
 function handleInstall(){
   const standalone=window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone===true;
   if(standalone){toast("O Monitora Deltaville já está instalado neste aparelho.");return;}
@@ -2708,634 +2582,48 @@ async function deleteEditingOccurrence(){
   }
 }
 
-let riverRefreshTimer=null;
-
-function riverTrendLabel(value){
-  return value==="rising"?"↑ Subindo":value==="falling"?"↓ Baixando":value==="stable"?"→ Estável":"Tendência indisponível";
-}
-function riverStatusLabel(value){
-  return value==="normal"?"NORMAL":value==="attention"?"ATENÇÃO":value==="alert"?"ALERTA":value==="critical"?"CRÍTICO":"SEM COTA OFICIAL";
-}
-function riverFreshnessText(latest){
-  if(!latest)return "Nenhuma medição armazenada.";
-  const mins=Number(latest.stale_minutes||0);
-  if(mins<1)return "Medição recebida agora.";
-  if(mins<60)return `Última medição recebida há ${mins} min.`;
-  const h=Math.floor(mins/60), m=mins%60;
-  return `Última medição recebida há ${h}h${m?` ${m}min`:""}.`;
-}
-function formatRiverDelta(delta){
-  if(delta===null || delta===undefined || !Number.isFinite(Number(delta)))return "—";
-  const cm=Math.round(Number(delta)*100);
-  return `${cm>0?"+":""}${cm} cm`;
-}
-function formatRiverTime(iso){
-  if(!iso)return "—";
-  try{
-    return new Intl.DateTimeFormat("pt-BR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit",timeZone:"America/Sao_Paulo"}).format(new Date(iso));
-  }catch(_){return "—";}
-}
-
-let riverWindowHours=24;
-let riverChartView=null;
-
-function riverPeriodText(hours){
-  if(hours===1)return "Última hora";
-  if(hours===3)return "Últimas 3 horas";
-  if(hours===6)return "Últimas 6 horas";
-  if(hours===12)return "Últimas 12 horas";
-  if(hours===24)return "Últimas 24 horas";
-  return "Últimos 7 dias";
-}
-function formatRiverAxisTime(iso,hours){
-  const d=new Date(iso);
-  if(!Number.isFinite(d.getTime()))return "";
-  const opt=hours>=168
-    ?{day:"2-digit",month:"2-digit",timeZone:"America/Sao_Paulo"}
-    :{hour:"2-digit",minute:"2-digit",timeZone:"America/Sao_Paulo"};
-  return new Intl.DateTimeFormat("pt-BR",opt).format(d);
-}
-function formatRiverTooltipTime(iso){
-  try{
-    return new Intl.DateTimeFormat("pt-BR",{
-      day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",
-      timeZone:"America/Sao_Paulo"
-    }).format(new Date(iso));
-  }catch(_){return "—";}
-}
-function filterRiverSeries(series,hours){
-  const clean=(Array.isArray(series)?series:[])
-    .map(x=>({t:x?.t,v:Number(x?.v)}))
-    .filter(x=>Number.isFinite(x.v)&&Number.isFinite(new Date(x.t).getTime()))
-    .sort((a,b)=>new Date(a.t)-new Date(b.t));
-  if(!clean.length)return [];
-  const end=new Date(clean[clean.length-1].t).getTime();
-  const start=end-hours*60*60*1000;
-  return clean.filter(x=>new Date(x.t).getTime()>=start);
-}
-function niceRiverBounds(values){
-  const rawMin=Math.min(...values),rawMax=Math.max(...values);
-  let span=rawMax-rawMin;
-  if(span<0.04)span=0.04;
-  const margin=Math.max(0.015,span*.14);
-  const min=Math.max(0,rawMin-margin);
-  const max=rawMax+margin;
-  return {min,max,span:max-min};
-}
-function updateRiverPeriodMetrics(pts,hours){
-  const label=$("#riverPeriodLabel");
-  if(label)label.textContent=riverPeriodText(hours);
-
-  const deltaEl=$("#riverMetricDelta"),maxEl=$("#riverMetricMax"),minEl=$("#riverMetricMin");
-  if(!pts.length){
-    if(deltaEl)deltaEl.textContent="—";
-    if(maxEl)maxEl.textContent="—";
-    if(minEl)minEl.textContent="—";
-    return;
-  }
-  const vals=pts.map(x=>x.v);
-  const delta=pts.length>1?vals[vals.length-1]-vals[0]:null;
-  if(deltaEl)deltaEl.textContent=delta===null?"—":formatRiverDelta(delta);
-  if(maxEl)maxEl.textContent=`${Math.max(...vals).toFixed(2).replace(".",",")} m`;
-  if(minEl)minEl.textContent=`${Math.min(...vals).toFixed(2).replace(".",",")} m`;
-}
-function renderRiverChart(series=[]){
-  const host=$("#riverChart");if(!host)return;
-
-  const pts=filterRiverSeries(series,riverWindowHours);
-  updateRiverPeriodMetrics(pts,riverWindowHours);
-
-  $$("#riverWindowChips [data-river-window]").forEach(btn=>{
-    const active=Number(btn.dataset.riverWindow)===riverWindowHours;
-    btn.classList.toggle("active",active);
-    btn.setAttribute("aria-pressed",String(active));
-  });
-
-  if(pts.length<2){
-    riverChartView=null;
-    host.innerHTML='<div class="river-chart-empty">Ainda não há medições suficientes neste período.</div>';
-    return;
-  }
-
-  const vals=pts.map(x=>x.v);
-  const {min,max,span}=niceRiverBounds(vals);
-  const width=720,height=235;
-  const pad={l:52,r:20,t:18,b:34};
-  const plotW=width-pad.l-pad.r,plotH=height-pad.t-pad.b;
-
-  const xy=pts.map((x,i)=>{
-    const px=pad.l+(i/(pts.length-1))*plotW;
-    const py=pad.t+((max-x.v)/span)*plotH;
-    return {...x,x:px,y:py};
-  });
-
-  const coords=xy.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const area=`${pad.l},${height-pad.b} ${coords} ${width-pad.r},${height-pad.b}`;
-
-  const yTicks=Array.from({length:4},(_,i)=>{
-    const value=max-(span*(i/3));
-    const y=pad.t+plotH*(i/3);
-    return {value,y};
-  });
-
-  const tickCount=Math.min(5,pts.length);
-  const idxs=[...new Set(Array.from({length:tickCount},(_,i)=>
-    Math.round(i*(pts.length-1)/(tickCount-1))
-  ))];
-
-  const yGrid=yTicks.map(t=>`
-    <line x1="${pad.l}" y1="${t.y.toFixed(1)}" x2="${width-pad.r}" y2="${t.y.toFixed(1)}" class="river-grid-line"/>
-    <text x="${pad.l-9}" y="${(t.y+3).toFixed(1)}" text-anchor="end" class="river-axis-label">${t.value.toFixed(2).replace(".",",")} m</text>
-  `).join("");
-
-  const xLabels=idxs.map(i=>{
-    const p=xy[i];
-    return `<text x="${p.x.toFixed(1)}" y="${height-10}" text-anchor="middle" class="river-axis-label">${formatRiverAxisTime(p.t,riverWindowHours)}</text>`;
-  }).join("");
-
-  const last=xy[xy.length-1];
-
-  host.innerHTML=`
-    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução do nível do Rio Biguaçu em ${riverPeriodText(riverWindowHours).toLowerCase()}">
-      <defs>
-        <linearGradient id="riverFill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="#1681EF" stop-opacity=".28"/>
-          <stop offset="100%" stop-color="#1681EF" stop-opacity=".025"/>
-        </linearGradient>
-        <filter id="riverDotShadow" x="-100%" y="-100%" width="300%" height="300%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".18"/>
-        </filter>
-      </defs>
-      ${yGrid}
-      <polygon points="${area}" fill="url(#riverFill)"/>
-      <polyline points="${coords}" class="river-chart-line"/>
-      <line id="riverCrosshair" x1="${last.x}" y1="${pad.t}" x2="${last.x}" y2="${height-pad.b}" class="river-crosshair" visibility="hidden"/>
-      <circle id="riverHoverDot" cx="${last.x}" cy="${last.y}" r="5" class="river-hover-dot" visibility="hidden"/>
-      <circle cx="${last.x}" cy="${last.y}" r="6" class="river-last-dot" filter="url(#riverDotShadow)"/>
-      ${xLabels}
-    </svg>
-    <div class="river-current-label" style="left:${(last.x/width*100).toFixed(2)}%;top:${(last.y/height*100).toFixed(2)}%">
-      ${last.v.toFixed(2).replace(".",",")} m
-    </div>
-    <div class="river-tooltip" id="riverTooltip">
-      <strong id="riverTooltipLevel">${last.v.toFixed(2).replace(".",",")} m</strong>
-      <span id="riverTooltipTime">${formatRiverTooltipTime(last.t)}</span>
-    </div>`;
-
-  riverChartView={pts:xy,width,height,pad};
-  bindRiverChartInteraction();
-}
-function bindRiverChartInteraction(){
-  const host=$("#riverChart"),view=riverChartView;
-  if(!host||!view)return;
-
-  const tooltip=$("#riverTooltip");
-  const cross=$("#riverCrosshair");
-  const dot=$("#riverHoverDot");
-  const latest=view.pts[view.pts.length-1];
-
-  function paintPoint(nearest,active=true){
-    if(!nearest)return;
-    cross?.setAttribute("x1",nearest.x);
-    cross?.setAttribute("x2",nearest.x);
-    cross?.setAttribute("visibility",active?"visible":"hidden");
-    dot?.setAttribute("cx",nearest.x);
-    dot?.setAttribute("cy",nearest.y);
-    dot?.setAttribute("visibility",active?"visible":"hidden");
-    if($("#riverTooltipLevel"))$("#riverTooltipLevel").textContent=`${nearest.v.toFixed(2).replace(".",",")} m`;
-    if($("#riverTooltipTime"))$("#riverTooltipTime").textContent=formatRiverTooltipTime(nearest.t);
-    if(tooltip)tooltip.hidden=false;
-  }
-
-  function showAt(clientX){
-    const rect=host.getBoundingClientRect();
-    if(rect.width<=0)return;
-    const svgX=Math.max(view.pad.l,Math.min(view.width-view.pad.r,(clientX-rect.left)/rect.width*view.width));
-    let nearest=view.pts[0],dist=Infinity;
-    for(const p of view.pts){
-      const d=Math.abs(p.x-svgX);
-      if(d<dist){dist=d;nearest=p;}
-    }
-    paintPoint(nearest,true);
-  }
-
-  function reset(){paintPoint(latest,false);}
-
-  host.onpointermove=e=>{
-    if(e.pointerType==="touch")return;
-    showAt(e.clientX);
-  };
-  host.onpointerdown=e=>showAt(e.clientX);
-  host.onpointerleave=reset;
-  host.onpointercancel=reset;
-  reset();
-}
-function bindRiverWindowControls(){
-  const wrap=$("#riverWindowChips");
-  if(!wrap||wrap.dataset.bound==="1")return;
-  wrap.dataset.bound="1";
-  wrap.addEventListener("click",e=>{
-    const btn=e.target.closest("[data-river-window]");
-    if(!btn)return;
-    riverWindowHours=Number(btn.dataset.riverWindow)||24;
-    renderRiverChart(state.riverStatus?.series||[]);
-  });
-}
-
-function renderRiverStatus(){
-  const d=state.riverStatus;
-  const badge=$("#riverStatusBadge");
-  const value=$("#riverLevelValue"),trend=$("#riverTrend"),variation=$("#riverVariation"),updated=$("#riverUpdated"),fresh=$("#riverFreshness");
-  if(!badge||!value)return;
-  bindRiverWindowControls();
-
-  const connection=d?.connection_state||"source_not_configured";
-  const latest=d?.latest||null;
-  const status=d?.status||"unknown";
-  badge.className=`river-status-badge ${status}`;
-  badge.textContent=riverStatusLabel(status);
-
-  if(latest){
-    value.textContent=`${Number(latest.level_m).toFixed(2).replace(".",",")} m`;
-    trend.className=`river-trend ${d?.trend||"unknown"}`;
-    trend.textContent=riverTrendLabel(d?.trend);
-    variation.textContent=`Variação em 1 hora: ${formatRiverDelta(d?.variation_1h_m)}`;
-    updated.textContent=latest.stale
-      ?`Dado desatualizado • medição de ${formatRiverTime(latest.measured_at)}`
-      :`Atualizado: ${formatRiverTime(latest.measured_at)}`;
-    fresh.textContent=riverFreshnessText(latest);
-    renderRiverChart(d?.series||[]);
-  }else{
-    value.textContent="—";
-    trend.className="river-trend unknown";
-    trend.textContent=connection==="source_not_configured"?"Fonte estruturada ainda não confirmada":"Sem medição disponível";
-    variation.textContent="Variação em 1 hora: —";
-    updated.textContent=connection==="source_not_configured"
-      ?"Backend pronto; ingestão automática permanece desativada até validar o endpoint oficial."
-      :"Aguardando nova medição.";
-    fresh.textContent="Nenhuma medição armazenada.";
-    renderRiverChart([]);
-  }
-}
-async function loadRiverStatus(){
-  if(!state.user)return;
-  try{
-    const {data,error}=await db.functions.invoke("river-biguacu-status",{method:"GET"});
-    if(error)throw error;
-    state.riverStatus=data||null;
-  }catch(e){
-    console.warn("Rio Biguaçu:",e);
-    state.riverStatus={connection_state:"unavailable",latest:null,status:"unknown",trend:"unknown",series:[]};
-  }
-  renderRiverStatus();
-}
-function scheduleRiverRefresh(){
-  clearTimeout(riverRefreshTimer);
-  riverRefreshTimer=setTimeout(async()=>{
-    if(document.visibilityState==="visible")await loadRiverStatus();
-    scheduleRiverRefresh();
-  },15*60*1000);
-}
-
-function weatherIconForCode(code,isDay=1){
-  const c=Number(code), day=Number(isDay)===1;
-  if(c===0) return day?"☀️":"🌙";
-  if(c===1) return day?"🌤️":"🌙";
-  if(c===2) return day?"⛅":"☁️";
-  if(c===3) return "☁️";
-  if([45,48].includes(c)) return "🌫️";
-  if([51,53,55,56,57].includes(c)) return day?"🌦️":"🌧️";
-  if([61,63,66,80,81].includes(c)) return "🌦️";
-  if([65,67,82].includes(c)) return "🌧️";
-  if([71,73,75,77,85,86].includes(c)) return "❄️";
-  if([95,96,99].includes(c)) return day?"⛈️":"🌩️";
-  return day?"🌤️":"🌙";
-}
-
-const WEATHER_CACHE_KEY="monitora_weather_v1";
-let weatherRefreshTimer=null;
-function renderWeatherSnapshot(snapshot){
-  if(!snapshot)return;
-  const rainText=`${Number(snapshot.rain||0).toFixed(1)} mm`;
-  const chanceText=`${Number(snapshot.prob||0)}%`;
-  const tempText=`${Math.round(Number(snapshot.temp)||0)}°`;
-  $("#rain6h").textContent=rainText;
-  if($("#rainChance"))$("#rainChance").textContent=`até ${chanceText} de chance`;
-  $("#weatherTemp").textContent=tempText;
-  $("#weatherHeadline").textContent="Biguaçu agora";
-  $("#topWeatherRain").textContent=rainText;
-  $("#weatherDetail").textContent=snapshot.detail||"Previsão local";
-  if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=snapshot.icon||"🌤️";
-  if($("#desktopRain6h"))$("#desktopRain6h").textContent=rainText;
-}
-function loadCachedWeather(){
-  try{
-    const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
-    if(cached&&Date.now()-Number(cached.saved_at||0)<60*60*1000)renderWeatherSnapshot(cached);
-  }catch(_){}
-}
-function scheduleWeatherRefresh(){
-  clearTimeout(weatherRefreshTimer);
-  weatherRefreshTimer=setTimeout(async()=>{
-    if(document.visibilityState==="visible")await loadWeather();
-    scheduleWeatherRefresh();
-  },15*60*1000);
-}
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"){
-    try{
-      const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
-      if(!cached||Date.now()-Number(cached.saved_at||0)>10*60*1000)loadWeather();
-    }catch(_){loadWeather();}
-    loadRiverStatus();
-  }
-});
-
-async function loadWeather(){
-  try{
-    const lat=-27.48755, lon=-48.66852;
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,weather_code,is_day&hourly=precipitation,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=America%2FSao_Paulo`;
-    const r=await fetch(url);
-    if(!r.ok)throw new Error('weather');
-    const w=await r.json();
-    const nowIdx=Math.max(0,w.hourly.time.findIndex(t=>new Date(t)>=new Date()));
-    const rain=w.hourly.precipitation.slice(nowIdx,nowIdx+6).reduce((a,b)=>a+(Number(b)||0),0);
-    const prob=Math.max(...w.hourly.precipitation_probability.slice(nowIdx,nowIdx+6).map(Number),0);
-    const temp=Math.round(Number(w.current.temperature_2m)||0);
-    const max=Math.round(Number(w.daily?.temperature_2m_max?.[0])||temp);
-    const min=Math.round(Number(w.daily?.temperature_2m_min?.[0])||temp);
-    let summary='Sem chuva significativa nas próximas 6h';
-    if(rain>=20) summary='Chuva forte prevista nas próximas 6h';
-    else if(rain>=5) summary='Há previsão de chuva nas próximas 6h';
-    else if(prob>=50) summary='Chance de chuva nas próximas 6h';
-    $("#rain6h").textContent=`${rain.toFixed(1)} mm`;
-    if($("#rainChance")) $("#rainChance").textContent=`até ${prob}% de chance`;
-    $("#weatherTemp").textContent=`${temp}°`;
-    $("#weatherHeadline").textContent='Biguaçu agora';
-    $("#topWeatherRain").textContent=`${rain.toFixed(1)} mm`;
-    const weatherDetail=`${summary} • ${prob}% • ${max}°/${min}°`;
-    const weatherIcon=weatherIconForCode(w.current.weather_code,w.current.is_day);
-    $("#weatherDetail").textContent=weatherDetail;
-    if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=weatherIcon;
-    if($("#desktopRain6h"))$("#desktopRain6h").textContent=`${rain.toFixed(1)} mm`;
-    try{
-      localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify({
-        saved_at:Date.now(),rain,prob,temp,detail:weatherDetail,icon:weatherIcon
-      }));
-    }catch(_){}
-  }catch(e){
-    console.warn(e);
-    let restored=false;
-    try{
-      const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
-      if(cached){
-        renderWeatherSnapshot(cached);
-        if($("#weatherDetail"))$("#weatherDetail").textContent=`${cached.detail||"Previsão salva"} • atualização anterior`;
-        restored=true;
-      }
-    }catch(_){}
-    if(!restored){
-      $("#rain6h").textContent="—";
-      if($("#rainChance"))$("#rainChance").textContent="Previsão indisponível";
-      $("#weatherTemp").textContent="—";
-      $("#weatherHeadline").textContent="Biguaçu agora";
-      $("#topWeatherRain").textContent="—";
-      $("#weatherDetail").textContent="Previsão temporariamente indisponível";
-      if($("#topWeatherIcon"))$("#topWeatherIcon").textContent="🌥️";
-    }
-  }
-  renderPushSettings();
-}
-
-
-function isIOSDevice(){
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
-}
-function isStandaloneApp(){
-  return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone===true;
-}
-function pushSupported(){
-  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-}
-function base64UrlToUint8Array(base64String){
-  const padding="=".repeat((4-base64String.length%4)%4);
-  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
-  const raw=atob(base64);
-  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
-}
-function subscriptionKeys(subscription){
-  const json=subscription.toJSON();
-  return {
-    endpoint:subscription.endpoint,
-    p256dh:json.keys?.p256dh||"",
-    auth:json.keys?.auth||""
-  };
-}
-async function invokePushSubscribe(action,subscription,minSeverity=state.pushMinSeverity){
-  if(!subscription)return;
-  const keys=subscriptionKeys(subscription);
-  const {error}=await db.functions.invoke("push-subscribe",{body:{
-    action,
-    endpoint:keys.endpoint,
-    p256dh:keys.p256dh,
-    auth:keys.auth,
-    min_severity:minSeverity,
-    user_agent:navigator.userAgent
-  }});
-  if(error)throw error;
-}
-async function currentBrowserPushSubscription(){
-  if(!pushSupported())return null;
-  const reg=await navigator.serviceWorker.ready;
-  return await reg.pushManager.getSubscription();
-}
-function renderPushSettings(){
-  const toggle=$("#pushToggle"),panel=$("#pushLevelPanel"),status=$("#pushStatusText"),help=$("#pushHelp");
-  if(!toggle)return;
-
-  const supported=pushSupported();
-  const iosNeedsInstall=isIOSDevice()&&!isStandaloneApp();
-  const denied=("Notification" in window)&&Notification.permission==="denied";
-
-  toggle.setAttribute("aria-checked",state.pushEnabled?"true":"false");
-  toggle.classList.toggle("on",state.pushEnabled);
-  toggle.classList.toggle("disabled",!supported||denied||iosNeedsInstall);
-  if(panel)panel.hidden=!state.pushEnabled;
-
-  $$("[data-push-level]").forEach(btn=>btn.classList.toggle("selected",btn.dataset.pushLevel===state.pushMinSeverity));
-
-  if(iosNeedsInstall){
-    status.textContent="Instale o app para ativar";
-    help.textContent="No iPhone, adicione o Monitora à Tela de Início. Depois abra pelo ícone e ative as notificações.";
-    toggle.setAttribute("aria-label","Instalar para ativar notificações");
-  }else if(!supported){
-    status.textContent="Não disponível neste navegador";
-    help.textContent="Este aparelho ou navegador não oferece notificações push.";
-  }else if(denied){
-    status.textContent="Bloqueadas pelo sistema";
-    help.textContent="As notificações foram bloqueadas. Reative nas configurações de notificações do aparelho.";
-  }else if(state.pushEnabled){
-    const labels={attention:"Atenção, Alerta e Crítico",alert:"Alerta e Crítico",critical:"Somente Crítico"};
-    status.textContent="Ativas neste aparelho";
-    help.textContent=`Recebendo: ${labels[state.pushMinSeverity]||labels.attention}.`;
-    toggle.setAttribute("aria-label","Desativar notificações");
-  }else{
-    status.textContent="Desativadas neste aparelho";
-    help.textContent="Ative para receber novas ocorrências mesmo quando o app estiver fechado.";
-    toggle.setAttribute("aria-label","Ativar notificações");
-  }
-}
-async function loadPushSettings(){
-  try{
-    if(!pushSupported()){state.pushEnabled=false;renderPushSettings();return;}
-    const subscription=await currentBrowserPushSubscription();
-    state.pushSubscription=subscription;
-    if(!subscription){state.pushEnabled=false;renderPushSettings();return;}
-
-    const {data,error}=await db.from("push_subscriptions")
-      .select("min_severity,enabled")
-      .eq("endpoint",subscription.endpoint)
-      .eq("user_id",state.user.id)
-      .maybeSingle();
-    if(error)throw error;
-
-    if(data?.enabled){
-      state.pushEnabled=true;
-      state.pushMinSeverity=data.min_severity||"attention";
-      await invokePushSubscribe("subscribe",subscription,state.pushMinSeverity).catch(()=>{});
-    }else{
-      state.pushEnabled=false;
-    }
-  }catch(err){
-    console.warn("Push settings:",err);
-    state.pushEnabled=false;
-  }
-  renderPushSettings();
-}
-async function enablePushNotifications(){
-  if(isIOSDevice()&&!isStandaloneApp()){
-    renderPushSettings();
-    handleInstall();
-    return;
-  }
-  if(!pushSupported()){
-    toast("Notificações não são compatíveis com este navegador.");
-    return;
-  }
-  if(Notification.permission==="denied"){
-    renderPushSettings();
-    toast("As notificações estão bloqueadas nas configurações do aparelho.");
-    return;
-  }
-
-  const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
-  if(permission!=="granted"){
-    state.pushEnabled=false;
-    renderPushSettings();
-    return;
-  }
-
-  const reg=await navigator.serviceWorker.ready;
-  let subscription=await reg.pushManager.getSubscription();
-  if(!subscription){
-    subscription=await reg.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey:base64UrlToUint8Array(PUSH_VAPID_PUBLIC_KEY)
-    });
-  }
-  await invokePushSubscribe("subscribe",subscription,state.pushMinSeverity);
-  state.pushSubscription=subscription;
-  state.pushEnabled=true;
-  renderPushSettings();
-  try{
-    await reg.showNotification("Notificações ativadas",{
-      body:"O Monitora Deltaville avisará conforme o grau escolhido.",
-      icon:"assets/icon-192.png",
-      badge:"assets/icon-192.png",
-      tag:"monitora-push-enabled"
-    });
-  }catch(_){}
-}
-async function disablePushNotifications({silent=false}={}){
-  try{
-    const subscription=state.pushSubscription||await currentBrowserPushSubscription();
-    if(subscription){
-      await invokePushSubscribe("unsubscribe",subscription,state.pushMinSeverity).catch(()=>{});
-      await subscription.unsubscribe().catch(()=>{});
-    }
-  }finally{
-    state.pushSubscription=null;
-    state.pushEnabled=false;
-    renderPushSettings();
-    if(!silent)toast("Notificações desativadas neste aparelho.");
-  }
-}
-async function togglePushNotifications(){
-  try{
-    if(state.pushEnabled)await disablePushNotifications();
-    else await enablePushNotifications();
-  }catch(err){
-    console.error(err);
-    toast("Não foi possível alterar as notificações.");
-    await loadPushSettings();
-  }
-}
-async function setPushMinimumSeverity(level){
-  if(!["attention","alert","critical"].includes(level))return;
-  state.pushMinSeverity=level;
-  localStorage.setItem("monitora_push_level",level);
-  renderPushSettings();
-  try{
-    if(state.pushEnabled){
-      const subscription=state.pushSubscription||await currentBrowserPushSubscription();
-      if(subscription)await invokePushSubscribe("subscribe",subscription,level);
-    }
-  }catch(err){
-    console.error(err);
-    toast("Não foi possível salvar a preferência.");
-  }
-}
-async function sendOccurrencePush(ids){
-  if(!Array.isArray(ids)||!ids.length)return;
-  const {error}=await db.functions.invoke("push-occurrence",{body:{occurrence_ids:ids}});
-  if(error)throw error;
-}
-async function notifyLocal(title,body){
-  if(!("Notification" in window)||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
-  try{
-    const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification(title,{body,icon:"assets/icon-192.png",badge:"assets/icon-192.png",tag:"monitora-local"});
-  }catch(_){}
-}
-function handlePushDeepLink(){
-  const url=new URL(location.href);
-  const occurrenceId=url.searchParams.get("occurrence");
-  if(!occurrenceId)return;
-  url.searchParams.delete("occurrence");
-  history.replaceState({}, "", url.pathname+url.search+url.hash);
-  setTimeout(()=>focusOccurrenceOnMap(occurrenceId),300);
-}
-
 let realtimeRefreshTimer=null;
-function scheduleRealtimeRefresh(){
+const realtimePendingSources=new Set();
+function scheduleRealtimeRefresh(keys=["occurrences","recentResolved","alerts"]){
+  keys.forEach(key=>realtimePendingSources.add(key));
+  if(document.visibilityState!=="visible"||!navigator.onLine){state.realtimeDirty=true;return;}
   clearTimeout(realtimeRefreshTimer);
   realtimeRefreshTimer=setTimeout(async()=>{
-    await loadDataSafe();
+    if(dataLoadInFlight)await dataLoadInFlight;
+    const sources=[...realtimePendingSources];realtimePendingSources.clear();
+    if(sources.length)await loadDataSafe(sources);
     renderAll();
-  },220);
+  },1000);
 }
 function subscribeRealtime(){
   if(state.realtimeChannel)db.removeChannel(state.realtimeChannel).catch(()=>{});
   state.realtimeChannel=db.channel("monitora-community")
     .on("postgres_changes",{event:"*",schema:"public",table:"occurrences"},payload=>{
-      scheduleRealtimeRefresh();
+      scheduleRealtimeRefresh(["occurrences","recentResolved"]);
       // Ocorrências novas usam Web Push no servidor; evitamos duplicar notificações em primeiro plano.
     })
     .on("postgres_changes",{event:"*",schema:"public",table:"alerts"},payload=>{
-      scheduleRealtimeRefresh();
+      scheduleRealtimeRefresh(["alerts"]);
       if(payload.eventType==="INSERT")notifyLocal("Novo alerta no Monitora Deltaville",payload.new?.title||"Há um novo alerta ativo.");
     }).subscribe();
 }
+window.addEventListener("offline",()=>{renderConnection();if(state.initialized)renderStatus();});
+window.addEventListener("online",async()=>{
+  if(!state.initialized){await bootstrap();return;}
+  await loadDataSafe();renderAll();await loadRiverStatus();
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&state.initialized){
+    renderConnection();renderStatus();
+    if(state.realtimeDirty){state.realtimeDirty=false;scheduleRealtimeRefresh();}
+  }
+});
+// Keep expiry semantics accurate even without database events.
+setInterval(()=>{if(state.initialized&&document.visibilityState==="visible"){renderStatus();renderAll();}},60000);
+// Offline submissions are never queued or reported as successful.
+document.addEventListener("submit",event=>{
+  if(!navigator.onLine){event.preventDefault();event.stopImmediatePropagation();toast("Sem conexão. Reconecte para enviar; seus campos continuam preenchidos.");}
+},true);
 function startSmartVoice(){
   const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!Recognition){toast("Use o microfone do teclado do iPhone para ditar a ocorrência.");return;}
@@ -3478,3 +2766,4 @@ bootstrap();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindProfileShortcut,{once:true});
   else bindProfileShortcut();
 })();
+

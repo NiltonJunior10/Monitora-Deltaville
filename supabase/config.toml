@@ -1,0 +1,18 @@
+[functions.resident-access]
+verify_jwt = false
+
+[functions.river-biguacu-sync]
+verify_jwt = false
+
+[functions.river-biguacu-status]
+verify_jwt = true
+
+[functions.push-subscribe]
+verify_jwt = true
+
+[functions.push-occurrence]
+verify_jwt = true
+
+[functions.app-config]
+verify_jwt = true
+

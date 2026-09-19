@@ -1,9 +1,19 @@
-const CACHE="monitora-deltaville-v502-ux-review";
+const CACHE="monitora-deltaville-v510-stability";
 const APP_SHELL=[
+  "https://unpkg.com/@supabase/supabase-js@2.113.0",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "./",
   "./index.html",
-  "./styles.css?v=502",
-  "./app.js?v=502",
+  "./styles.css?v=510",
+  "./stability.css?v=510",
+  "./auth.js?v=510",
+  "./river.js?v=510",
+  "./weather.js?v=510",
+  "./push.js?v=510",
+  "./app.js?v=510",
+  "./stability-core.js?v=510",
+  "./theme-init.js?v=510",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
@@ -24,7 +34,7 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
-      .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+      .then(keys=>Promise.all(keys.filter(key=>key.startsWith("monitora-deltaville-")&&key!==CACHE).map(key=>caches.delete(key))))
       .then(()=>self.clients.claim())
   );
 });
@@ -33,6 +43,7 @@ async function networkFirst(request,fallbackUrl){
   const cache=await caches.open(CACHE);
   try{
     const response=await fetch(request);
+    if(!response.ok)throw new Error("Navigation temporarily unavailable");
     if(response&&response.ok)await cache.put(request,response.clone());
     return response;
   }catch(_){
@@ -107,7 +118,8 @@ self.addEventListener("push",event=>{
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
   const rawUrl=event.notification.data?.url||"./";
-  const target=new URL(rawUrl,self.location.origin).href;
+  let target=new URL("./",self.location.origin).href;
+  try{const parsed=new URL(rawUrl,self.location.origin);if(parsed.origin===self.location.origin)target=parsed.href;}catch(_){}
 
   event.waitUntil(
     self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{
@@ -121,3 +133,4 @@ self.addEventListener("notificationclick",event=>{
     })
   );
 });
+

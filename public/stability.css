@@ -1,0 +1,22 @@
+/* v5.1.0: isolated accessibility and connection styles. */
+#connectionNotice{position:sticky;top:0;z-index:2100;background:#fff0cc;color:#583b00;padding:10px 16px;text-align:center;font-size:14px;line-height:1.5}
+#connectionNotice[hidden]{display:none}
+#monitoringSources p,#homeMonitoringSources p{font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.desktop-monitor-card h3{font-size:15px;margin:20px 0 8px}
+html{touch-action:manipulation}
+input,select,textarea{font-size:16px}
+select option{background:#fff;color:#16283f}
+:root[data-theme="dark"] select option{background:#17283d;color:#edf4ff}
+:root[data-theme="dark"] .form label,:root[data-theme="dark"] .form legend,:root[data-theme="dark"] .access-sheet label{color:#c5d5e9!important}
+.desktop-kpi:not(.desktop-kpi-status) strong,.desktop-kpi:not(.desktop-kpi-status) small{display:block}
+.desktop-kpi:not(.desktop-kpi-status) small{margin-top:4px!important}
+:root[data-theme="dark"] .desktop-kpi-icon.attention{background:#493a17!important;color:#ffdc7b!important}
+:root[data-theme="dark"] .desktop-kpi-icon.alert{background:#4b2e1c!important;color:#ffbb88!important}
+:root[data-theme="dark"] .desktop-kpi-icon.critical{background:#4b2631!important;color:#ffb2c1!important}
+:root[data-theme="dark"] #connectionNotice{background:#493a17;color:#ffe6a6}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #5aa9ff;outline-offset:3px}
+.status-card,.desktop-kpi{min-width:0}
+#overallStatus,#desktopOverallStatus{overflow-wrap:anywhere}
+@media(max-width:480px){#connectionNotice{font-size:13px}.grid2{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
