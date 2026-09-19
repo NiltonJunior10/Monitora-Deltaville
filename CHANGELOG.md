@@ -1,3 +1,10 @@
+# v6.0.5 — Cabeçalho mobile compacto
+
+- Reduz o cabeçalho mobile para aproximadamente 52–54 pt.
+- Diminui logo e sino mantendo área de toque confortável.
+- Remove o excesso de espaço vazio entre a barra superior e o card de clima.
+- Reduz o padding superior do conteúdo no iPhone.
+
 # v6.0.4 — Previsão do tempo mobile
 
 - Corrige a sobreposição mostrada no iPhone entre “Próx. 6h”, chuva e resumo da previsão.
