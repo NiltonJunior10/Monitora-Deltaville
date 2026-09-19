@@ -974,79 +974,250 @@ function bindMapPointSelection(){
   state.mapInteractionBound=true;
   const map=state.maps.full;
   const container=map.getContainer();
+  let suppressClickUntil=0;
+  let touchGesture=null;
+  let mouseGesture=null;
 
-  // Modo explícito: ativa "Marcar ponto exato" e toca uma vez.
+  const clientToLatLng=(x,y)=>{
+    const rect=container.getBoundingClientRect();
+    return map.containerPointToLatLng(L.point(x-rect.left,y-rect.top));
+  };
+
+  const restoreMapGestures=()=>{
+    try{map.dragging.enable();}catch(_){}
+    try{map.touchZoom.enable();}catch(_){}
+    try{map.doubleClickZoom.enable();}catch(_){}
+    container.classList.remove("road-drag-selecting");
+  };
+
+  const removeLiveLayers=gesture=>{
+    for(const layer of gesture?.liveLayers||[]){
+      try{layer.remove();}catch(_){}
+    }
+    if(gesture)gesture.liveLayers=[];
+  };
+
+  const updateLiveRoadSelection=gesture,latlng=>{
+    if(!gesture?.active||!gesture.avenue)return;
+    const projection=projectPointOnRoute(latlng,gesture.avenue.pts);
+    gesture.currentProjection=projection;
+    state.selectedSegment={
+      avenueId:gesture.avenue.loc.id,
+      startRatio:gesture.startProjection.ratio,
+      endRatio:projection.ratio
+    };
+    const section=subRoute(
+      gesture.avenue.pts,
+      gesture.startProjection.ratio,
+      projection.ratio
+    );
+    if(!gesture.liveLayers?.length){
+      const halo=L.polyline(section,{
+        color:"#FFFFFF",weight:24,opacity:.72,lineCap:"round",lineJoin:"round",
+        interactive:false,className:"road-drag-halo"
+      }).addTo(map);
+      const band=L.polyline(section,{
+        color:"#0A84FF",weight:16,opacity:.46,lineCap:"round",lineJoin:"round",
+        interactive:false,className:"road-drag-band"
+      }).addTo(map);
+      const core=L.polyline(section,{
+        color:"#65D5FF",weight:7,opacity:.95,lineCap:"round",lineJoin:"round",
+        interactive:false,className:"road-drag-core"
+      }).addTo(map);
+      gesture.liveLayers=[halo,band,core];
+    }else{
+      gesture.liveLayers.forEach(layer=>layer.setLatLngs(section));
+    }
+    const delta=Math.abs(projection.ratio-gesture.startProjection.ratio);
+    gesture.dragged=delta>.006;
+    if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=gesture.avenue.loc.name;
+    if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent=gesture.dragged?"Solte para marcar este trecho":"Arraste pela via";
+  };
+
+  const activateLongPress=(gesture)=>{
+    if(!gesture||gesture.cancelled)return;
+    const latlng=clientToLatLng(gesture.startX,gesture.startY);
+    const avenue=nearestAvenueProjection(latlng,82);
+    gesture.active=true;
+    gesture.startLatLng=latlng;
+    gesture.avenue=avenue;
+    suppressClickUntil=Date.now()+900;
+
+    try{map.dragging.disable();}catch(_){}
+    try{map.touchZoom.disable();}catch(_){}
+    try{map.doubleClickZoom.disable();}catch(_){}
+    container.classList.add("road-drag-selecting");
+    hideMapFocusCard?.();
+
+    if(avenue){
+      clearSelectedPoint({silent:true});
+      clearSegmentSelection({silent:true});
+      gesture.startProjection=avenue.projection;
+      gesture.currentProjection=avenue.projection;
+      gesture.liveLayers=[];
+      state.selectedSegment={
+        avenueId:avenue.loc.id,
+        startRatio:avenue.projection.ratio,
+        endRatio:avenue.projection.ratio
+      };
+      if(!state.reportLocationIds.includes(avenue.loc.id))state.reportLocationIds.push(avenue.loc.id);
+      if($("#selectedSegmentAction"))$("#selectedSegmentAction").hidden=false;
+      if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=avenue.loc.name;
+      if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Arraste pela via";
+      try{navigator.vibrate?.(18);}catch(_){}
+    }else{
+      gesture.pointOnly=true;
+      try{navigator.vibrate?.(12);}catch(_){}
+    }
+  };
+
+  const finishLongPress=(gesture,endX,endY)=>{
+    clearTimeout(gesture?.timer);
+    if(!gesture)return false;
+    if(!gesture.active)return false;
+
+    suppressClickUntil=Date.now()+700;
+    if(gesture.avenue){
+      const endLatLng=clientToLatLng(endX??gesture.startX,endY??gesture.startY);
+      updateLiveRoadSelection(gesture,endLatLng);
+      removeLiveLayers(gesture);
+
+      if(gesture.dragged){
+        state.segmentPickMode=null;
+        renderSelectedSegmentLayers();
+        updateSegmentUI();
+        if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=gesture.avenue.loc.name;
+        if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Trecho delimitado • ajuste pelas alças";
+        toast(`Trecho marcado em ${gesture.avenue.loc.name}.`);
+        try{navigator.vibrate?.([12,24,12]);}catch(_){}
+      }else{
+        clearSegmentSelection({silent:true});
+        setSelectedPoint(gesture.startLatLng);
+      }
+    }else{
+      setSelectedPoint(gesture.startLatLng);
+    }
+
+    restoreMapGestures();
+    return true;
+  };
+
+  const cancelGesture=gesture=>{
+    if(!gesture)return;
+    clearTimeout(gesture.timer);
+    gesture.cancelled=true;
+    removeLiveLayers(gesture);
+    if(gesture.active&&gesture.avenue&&!gesture.dragged){
+      clearSegmentSelection({silent:true});
+    }
+    restoreMapGestures();
+  };
+
   map.on("click",e=>{
-    if(state.segmentPickMode?.active){ setSelectedSegmentPoint(e.latlng); return; }
+    if(Date.now()<suppressClickUntil)return;
+    if(state.segmentPickMode?.active){setSelectedSegmentPoint(e.latlng);return;}
     if(!state.pointPickMode)return;
     setSelectedPoint(e.latlng);
   });
 
-  // Desktop / clique direito / long press reconhecido pelo Leaflet.
   map.on("contextmenu",e=>{
     if(e.originalEvent?.preventDefault)e.originalEvent.preventDefault();
-    if(state.segmentPickMode?.active){ setSelectedSegmentPoint(e.latlng); return; }
-    setSelectedPoint(e.latlng);
+    if(state.segmentPickMode?.active){setSelectedSegmentPoint(e.latlng);return;}
+    const avenue=nearestAvenueProjection(e.latlng,72);
+    if(avenue){
+      clearSelectedPoint({silent:true});
+      clearSegmentSelection({silent:true});
+      state.selectedSegment={avenueId:avenue.loc.id,startRatio:avenue.projection.ratio,endRatio:avenue.projection.ratio};
+      renderSelectedSegmentLayers();
+      updateSegmentUI();
+    }else setSelectedPoint(e.latlng);
   });
 
-  const clearTimer=()=>{
-    clearTimeout(state.mapLongPressTimer);
-    state.mapLongPressTimer=null;
-    state.pointerStart=null;
-  };
-  const markAtClientPoint=(x,y)=>{
-    const rect=container.getBoundingClientRect();
-    const p=L.point(x-rect.left,y-rect.top);
-    const latlng=map.containerPointToLatLng(p);
-    if(state.segmentPickMode?.active){ setSelectedSegmentPoint(latlng); return; }
-    setSelectedPoint(latlng);
-  };
-
-  // iPhone/iPad/Android: touchstart é mais previsível que depender só de pointer events.
-  let touchStart=null, touchTimer=null, touchMarked=false;
+  // iPhone/iPad/Android: hold ~430 ms, then drag. During the active gesture
+  // map panning is suspended and the selection snaps to the detected avenue.
   container.addEventListener("touchstart",ev=>{
     if(ev.touches.length!==1||ev.target.closest(".leaflet-control"))return;
     const t=ev.touches[0];
-    touchMarked=false;
-    touchStart={x:t.clientX,y:t.clientY};
-    clearTimeout(touchTimer);
-    touchTimer=setTimeout(()=>{
-      if(!touchStart)return;
-      touchMarked=true;
-      markAtClientPoint(touchStart.x,touchStart.y);
-      touchStart=null;
-    },560);
+    touchGesture={
+      startX:t.clientX,startY:t.clientY,lastX:t.clientX,lastY:t.clientY,
+      active:false,cancelled:false,dragged:false,liveLayers:[]
+    };
+    touchGesture.timer=setTimeout(()=>activateLongPress(touchGesture),430);
   },{passive:true});
-  container.addEventListener("touchmove",ev=>{
-    if(!touchStart||ev.touches.length!==1)return;
-    const t=ev.touches[0];
-    if(Math.hypot(t.clientX-touchStart.x,t.clientY-touchStart.y)>14){
-      clearTimeout(touchTimer);touchTimer=null;touchStart=null;
-    }
-  },{passive:true});
-  const endTouch=()=>{clearTimeout(touchTimer);touchTimer=null;touchStart=null;};
-  container.addEventListener("touchend",endTouch,{passive:true});
-  container.addEventListener("touchcancel",endTouch,{passive:true});
 
-  // Mouse/pen fallback. Em dispositivos touch evitamos duplicar com touchstart.
+  container.addEventListener("touchmove",ev=>{
+    if(!touchGesture||ev.touches.length!==1)return;
+    const t=ev.touches[0];
+    touchGesture.lastX=t.clientX;touchGesture.lastY=t.clientY;
+    const moved=Math.hypot(t.clientX-touchGesture.startX,t.clientY-touchGesture.startY);
+
+    if(!touchGesture.active){
+      if(moved>13){
+        clearTimeout(touchGesture.timer);
+        touchGesture.cancelled=true;
+        touchGesture=null;
+      }
+      return;
+    }
+
+    // Once long-press is active, finger movement belongs to route selection,
+    // not to Leaflet's pan gesture.
+    ev.preventDefault();
+    if(touchGesture.avenue){
+      updateLiveRoadSelection(touchGesture,clientToLatLng(t.clientX,t.clientY));
+    }
+  },{passive:false});
+
+  container.addEventListener("touchend",ev=>{
+    if(!touchGesture)return;
+    const t=ev.changedTouches?.[0];
+    const gesture=touchGesture;
+    touchGesture=null;
+    if(gesture.cancelled){cancelGesture(gesture);return;}
+    finishLongPress(gesture,t?.clientX??gesture.lastX,t?.clientY??gesture.lastY);
+  },{passive:false});
+
+  container.addEventListener("touchcancel",()=>{
+    const gesture=touchGesture;touchGesture=null;cancelGesture(gesture);
+  },{passive:false});
+
+  // Mouse/pen: same hold-and-drag behavior.
   if(!("ontouchstart" in window)){
     container.addEventListener("pointerdown",ev=>{
-      if(ev.target.closest(".leaflet-control"))return;
-      state.pointerStart={x:ev.clientX,y:ev.clientY};
-      clearTimeout(state.mapLongPressTimer);
-      state.mapLongPressTimer=setTimeout(()=>{
-        if(!state.pointerStart)return;
-        markAtClientPoint(state.pointerStart.x,state.pointerStart.y);
-        clearTimer();
-      },560);
+      if(ev.button!==0||ev.target.closest(".leaflet-control"))return;
+      mouseGesture={
+        startX:ev.clientX,startY:ev.clientY,lastX:ev.clientX,lastY:ev.clientY,
+        active:false,cancelled:false,dragged:false,liveLayers:[],pointerId:ev.pointerId
+      };
+      mouseGesture.timer=setTimeout(()=>activateLongPress(mouseGesture),430);
     },{passive:true});
+
     container.addEventListener("pointermove",ev=>{
-      if(!state.pointerStart)return;
-      if(Math.hypot(ev.clientX-state.pointerStart.x,ev.clientY-state.pointerStart.y)>14)clearTimer();
+      if(!mouseGesture)return;
+      mouseGesture.lastX=ev.clientX;mouseGesture.lastY=ev.clientY;
+      const moved=Math.hypot(ev.clientX-mouseGesture.startX,ev.clientY-mouseGesture.startY);
+      if(!mouseGesture.active){
+        if(moved>13){clearTimeout(mouseGesture.timer);mouseGesture=null;}
+        return;
+      }
+      if(mouseGesture.avenue)updateLiveRoadSelection(mouseGesture,clientToLatLng(ev.clientX,ev.clientY));
     },{passive:true});
-    container.addEventListener("pointerup",clearTimer,{passive:true});
-    container.addEventListener("pointercancel",clearTimer,{passive:true});
-    container.addEventListener("pointerleave",clearTimer,{passive:true});
+
+    container.addEventListener("pointerup",ev=>{
+      const gesture=mouseGesture;mouseGesture=null;
+      if(!gesture)return;
+      finishLongPress(gesture,ev.clientX,ev.clientY);
+    },{passive:true});
+
+    container.addEventListener("pointercancel",()=>{
+      const gesture=mouseGesture;mouseGesture=null;cancelGesture(gesture);
+    },{passive:true});
+
+    container.addEventListener("pointerleave",ev=>{
+      if(!mouseGesture||!mouseGesture.active)return;
+      const gesture=mouseGesture;mouseGesture=null;
+      finishLongPress(gesture,ev.clientX,ev.clientY);
+    },{passive:true});
   }
 }
 function renderOccurrencePointMarkers(){
@@ -1172,10 +1343,22 @@ function markerIcon(loc,status,hasOccurrence=false){
 }
 
 const avenueRoutes={
-  "Av. Egídio Abelino Richartz":[[121,293],[121,365],[121,455],[121,545],[121,641]],
-  "Av. Wilson Castelo Branco":[[105,282],[260,282],[430,282],[610,282],[805,282],[1000,282],[1132,282]],
-  "Av. Deltaville":[[650,297],[650,390],[650,485],[650,585],[650,690],[650,840]],
-  "Av. Beira Rio":[[1138,248],[1138,340],[1138,440],[1138,545],[1138,660],[1138,820]]
+  /* Traçados em coordenadas do mapa-base. Mais pontos = snap e seleção mais fiéis à via. */
+  "Av. Egídio Abelino Richartz":[
+    [120,286],[120,330],[120,376],[121,424],[121,474],[121,524],[121,574],[120,624],[120,676]
+  ],
+  "Av. Wilson Castelo Branco":[
+    [102,282],[190,282],[280,282],[370,282],[462,282],[554,282],[646,282],[738,282],
+    [830,282],[922,282],[1014,282],[1104,282],[1194,282]
+  ],
+  "Av. Deltaville":[
+    [650,296],[650,342],[649,389],[649,436],[650,483],[650,530],[650,578],[650,626],
+    [650,674],[650,722],[650,770],[650,818],[650,846]
+  ],
+  "Av. Beira Rio":[
+    [1138,246],[1138,294],[1138,342],[1138,390],[1138,438],[1138,486],[1138,534],
+    [1138,582],[1138,630],[1138,678],[1138,726],[1138,774],[1138,822]
+  ]
 };
 const riverRoute=[
   [1573,302],[1578,370],[1575,450],[1571,535],[1577,620],[1573,710],[1569,805],[1562,895]
@@ -1273,6 +1456,19 @@ function avenuePointsByLocationId(id){
   if(!loc)return null;
   const route=avenueRoutes[loc.name];
   return route?routeToLatLng(route):null;
+}
+
+function nearestAvenueProjection(latlng,maxDistance=72){
+  let best=null;
+  for(const loc of state.locations.filter(item=>item.category==="avenue")){
+    const pts=avenuePointsByLocationId(loc.id);
+    if(!pts||pts.length<2)continue;
+    const projection=projectPointOnRoute(latlng,pts);
+    if(projection.distance<=maxDistance&&(!best||projection.distance<best.projection.distance)){
+      best={loc,pts,projection};
+    }
+  }
+  return best;
 }
 
 const lakeZones={
@@ -1514,8 +1710,8 @@ function renderAvenues(which){
 
     const corridor=L.polyline(points,{
       color,
-      weight:16,
-      opacity:.14,
+      weight:11,
+      opacity:.10,
       lineCap:"round",
       lineJoin:"round",
       interactive:false,
@@ -1524,8 +1720,8 @@ function renderAvenues(which){
 
     const core=L.polyline(points,{
       color,
-      weight:5.5,
-      opacity:.94,
+      weight:3.4,
+      opacity:.78,
       lineCap:"round",
       lineJoin:"round",
       interactive:false,
@@ -1534,8 +1730,8 @@ function renderAvenues(which){
 
     const center=L.polyline(points,{
       color:"#FFFFFF",
-      weight:1.8,
-      opacity:.82,
+      weight:1.15,
+      opacity:.62,
       lineCap:"round",
       interactive:false,
       dashArray:"3 8",
@@ -1544,7 +1740,7 @@ function renderAvenues(which){
 
     const hit=L.polyline(points,{
       color:"#000",
-      weight:24,
+      weight:34,
       opacity:0,
       interactive:true,
       className:"map-hit-target"
