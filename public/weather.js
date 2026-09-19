@@ -1,4 +1,4 @@
-/* v5.1.0: extracted without changing the shared application state contract. */
+/* v6.7.0: previsão local com chuva nas próximas 6h e detalhes expansíveis. */
 function weatherIconForCode(code,isDay=1){
   const c=Number(code), day=Number(isDay)===1;
   if(c===0) return day?"☀️":"🌙";
@@ -16,22 +16,54 @@ function weatherIconForCode(code,isDay=1){
 
 const WEATHER_CACHE_KEY="monitora_weather_v1";
 let weatherRefreshTimer=null;
+
+function weatherHasNumber(value){
+  return value!==null&&value!==undefined&&value!==""&&Number.isFinite(Number(value));
+}
+function weatherSetText(selector,value){
+  const el=$(selector);
+  if(el)el.textContent=value;
+}
 function renderWeatherSnapshot(snapshot){
   if(!snapshot)return;
-  const rainText=`${Number(snapshot.rain||0).toFixed(1)} mm`;
-  const chanceText=`${Number(snapshot.prob||0)}%`;
-  const tempText=`${Math.round(Number(snapshot.temp)||0)}°`;
-  $("#rain6h").textContent=rainText;
-  if($("#rainChance"))$("#rainChance").textContent=`até ${chanceText} de chance`;
-  $("#weatherTemp").textContent=tempText;
-  $("#weatherHeadline").textContent="Biguaçu agora";
-  $("#topWeatherRain").textContent=rainText;
-  $("#weatherDetail").textContent=snapshot.detail||"Previsão local";
-  if($("#v7WeatherTemp"))$("#v7WeatherTemp").textContent=tempText;
-  if($("#v7WeatherSummary"))$("#v7WeatherSummary").textContent=snapshot.short_summary||snapshot.detail||"Previsão local";
-  if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=snapshot.icon||"🌤️";
-  if($("#desktopRain6h"))$("#desktopRain6h").textContent=rainText;
+
+  const rainText=weatherHasNumber(snapshot.rain)?`${Number(snapshot.rain).toFixed(1)} mm`:"—";
+  const chanceText=weatherHasNumber(snapshot.prob)?`${Math.round(Number(snapshot.prob))}%`:"—";
+  const tempText=weatherHasNumber(snapshot.temp)?`${Math.round(Number(snapshot.temp))}°`:"—";
+  const currentRainText=weatherHasNumber(snapshot.currentRain)?`${Number(snapshot.currentRain).toFixed(1)} mm`:"—";
+  const feelsText=weatherHasNumber(snapshot.feelsLike)?`Sensação ${Math.round(Number(snapshot.feelsLike))}°`:"Sensação —";
+  const humidityText=weatherHasNumber(snapshot.humidity)?`Umidade ${Math.round(Number(snapshot.humidity))}%`:"Umidade —";
+  const windText=weatherHasNumber(snapshot.wind)?`Vento ${Math.round(Number(snapshot.wind))} km/h`:"Vento —";
+  const minMaxText=weatherHasNumber(snapshot.max)&&weatherHasNumber(snapshot.min)
+    ?`${Math.round(Number(snapshot.max))}° / ${Math.round(Number(snapshot.min))}°`
+    :"—";
+  const summary=snapshot.short_summary||snapshot.detail||"Previsão local";
+
+  weatherSetText("#rain6h",rainText);
+  weatherSetText("#rainChance",chanceText==="—"?"Previsão indisponível":`até ${chanceText} de chance`);
+  weatherSetText("#weatherTemp",tempText);
+  weatherSetText("#weatherHeadline","Biguaçu agora");
+  weatherSetText("#topWeatherRain",rainText);
+  weatherSetText("#weatherDetail",snapshot.detail||summary);
+  weatherSetText("#topWeatherIcon",snapshot.icon||"🌤️");
+  weatherSetText("#desktopRain6h",rainText);
+
+  // Card principal: prioriza exatamente a chuva prevista nas próximas 6 horas.
+  weatherSetText("#v7WeatherRain",rainText);
+  weatherSetText("#v7WeatherChance",chanceText==="—"?"Chance —":`${chanceText} de chance`);
+
+  // Painel expandido.
+  weatherSetText("#v7WeatherDetailSummary",summary);
+  weatherSetText("#v7WeatherTemp",tempText);
+  weatherSetText("#v7WeatherFeels",feelsText);
+  weatherSetText("#v7WeatherRainDetail",rainText);
+  weatherSetText("#v7WeatherChanceDetail",chanceText==="—"?"Chance —":`Até ${chanceText} de chance`);
+  weatherSetText("#v7WeatherNowRain",currentRainText);
+  weatherSetText("#v7WeatherHumidity",humidityText);
+  weatherSetText("#v7WeatherMinMax",minMaxText);
+  weatherSetText("#v7WeatherWind",windText);
 }
+
 function loadCachedWeather(){
   try{
     const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
@@ -59,37 +91,57 @@ async function loadWeather(){
   state.weatherUnavailable=false;
   try{
     const lat=-27.48755, lon=-48.66852;
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,weather_code,is_day&hourly=precipitation,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=America%2FSao_Paulo`;
+    const currentFields=[
+      "temperature_2m",
+      "relative_humidity_2m",
+      "apparent_temperature",
+      "precipitation",
+      "weather_code",
+      "is_day",
+      "wind_speed_10m"
+    ].join(",");
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=${currentFields}&hourly=precipitation,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=America%2FSao_Paulo`;
     const r=await fetch(url);
-    if(!r.ok)throw new Error('weather');
+    if(!r.ok)throw new Error("weather");
     const w=await r.json();
-    const nowIdx=Math.max(0,w.hourly.time.findIndex(t=>new Date(t)>=new Date()));
-    const rain=w.hourly.precipitation.slice(nowIdx,nowIdx+6).reduce((a,b)=>a+(Number(b)||0),0);
-    const prob=Math.max(...w.hourly.precipitation_probability.slice(nowIdx,nowIdx+6).map(Number),0);
-    const temp=Math.round(Number(w.current.temperature_2m)||0);
-    const max=Math.round(Number(w.daily?.temperature_2m_max?.[0])||temp);
-    const min=Math.round(Number(w.daily?.temperature_2m_min?.[0])||temp);
-    let summary='Sem chuva significativa nas próximas 6h';
-    if(rain>=20) summary='Chuva forte prevista nas próximas 6h';
-    else if(rain>=5) summary='Há previsão de chuva nas próximas 6h';
-    else if(prob>=50) summary='Chance de chuva nas próximas 6h';
-    $("#rain6h").textContent=`${rain.toFixed(1)} mm`;
-    if($("#rainChance")) $("#rainChance").textContent=`até ${prob}% de chance`;
-    $("#weatherTemp").textContent=`${temp}°`;
-    $("#weatherHeadline").textContent='Biguaçu agora';
-    $("#topWeatherRain").textContent=`${rain.toFixed(1)} mm`;
-    const weatherDetail=`${summary} • ${prob}% • ${max}°/${min}°`;
-    const weatherIcon=weatherIconForCode(w.current.weather_code,w.current.is_day);
-    $("#weatherDetail").textContent=weatherDetail;
-    if($("#v7WeatherTemp"))$("#v7WeatherTemp").textContent=`${temp}°`;
-    if($("#v7WeatherSummary"))$("#v7WeatherSummary").textContent=summary;
-    if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=weatherIcon;
-    if($("#desktopRain6h"))$("#desktopRain6h").textContent=`${rain.toFixed(1)} mm`;
-    try{
-      localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify({
-        saved_at:Date.now(),rain,prob,temp,detail:weatherDetail,short_summary:summary,icon:weatherIcon
-      }));
-    }catch(_){}
+
+    let nowIdx=w.hourly.time.findIndex(t=>new Date(t)>=new Date());
+    if(nowIdx<0)nowIdx=Math.max(0,w.hourly.time.length-6);
+
+    const nextRain=(w.hourly.precipitation||[]).slice(nowIdx,nowIdx+6);
+    const nextProbability=(w.hourly.precipitation_probability||[]).slice(nowIdx,nowIdx+6);
+    const rain=nextRain.reduce((a,b)=>a+(Number(b)||0),0);
+    const prob=Math.max(...nextProbability.map(Number).filter(Number.isFinite),0);
+
+    const temp=Number(w.current?.temperature_2m);
+    const currentRain=Number(w.current?.precipitation);
+    const humidity=Number(w.current?.relative_humidity_2m);
+    const feelsLike=Number(w.current?.apparent_temperature);
+    const wind=Number(w.current?.wind_speed_10m);
+    const max=Number(w.daily?.temperature_2m_max?.[0]);
+    const min=Number(w.daily?.temperature_2m_min?.[0]);
+
+    let summary="Sem chuva significativa nas próximas 6h";
+    if(rain>=20)summary="Chuva forte prevista nas próximas 6h";
+    else if(rain>=5)summary="Há previsão de chuva nas próximas 6h";
+    else if(prob>=50)summary="Chance de chuva nas próximas 6h";
+
+    const weatherIcon=weatherIconForCode(w.current?.weather_code,w.current?.is_day);
+    const tempLabel=Number.isFinite(temp)?`${Math.round(temp)}°`:"—";
+    const maxLabel=Number.isFinite(max)?`${Math.round(max)}°`:"—";
+    const minLabel=Number.isFinite(min)?`${Math.round(min)}°`:"—";
+    const weatherDetail=`${summary} • ${Math.round(prob)}% • ${maxLabel}/${minLabel} • agora ${tempLabel}`;
+
+    const snapshot={
+      saved_at:Date.now(),
+      rain,prob,temp,max,min,currentRain,humidity,feelsLike,wind,
+      detail:weatherDetail,
+      short_summary:summary,
+      icon:weatherIcon
+    };
+
+    renderWeatherSnapshot(snapshot);
+    try{localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify(snapshot));}catch(_){}
   }catch(e){
     state.weatherUnavailable=true;
     console.warn(e);
@@ -98,25 +150,23 @@ async function loadWeather(){
       const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
       if(cached){
         renderWeatherSnapshot(cached);
-        if($("#weatherDetail"))$("#weatherDetail").textContent=`${cached.detail||"Previsão salva"} • atualização anterior`;
+        weatherSetText("#weatherDetail",`${cached.detail||"Previsão salva"} • atualização anterior`);
+        weatherSetText("#v7WeatherDetailSummary",`${cached.short_summary||"Previsão salva"} • dados anteriores`);
         restored=true;
       }
     }catch(_){}
+
     if(!restored){
-      $("#rain6h").textContent="—";
-      if($("#rainChance"))$("#rainChance").textContent="Previsão indisponível";
-      $("#weatherTemp").textContent="—";
-      $("#weatherHeadline").textContent="Biguaçu agora";
-      $("#topWeatherRain").textContent="—";
-      $("#weatherDetail").textContent="Previsão temporariamente indisponível";
-      if($("#v7WeatherTemp"))$("#v7WeatherTemp").textContent="—";
-      if($("#v7WeatherSummary"))$("#v7WeatherSummary").textContent="Previsão indisponível";
-      if($("#topWeatherIcon"))$("#topWeatherIcon").textContent="🌥️";
+      const unavailable={
+        rain:null,prob:null,temp:null,max:null,min:null,currentRain:null,
+        humidity:null,feelsLike:null,wind:null,
+        detail:"Previsão temporariamente indisponível",
+        short_summary:"Previsão indisponível",
+        icon:"🌥️"
+      };
+      renderWeatherSnapshot(unavailable);
     }
   }
   renderPushSettings();
   renderSources();
 }
-
-
-
