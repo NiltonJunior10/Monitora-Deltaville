@@ -1,3 +1,13 @@
+# v6.2.2 — Circuito contínuo e seleção vetorial
+
+- Mantém a direção real do arraste em vias fechadas, sem trocar de lado ao cruzar o ponto de fechamento.
+- A Av. Deltaville passa a aceitar seleção contínua ao redor de todo o circuito oval.
+- Persiste a extensão/direção do trecho selecionado para reabrir e editar corretamente.
+- Ajuste das alças mantém a continuidade do circuito.
+- Simplifica o destaque selecionado para uma rota azul contínua, mais próxima do comportamento do Google Maps.
+- Afasta o painel “Trecho marcado” do FAB e da navegação inferior.
+- Mantém as geometrias de reconhecimento praticamente invisíveis.
+
 # v6.2.1 — Vias conectadas e seleção estilo Maps
 
 - Corrige o painel “Trecho marcado” para ficar acima da navegação inferior.
