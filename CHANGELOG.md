@@ -1,3 +1,10 @@
+# v6.0.1 — Correção de inicialização
+
+- Corrige um ciclo de observação do DOM introduzido na v6 que podia bloquear o navegador durante o carregamento inicial.
+- Restringe a observação dinâmica somente ao contador de alertas.
+- Torna os aprimoramentos opcionais da v6 isolados: falha em um recurso visual não interrompe o app principal.
+- Invalida completamente o cache v6.0.0 para impedir que navegadores continuem executando o JavaScript problemático.
+
 # v6.0.0 — iOS 27 Futurista
 
 - Redesenho completo da interface com foco mobile-first e aparência nativa Apple.
