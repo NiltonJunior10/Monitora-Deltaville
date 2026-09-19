@@ -19,17 +19,17 @@ As alterações desta versão estão descritas em [CHANGELOG.md](CHANGELOG.md). 
 
 ## Mapa estático local
 
-O Monitora usa **Leaflet + CRS.Simple** com o arquivo local:
+O Monitora usa **Leaflet + CRS.Simple** com os arquivos locais:
 
-`public/assets/mapa-deltaville-master.svg`
+- `public/assets/mapa-deltaville-clean.webp`
+- `public/assets/mapa-entorno-fade.webp`
 
-A base foi reconstruída vetorialmente a partir dos masterplans fornecidos do Deltaville atual e do Deltaville Marine, usando a foto aérea como referência de orientação.
+O mapa usa o sistema original 1601×982, mantendo compatibilidade direta com `map_x/map_y`, seleção de trechos, pontos e ocorrências.
 
 - Sem Google Maps.
 - Sem API key.
 - Sem cartão/faturamento.
 - Sem tiles externos.
 - Funciona como asset local do PWA e pode ser armazenado em cache.
-- Ocorrências e seleção de trechos continuam como camadas interativas independentes.
+- Avenidas, lagos, rio e ocorrências continuam como camadas interativas sobre a arte.
 
-Os registros antigos continuam usando o sistema legado `map_x/map_y`; o app aplica uma transformação de compatibilidade para posicioná-los no mapa mestre.
