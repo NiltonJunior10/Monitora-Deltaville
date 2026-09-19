@@ -109,32 +109,9 @@ const state = {
   reportPhotos:[], removedPhotoIds:[], photoViewerUrls:[], reportDamageTypes:[],
   pushEnabled:false, pushMinSeverity:"attention", pushSubscription:null
 };
-const LEGACY_W=1601, LEGACY_H=982;
-const MAP_W=2380, MAP_H=1540;
-
-/* Mapa mestre estático local.
-   O banco continua guardando map_x/map_y no sistema legado 1601×982.
-   Esta transformação coloca esses registros sobre a área do Deltaville atual
-   dentro do novo mapa composto Deltaville + Marine. */
-const LEGACY_RECT={x:20,y:500,w:1125,h:1000};
+const MAP_W=1601, MAP_H=982;
 const MAP_BOUNDS=[[0,0],[MAP_H,MAP_W]];
-const MAP_EXTENDED_BOUNDS=[[-110,-140],[MAP_H+110,MAP_W+140]];
-const USE_STATIC_MASTER=true;
-
-function legacyXYToMaster(x,y){
-  return {
-    x:LEGACY_RECT.x+(Number(x)/LEGACY_W)*LEGACY_RECT.w,
-    y:LEGACY_RECT.y+(Number(y)/LEGACY_H)*LEGACY_RECT.h
-  };
-}
-function masterToLegacyXY(latlng){
-  const mx=Number(latlng.lng);
-  const my=MAP_H-Number(latlng.lat);
-  return {
-    x:((mx-LEGACY_RECT.x)/LEGACY_RECT.w)*LEGACY_W,
-    y:((my-LEGACY_RECT.y)/LEGACY_RECT.h)*LEGACY_H
-  };
-}
+const MAP_EXTENDED_BOUNDS=[[-120,-180],[MAP_H+120,MAP_W+180]];
 
 /* Visual anchors are tied to this map artwork and remain stable at every zoom. */
 const visualAnchors={
@@ -189,10 +166,10 @@ function reportLocationName(id){
 function condominiumNormalized(name){
   const xy=condominiumAnchors[name];
   if(!xy)return {map_x:.5,map_y:.5};
-  return {map_x:xy[0]/LEGACY_W,map_y:xy[1]/LEGACY_H};
+  return {map_x:xy[0]/MAP_W,map_y:xy[1]/MAP_H};
 }
 function neighborhoodNormalized(){
-  return {map_x:neighborhoodAnchor[0]/LEGACY_W,map_y:neighborhoodAnchor[1]/LEGACY_H};
+  return {map_x:neighborhoodAnchor[0]/MAP_W,map_y:neighborhoodAnchor[1]/MAP_H};
 }
 
 
@@ -215,8 +192,8 @@ const conditionLabels = {
 const severityLabels = {attention:"Atenção",alert:"Alerta",critical:"Crítico"};
 const severityRank = {normal:0,attention:1,alert:2,critical:3};
 const occurrenceIcons = {
-  avenue_flooding:"💧", lakes_full:"≈", heavy_rain_flood_risk:"☔", hail:"◌",
-  wind_damage:"↝", wind_no_damage:"↝", river_level:"≋", river_overflow:"≋",
+  avenue_flooding:"🌊", lakes_full:"≈", heavy_rain_flood_risk:"☔", hail:"◌",
+  wind_damage:"↝", wind_no_damage:"↝", river_level:"≋", river_overflow:"🌊↑",
   public_lighting:"💡", drainage_clogged:"◉", tree_hazard:"🌳", road_damage:"▰",
   power_outage:"⚡", sewer_issue:"≈", waste_accumulation:"◆", signage_issue:"⚑",
   sidewalk_obstruction:"↥", water_supply:"🚰", infrastructure_damage:"▦",
@@ -353,13 +330,7 @@ function ensureMapLayout(map,fit=false){
     map.__visibleFitDone=true;
   }
 }
-function xyToLatLng(x,y){
-  const p=legacyXYToMaster(x,y);
-  return [MAP_H-p.y,p.x];
-}
-function latLngToLegacyXY(latlng){
-  return masterToLegacyXY(latlng);
-}
+function xyToLatLng(x,y){return [MAP_H-Number(y),Number(x)];}
 function shortLakeName(name){
   return String(name)
     .replace("Lagos Av. ","")
@@ -706,8 +677,8 @@ async function moveExistingPhotosToOccurrence(occurrenceId){
 function makeMap(id, preview=false){
   const map=L.map(id,{
     crs:L.CRS.Simple,
-    minZoom:preview?-1.55:-1.30,
-    maxZoom:2.7,
+    minZoom:preview?-1.45:-1.15,
+    maxZoom:2.45,
     zoomControl:!preview,
     attributionControl:false,
     scrollWheelZoom:preview?false:window.matchMedia("(pointer:fine)").matches,
@@ -724,17 +695,18 @@ function makeMap(id, preview=false){
     fadeAnimation:true,
     markerZoomAnimation:true,
     zoomAnimation:true,
+    dragging:true,
+    touchZoom:true,
+    doubleClickZoom:true,
     boxZoom:!preview,
-    keyboard:!preview,
-    preferCanvas:true
+    keyboard:!preview
   });
-
-  const overlay=L.imageOverlay("assets/mapa-deltaville-master.svg?v=660",MAP_BOUNDS,{
-    interactive:false,
-    className:"map-master-layer",
-    opacity:1
+  L.imageOverlay("assets/mapa-entorno-fade.webp",MAP_EXTENDED_BOUNDS,{
+    interactive:false,className:"map-entourage-layer",opacity:1
   }).addTo(map);
-
+  const overlay=L.imageOverlay("assets/mapa-deltaville-clean.webp",MAP_BOUNDS,{
+    interactive:false,className:"map-core-layer"
+  }).addTo(map);
   map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false});
   overlay.on("load",()=>ensureMapLayout(map,true));
   map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),80));
@@ -757,17 +729,16 @@ function initMaps(){
 function coord(loc){
   const anchor=visualAnchors[loc?.name];
   if(anchor)return xyToLatLng(anchor[0],anchor[1]);
-  return normalizedToLatLng(Number(loc?.map_x||.5),Number(loc?.map_y||.5));
+  return [MAP_H*(1-Number(loc?.map_y||.5)),MAP_W*Number(loc?.map_x||.5)];
 }
 function latLngToNormalized(latlng){
-  const legacy=latLngToLegacyXY(latlng);
   return {
-    map_x:legacy.x/LEGACY_W,
-    map_y:legacy.y/LEGACY_H
+    map_x:Math.max(0,Math.min(1,Number(latlng.lng)/MAP_W)),
+    map_y:Math.max(0,Math.min(1,1-(Number(latlng.lat)/MAP_H)))
   };
 }
 function normalizedToLatLng(x,y){
-  return xyToLatLng(LEGACY_W*Number(x),LEGACY_H*Number(y));
+  return [MAP_H*(1-Number(y)),MAP_W*Number(x)];
 }
 function precisePointIcon(index=1){
   return L.divIcon({className:"",html:`<div class="precise-pin precise-pin-numbered"><span>${index}</span></div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16]});
@@ -776,16 +747,16 @@ function occurrencePointIcon(severity){
   return L.divIcon({className:"",html:`<div class="occurrence-map-pin ${severity}">!</div>`,iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-12]});
 }
 function pointToSegmentDistance(p,a,b){
-  const ABx=b.lng-a.lng,ABy=b.lat-a.lat;
-  const APx=p.lng-a.lng,APy=p.lat-a.lat;
+  const ABx=b.lng-a.lng,ABy=b.lat-a.lat,APx=p.lng-a.lng,APy=p.lat-a.lat;
   const ab2=ABx*ABx+ABy*ABy||1;
-  const t=clamp((APx*ABx+APy*ABy)/ab2,0,1);
+  let t=(APx*ABx+APy*ABy)/ab2;
+  t=Math.max(0,Math.min(1,t));
   const cx=a.lng+t*ABx,cy=a.lat+t*ABy;
   return Math.hypot(p.lng-cx,p.lat-cy);
 }
 function nearestFeatureForPoint(latlng){
   let best=null;
-  const lakeThreshold=58,avenueThreshold=46;
+  const lakeThreshold=58,avenueThreshold=48;
   state.locations.forEach(loc=>{
     if(loc.category==="lake"){
       const c=coord(loc);
@@ -810,7 +781,7 @@ function nearestFeatureForPoint(latlng){
       for(let i=0;i<pts.length-1;i++){
         min=Math.min(min,pointToSegmentDistance(latlng,{lat:pts[i][0],lng:pts[i][1]},{lat:pts[i+1][0],lng:pts[i+1][1]}));
       }
-      if(min<=62&&(!best||min<best.distance))best={category:"river",loc,distance:min};
+      if(min<=58&&(!best||min<best.distance))best={category:"river",loc,distance:min};
     }
   });
   return best;
@@ -2044,19 +2015,15 @@ function renderMapMarkers(){
     state.markers[which].forEach(m=>m.remove());
     state.markers[which]=[];
     const map=state.maps[which];
-    if(!USE_STATIC_MASTER){
-      renderAvenues(which);
-      renderLakeZones(which);
-      renderRiverZone(which);
-    }
+    renderAvenues(which);
+    renderLakeZones(which);
+    renderRiverZone(which);
 
     state.locations.filter(loc=>loc.category==="lake").forEach(loc=>{
-      if(USE_STATIC_MASTER&&which==="full"&&state.filter!=="all"&&state.filter!=="lake"&&state.filter!=="alerts")return;
       const status=statusForLocation(loc.id);
       if(which==="full"&&state.filter==="avenue")return;
       if(which==="full"&&state.filter==="alerts"&&status==="normal")return;
       const latest=state.occurrences.find(o=>o.location_id===loc.id);
-      if(USE_STATIC_MASTER&&which==="full"&&state.filter==="all"&&!latest)return;
       const marker=L.marker(coord(loc),{icon:markerIcon(loc,status,!!latest),zIndexOffset:540}).addTo(map);
       const payload={
         title:loc.name,
@@ -2071,7 +2038,7 @@ function renderMapMarkers(){
         if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
         else showMapFocusCard(payload);
       });
-      if(which==="full"&&(state.filter==="lake"||latest)){
+      if(which==="full"){
         marker.bindTooltip(shortLakeName(loc.name),{permanent:true,direction:"top",offset:[0,-17],className:"lake-name-tooltip"}).openTooltip();
       }
       state.markers[which].push(marker);
