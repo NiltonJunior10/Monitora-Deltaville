@@ -1,3 +1,11 @@
+# v6.0.4 — Previsão do tempo mobile
+
+- Corrige a sobreposição mostrada no iPhone entre “Próx. 6h”, chuva e resumo da previsão.
+- Separa estruturalmente a linha principal e o resumo meteorológico.
+- Mantém ícone, temperatura e chuva em uma única linha estável.
+- Move a frase detalhada da previsão para uma segunda linha própria.
+- Ajusta larguras para telas de até 390 px sem colisão de conteúdo.
+
 # v6.0.3 — Gráfico do Rio Biguaçu
 
 - Redesenha o gráfico como área suavizada em vez de linha quebrada simples.
