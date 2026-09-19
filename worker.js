@@ -1,27 +1,9 @@
 const TILE_PATH=/^\/map-tiles\/(\d+)\/(\d+)\/(\d+)\.png$/;
 
-const GOOGLE_MAPS_CONFIG_PATH="/google-maps-config.js";
 
 export default {
   async fetch(request, env, ctx) {
     const url=new URL(request.url);
-
-    if(url.pathname===GOOGLE_MAPS_CONFIG_PATH){
-      const config={
-        apiKey:String(env.GOOGLE_MAPS_API_KEY||""),
-        mapId:String(env.GOOGLE_MAPS_MAP_ID||"")
-      };
-      return new Response(
-        "window.MONITORA_GOOGLE_MAPS="+JSON.stringify(config)+";",
-        {
-          headers:{
-            "Content-Type":"application/javascript; charset=utf-8",
-            "Cache-Control":"no-store, max-age=0",
-            "X-Content-Type-Options":"nosniff"
-          }
-        }
-      );
-    }
 
     const match=url.pathname.match(TILE_PATH);
 
