@@ -1,3 +1,20 @@
+# v6.0.0 — iOS 27 Futurista
+
+- Redesenho completo da interface com foco mobile-first e aparência nativa Apple.
+- Nova linguagem visual em glassmorphism, superfícies translúcidas, blur adaptativo e modo escuro refinado.
+- Home reorganizada como Control Center: situação do bairro, clima, Rio Biguaçu, mapa e ocorrências com prioridade visual clara.
+- Navegação mobile flutuante em frosted glass, com FAB central para registrar ocorrência.
+- Acesso aos alertas movido para o topo; navegação principal passa a priorizar Início, Mapa, Relatórios e Perfil.
+- Mapa passa a ser a camada predominante, com painel de detalhe em formato Bottom Sheet e gesto de swipe-down.
+- Fluxo de nova ocorrência transformado em 4 etapas progressivas: tipo, local, gravidade e detalhes.
+- Tipos mais comuns ficam em destaque; opções avançadas continuam disponíveis sem sobrecarregar a tela inicial do formulário.
+- Login e PIN recebem apresentação mais próxima da tela de bloqueio do iPhone, com visualização por pontos e teclado numérico nativo do aparelho.
+- Loading tradicional substituído visualmente por Skeleton Loader com shimmer.
+- Pull-to-refresh e feedback tátil progressivo adicionados quando suportados pelo navegador.
+- Large Titles passam a reduzir de tamanho durante o scroll.
+- Desktop reorganizado como painel contextual, preservando mapa, rio, clima, ocorrências, relatórios e fontes de monitoramento.
+- Toda a lógica existente de Supabase, autenticação, clima, Rio Biguaçu, mapa, ocorrências, fotos, realtime, push e PWA foi preservada.
+
 # v5.2.1 — Correção do resumo desktop
 
 - Corrige sobreposição entre “Relatos da comunidade” e “Fontes de monitoramento”.
