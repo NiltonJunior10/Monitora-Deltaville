@@ -1,3 +1,14 @@
+# v6.4.0 — Google Maps
+
+- Troca a camada-base do mapa para Google Maps JavaScript API.
+- Mantém Leaflet apenas como camada de monitoramento para ocorrências, lagos, rio e seleção de trechos.
+- Carrega a chave do Google Maps em runtime pelo Cloudflare Worker, sem gravar a chave no repositório.
+- Adiciona suporte opcional a Google Map ID.
+- Mantém o long press + arraste e as geometrias existentes sobre a base Google.
+- Reserva espaço no mobile para o logo e a atribuição do Google não ficarem escondidos pela barra inferior.
+- Exibe uma mensagem clara quando a chave Google Maps ainda não estiver configurada.
+- Impede o Service Worker de armazenar em cache a configuração da chave.
+
 # v6.3.2 — Proxy same-origin para o mapa real
 
 - Corrige o carregamento de tiles que continuava falhando no Safari/iPhone dentro do workers.dev.
