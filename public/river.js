@@ -344,10 +344,13 @@ function renderRiverStatus(){
 
   if(latest){
     value.textContent=`${Number(latest.level_m).toFixed(2).replace(".",",")} m`;
+    if($("#v7RiverLevel"))$("#v7RiverLevel").textContent=value.textContent;
     const delta=MonitoraCore.riverDelta(d?.series||[]);
     const trendValue=delta===null?"unknown":(Math.abs(delta.value)<=0.02?"stable":delta.value>0?"rising":"falling");
     trend.className=`river-trend ${trendValue}`;
     trend.textContent=riverTrendLabel(trendValue);
+    if($("#v7RiverStatus"))$("#v7RiverStatus").textContent=riverStatusLabel(status)==="SEM COTA OFICIAL"?riverTrendLabel(trendValue):riverStatusLabel(status);
+    if($("#v7RiverDot"))$("#v7RiverDot").className=status;
     variation.textContent=delta===null?"Variação em 1 hora: dados insuficientes":`Variação em aproximadamente 1 hora: ${formatRiverDelta(delta.value)} (${delta.minutes} min)`;
     updated.textContent=latest.stale
       ?`Dado desatualizado • medição de ${formatRiverTime(latest.measured_at)}`
@@ -356,8 +359,11 @@ function renderRiverStatus(){
     renderRiverChart(d?.series||[]);
   }else{
     value.textContent="—";
+    if($("#v7RiverLevel"))$("#v7RiverLevel").textContent="—";
     trend.className="river-trend unknown";
     trend.textContent=connection==="source_not_configured"?"Fonte estruturada ainda não confirmada":"Sem medição disponível";
+    if($("#v7RiverStatus"))$("#v7RiverStatus").textContent="Sem medição disponível";
+    if($("#v7RiverDot"))$("#v7RiverDot").className="";
     variation.textContent="Variação em 1 hora: —";
     updated.textContent=connection==="source_not_configured"
       ?"Backend pronto; ingestão automática permanece desativada até validar o endpoint oficial."
