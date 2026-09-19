@@ -100,6 +100,15 @@ self.addEventListener("fetch",event=>{
     url.hostname==="fonts.gstatic.com"
   ){
     event.respondWith(cacheFirst(event.request));
+    return;
+  }
+
+  // Map tiles: keep the last successful tiles for faster reopen/offline tolerance.
+  if(
+    url.hostname.endsWith("basemaps.cartocdn.com") ||
+    url.hostname==="tile.openstreetmap.org"
+  ){
+    event.respondWith(staleWhileRevalidate(event.request));
   }
 });
 
