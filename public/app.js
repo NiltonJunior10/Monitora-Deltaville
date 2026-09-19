@@ -52,10 +52,17 @@ function renderConnection(){
   const banner=$("#connectionNotice");
   if(banner){banner.hidden=!pending;banner.textContent=message;}
   if($("#backendStatus"))$("#backendStatus").textContent=message;
+  const mobileSystem=$("#v7SystemStatus");
+  if(mobileSystem){
+    mobileSystem.classList.remove("online","degraded","offline");
+    const mode=!navigator.onLine?"offline":pending?"degraded":"online";
+    mobileSystem.classList.add(mode);
+    mobileSystem.innerHTML=`<i></i>${!navigator.onLine?"Sem conexão":pending?"Conexão parcial":"Sistema online"}`;
+  }
   renderSources();
 }
 function renderSources(){
-  const hosts=[$("#monitoringSources"),$("#homeMonitoringSources")].filter(Boolean);if(!hosts.length)return;
+  const hosts=[$("#monitoringSources"),$("#homeMonitoringSources"),$("#mobileMonitoringSources")].filter(Boolean);if(!hosts.length)return;
   const river=state.riverStatus;
   const sourceText=river?.connection_state==='ok'?"Medição disponível":river?.connection_state==='stale'?"Medição desatualizada":river?.connection_state==='degraded'?"Fonte com falha recente":"Consulta indisponível ou pendente";
   let weatherText="Consulta pendente";
@@ -1787,6 +1794,57 @@ function renderReports(){
     </div>`).join(""):'<div class="empty">Ainda não há registros suficientes para o relatório.</div>';
 }
 
+function mobileRecentRow(item){
+  const o=item.occurrence;
+  const title=occurrenceLabels[o.occurrence_type]||"Ocorrência";
+  const where=locationName(o)||"Deltaville";
+  const when=item.when||o.created_at;
+  const sev=item.severity||o.severity||"attention";
+  const icon=occurrenceIcon(o.occurrence_type);
+  const tag=item.resolved?"Resolvida":"Ativa";
+  const cls=item.resolved?"":" active";
+  const inner=`<span class="v7-recent-icon ${esc(sev)}">${esc(icon)}</span>
+    <span class="v7-recent-copy"><b>${esc(title)}</b><span>${esc(where)}</span><small>${age(when)}</small></span>
+    <span class="v7-recent-state${cls}">${tag}</span>`;
+  return item.resolved
+    ?`<div class="v7-recent-row">${inner}</div>`
+    :`<button type="button" class="v7-recent-row" data-open-occurrence="${o.id}" aria-label="Abrir ${esc(title)} no mapa">${inner}</button>`;
+}
+function renderMobileHomeDashboard(){
+  const activeGroups=groupOccurrences(state.occurrences);
+  const now=Date.now();
+  const recentWindow=[...state.occurrences,...state.recentResolved].filter(o=>{
+    const t=Date.parse(o.created_at||o.resolved_at||"");
+    return Number.isFinite(t)&&now-t<=24*60*60*1000;
+  });
+  const recent24=groupOccurrences(recentWindow).length;
+  if($("#v7Reports24h"))$("#v7Reports24h").textContent=recent24;
+  if($("#v7ReportsCaption"))$("#v7ReportsCaption").textContent=recent24===1?"1 registro recente":`${recent24} registros recentes`;
+  if($("#v7ActiveCount"))$("#v7ActiveCount").textContent=activeGroups.length;
+  if($("#v7ActiveStatus"))$("#v7ActiveStatus").textContent=activeGroups.length===0?"Tudo sob controle":activeGroups.length===1?"1 situação em monitoramento":`${activeGroups.length} situações em monitoramento`;
+
+  const activeItems=activeGroups.map(g=>({
+    occurrence:g.items[0],
+    severity:highestSeverity(g.items),
+    when:g.items[0]?.created_at,
+    resolved:false
+  }));
+  const resolvedItems=state.recentResolved.map(o=>({
+    occurrence:o,
+    severity:o.severity||"attention",
+    when:o.resolved_at||o.created_at,
+    resolved:true
+  }));
+  const recent=[...activeItems,...resolvedItems]
+    .filter(x=>x.occurrence)
+    .sort((a,b)=>Date.parse(b.when||0)-Date.parse(a.when||0))
+    .slice(0,3);
+  const host=$("#v7RecentList");
+  if(host)host.innerHTML=recent.length
+    ?recent.map(mobileRecentRow).join("")
+    :'<div class="v7-recent-empty">Nenhuma ocorrência recente no momento.</div>';
+}
+
 function renderAll(){
   renderStatus();
   renderProfile();
@@ -1797,6 +1855,7 @@ function renderAll(){
   renderDesktopSeverity();
   renderDesktopRecent();
   renderReports();
+  renderMobileHomeDashboard();
   renderMapMarkers();
 }
 function renderProfile(){
@@ -1810,6 +1869,7 @@ function renderProfile(){
   if($("#desktopAvatar"))$("#desktopAvatar").textContent=initials;
   if($("#desktopAccountName"))$("#desktopAccountName").textContent=p.first_name;
   if($("#desktopAccountRole"))$("#desktopAccountRole").textContent=p.condominiums?.name||"Morador";
+  if($("#mobileAvatar"))$("#mobileAvatar").textContent=initials;
   const legacy=state.user?.is_anonymous===true;
   $("#profileView").innerHTML=`<div class="initials">${esc(initials)}</div><h2>${esc(p.first_name)} ${esc(p.last_name)}</h2><p>${esc(p.condominiums?.name||"")}</p><small>Casa/lote ${esc(p.house_or_lot)}</small><span class="profile-access-state">${legacy?"Acesso antigo • sem PIN":"Acesso com PIN"}</span>`;
   $("#upgradeLegacyBtn").hidden=!legacy;
