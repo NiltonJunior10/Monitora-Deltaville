@@ -127,6 +127,7 @@ const GEO_AFFINE={
   inv11:71397.98995981
 };
 const MAP_CENTER=[-27.48655,-48.66875];
+const USE_REAL_MAP=true;
 /* Includes the original Deltaville and the Deltaville Marine area to the north. */
 const MAP_BOUNDS=[[-27.4962,-48.6765],[-27.4772,-48.6603]];
 const MAP_EXTENDED_BOUNDS=[[-27.5055,-48.6865],[-27.4690,-48.6515]];
@@ -701,7 +702,7 @@ function makeMap(id, preview=false){
     minZoom:14,
     maxZoom:20,
     zoomControl:!preview,
-    attributionControl:true,
+    attributionControl:false,
     scrollWheelZoom:preview?false:window.matchMedia("(pointer:fine)").matches,
     touchZoom:true,
     doubleClickZoom:true,
@@ -721,17 +722,50 @@ function makeMap(id, preview=false){
     preferCanvas:true
   });
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  const attribution=L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
+  attribution.addAttribution(
+    '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> · '+
+    '<a href="https://carto.com/attributions" target="_blank" rel="noopener">© CARTO</a>'
+  );
+
+  let fallbackStarted=false;
+  let tileErrors=0;
+  let baseLayer=null;
+
+  const addOsmFallback=()=>{
+    if(fallbackStarted)return;
+    fallbackStarted=true;
+    if(baseLayer){
+      try{map.removeLayer(baseLayer);}catch(_){}
+    }
+    baseLayer=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
+      minZoom:14,
+      maxZoom:20,
+      maxNativeZoom:19,
+      detectRetina:false,
+      updateWhenIdle:true,
+      keepBuffer:4
+    }).addTo(map);
+  };
+
+  baseLayer=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+    subdomains:"abcd",
     minZoom:14,
     maxZoom:20,
-    maxNativeZoom:19,
+    maxNativeZoom:20,
     detectRetina:true,
-    crossOrigin:true,
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-  }).addTo(map);
+    updateWhenIdle:true,
+    keepBuffer:4
+  });
+
+  baseLayer.on("tileerror",()=>{
+    tileErrors++;
+    if(tileErrors>=3)addOsmFallback();
+  });
+  baseLayer.addTo(map);
 
   map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false,maxZoom:17});
-  map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),100));
+  map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),120));
   if(preview)map.on("click",()=>navigate("map"));
   return map;
 }
@@ -1721,7 +1755,7 @@ function focusLocationById(id){
 function bindMapUX(){
   $("#mapBackBtn")?.addEventListener("click",()=>navigate("home"));
   $("#mapCenterBtn")?.addEventListener("click",()=>{
-    state.maps.full?.flyToBounds(MAP_BOUNDS,{duration:.42,padding:[0,0]});
+    state.maps.full?.flyToBounds(MAP_BOUNDS,{duration:.42,padding:[12,12],maxZoom:17});
   });
   $("#mapLegendBtn")?.addEventListener("click",()=>{
     const el=$("#mapInlineLegend");
@@ -2049,11 +2083,14 @@ function renderMapMarkers(){
     state.markers[which].forEach(m=>m.remove());
     state.markers[which]=[];
     const map=state.maps[which];
-    renderAvenues(which);
-    renderLakeZones(which);
-    renderRiverZone(which);
+    if(!USE_REAL_MAP){
+      renderAvenues(which);
+      renderLakeZones(which);
+      renderRiverZone(which);
+    }
 
     state.locations.filter(loc=>loc.category==="lake").forEach(loc=>{
+      if(USE_REAL_MAP&&which==="full"&&state.filter!=="all"&&state.filter!=="lake"&&state.filter!=="alerts")return;
       const status=statusForLocation(loc.id);
       if(which==="full"&&state.filter==="avenue")return;
       if(which==="full"&&state.filter==="alerts"&&status==="normal")return;
