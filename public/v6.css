@@ -2991,3 +2991,56 @@ body.map-open .leaflet-control-attribution{
     bottom:calc(126px + env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* =========================================================
+   v6.6.0 — mapa mestre estático local
+   ========================================================= */
+.map-master-layer{
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  image-rendering:auto!important;
+  pointer-events:none!important;
+}
+
+.google-map-underlay,
+.free-map-underlay,
+.google-map-status,
+.free-map-status{
+  display:none!important;
+}
+
+.leaflet-container{
+  background:#edf4f0!important;
+}
+
+.leaflet-overlay-pane{
+  z-index:400!important;
+}
+
+.map-master-layer{
+  z-index:1!important;
+}
+
+@media(max-width:1179px){
+  body.map-open main{
+    inset:0!important;
+  }
+
+  body.map-open [data-page="map"] .map-bottom-action,
+  body.map-open [data-page="map"] #mapFocusCard{
+    bottom:calc(132px + env(safe-area-inset-bottom))!important;
+  }
+
+  body.map-open .bottom-nav{
+    z-index:2200!important;
+  }
+}
+
+@media(max-width:390px){
+  body.map-open [data-page="map"] .map-bottom-action,
+  body.map-open [data-page="map"] #mapFocusCard{
+    bottom:calc(126px + env(safe-area-inset-bottom))!important;
+  }
+}
