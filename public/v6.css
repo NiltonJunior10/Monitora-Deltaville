@@ -1480,3 +1480,60 @@ body.map-open [data-page="map"] #mapFilters{
     padding-top:8px!important;
   }
 }
+
+
+/* =========================================================
+   v6.0.6 — mobile brand name
+   ========================================================= */
+@media(max-width:1179px){
+  .topbar .brand{
+    gap:9px!important;
+    min-width:0!important;
+  }
+
+  .topbar .brand span{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    align-items:flex-start!important;
+    min-width:0!important;
+    line-height:.96!important;
+  }
+
+  .topbar .brand b,
+  .topbar .brand strong{
+    display:block!important;
+    margin:0!important;
+    padding:0!important;
+    white-space:nowrap!important;
+    font-family:var(--v6-display)!important;
+    letter-spacing:-.025em!important;
+  }
+
+  .topbar .brand b{
+    color:var(--v6-label)!important;
+    font-size:13px!important;
+    font-weight:600!important;
+  }
+
+  .topbar .brand strong{
+    margin-top:2px!important;
+    color:var(--v6-blue)!important;
+    font-size:15px!important;
+    font-weight:720!important;
+  }
+}
+
+@media(max-width:390px){
+  .topbar .brand{
+    gap:8px!important;
+  }
+
+  .topbar .brand b{
+    font-size:12px!important;
+  }
+
+  .topbar .brand strong{
+    font-size:14px!important;
+  }
+}
