@@ -1,19 +1,19 @@
-const CACHE="monitora-deltaville-v511-typography";
+const CACHE="monitora-deltaville-v512-apple-type";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "./",
   "./index.html",
-  "./styles.css?v=511",
-  "./stability.css?v=511",
-  "./auth.js?v=511",
-  "./river.js?v=511",
-  "./weather.js?v=511",
-  "./push.js?v=511",
-  "./app.js?v=511",
-  "./stability-core.js?v=511",
-  "./theme-init.js?v=511",
+  "./styles.css?v=512",
+  "./stability.css?v=512",
+  "./auth.js?v=512",
+  "./river.js?v=512",
+  "./weather.js?v=512",
+  "./push.js?v=512",
+  "./app.js?v=512",
+  "./stability-core.js?v=512",
+  "./theme-init.js?v=512",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
@@ -133,4 +133,3 @@ self.addEventListener("notificationclick",event=>{
     })
   );
 });
-

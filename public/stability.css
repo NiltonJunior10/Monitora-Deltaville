@@ -20,11 +20,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:480px){#connectionNotice{font-size:13px}.grid2{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
-/* v5.1.1 typography pass: readable type wins over the legacy compact rules. */
-:root{--font-body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--font-display:Poppins,Inter,system-ui,sans-serif}
+/* v5.1.2: Apple-like system typography. Uses SF Pro when the platform provides it. */
+:root{--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;--font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif}
 html,body,button,input,select,textarea{font-family:var(--font-body)}
-body{font-size:15px;line-height:1.45;letter-spacing:.005em}
-h1,h2,h3,h4,.hello h1,.page-title h1,.section-head h2,.sheet-head h2,.onboarding h2,.profile-card h2,.smart-composer-head b{font-family:var(--font-display);letter-spacing:-.015em}
+body{font-size:15px;line-height:1.5;letter-spacing:0}
+h1,h2,h3,h4,.hello h1,.page-title h1,.section-head h2,.sheet-head h2,.onboarding h2,.profile-card h2,.smart-composer-head b{font-family:var(--font-display);letter-spacing:-.025em;font-weight:700}
 .eyebrow,.kicker{font-size:12px!important;line-height:1.35!important;letter-spacing:.1em!important}
 .muted,.info-card p,.status-card small{font-size:14px!important;line-height:1.5!important}
 .section-head h2,.page-title h1{font-size:21px!important;line-height:1.2!important}
@@ -53,3 +53,7 @@ h1,h2,h3,h4,.hello h1,.page-title h1,.section-head h2,.sheet-head h2,.onboarding
   .sheet-head h2{font-size:23px!important}
 }
 
+/* Native Apple control proportions and hierarchy. */
+.primary,.secondary,.small-btn,.link{font-family:var(--font-body);font-weight:600;letter-spacing:-.01em}
+.form input,.form select,.form textarea{font-family:var(--font-body);letter-spacing:-.005em}
+.form label,.form legend{font-weight:600;letter-spacing:-.005em}
