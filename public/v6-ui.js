@@ -104,6 +104,34 @@
       });
     }
 
+    const weatherButton=q("[data-v7-weather-details]");
+    const weatherDetails=q("#v7WeatherDetails");
+    if(weatherButton&&weatherDetails&&weatherButton.dataset.bound!=="1"){
+      weatherButton.dataset.bound="1";
+      weatherButton.addEventListener("click",()=>{
+        const open=weatherDetails.hidden;
+        weatherDetails.hidden=!open;
+        weatherButton.setAttribute("aria-expanded",String(open));
+        document.body.classList.toggle("v7-weather-expanded",open);
+        vibrate(7);
+        if(open){
+          setTimeout(()=>weatherDetails.scrollIntoView({behavior:"smooth",block:"nearest"}),50);
+        }
+      });
+    }
+
+    const weatherClose=q("[data-v7-weather-close]");
+    if(weatherClose&&weatherDetails&&weatherClose.dataset.bound!=="1"){
+      weatherClose.dataset.bound="1";
+      weatherClose.addEventListener("click",()=>{
+        weatherDetails.hidden=true;
+        weatherButton?.setAttribute("aria-expanded","false");
+        document.body.classList.remove("v7-weather-expanded");
+        vibrate(6);
+        setTimeout(()=>weatherButton?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+      });
+    }
+
     const riverButton=q("[data-v7-river-details]");
     if(riverButton&&riverButton.dataset.bound!=="1"){
       riverButton.dataset.bound="1";
