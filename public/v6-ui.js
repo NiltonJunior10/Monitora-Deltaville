@@ -35,15 +35,18 @@
   }
 
   function simplifyMobileTabBar(){
+    const homeTab=q('.bottom-nav [data-nav="home"]');
+    const homeLabel=homeTab&&q("b",homeTab);
+    if(homeLabel)homeLabel.textContent="Painel";
+
     const alertTab=q(".bottom-nav .nav-alerts");
-    if(!alertTab||alertTab.dataset.v6Converted==="1")return;
-    alertTab.dataset.v6Converted="1";
-    alertTab.dataset.nav="reports";
-    alertTab.classList.remove("nav-alerts");
-    const icon=q(".nav-icon",alertTab);
-    const label=q("b",alertTab);
-    if(icon)icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M10 20V5M16 20v-8M22 20H2"/></svg>';
-    if(label)label.textContent="Relatórios";
+    if(alertTab){
+      alertTab.dataset.nav="alerts";
+      const icon=q(".nav-icon",alertTab);
+      const label=q("b",alertTab);
+      if(icon)icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><i class="nav-badge" id="navAlertBadge" hidden>0</i>';
+      if(label)label.textContent="Alertas";
+    }
   }
 
   let weatherMarker=null;
@@ -89,6 +92,65 @@
       if(!ticking){ticking=true;requestAnimationFrame(update);}
     },{passive:true});
     update();
+  }
+
+  function setupMobileRedistribution(){
+    const community=q("#v7CommunityReport");
+    if(community&&community.dataset.bound!=="1"){
+      community.dataset.bound="1";
+      community.addEventListener("click",()=>{
+        vibrate(8);
+        q("#navReport")?.click();
+      });
+    }
+
+    const riverButton=q("[data-v7-river-details]");
+    if(riverButton&&riverButton.dataset.bound!=="1"){
+      riverButton.dataset.bound="1";
+      riverButton.addEventListener("click",()=>{
+        const open=!document.body.classList.contains("v7-river-expanded");
+        document.body.classList.toggle("v7-river-expanded",open);
+        riverButton.setAttribute("aria-expanded",String(open));
+        vibrate(7);
+        if(open){
+          setTimeout(()=>q("#riverLevelCard")?.scrollIntoView({behavior:"smooth",block:"start"}),60);
+        }
+      });
+    }
+
+    const riverHead=q("#riverLevelCard .river-level-head");
+    if(riverHead&&!q(".v7-river-collapse",riverHead)){
+      const close=document.createElement("button");
+      close.type="button";
+      close.className="v7-river-collapse";
+      close.textContent="Fechar";
+      close.addEventListener("click",()=>{
+        document.body.classList.remove("v7-river-expanded");
+        riverButton?.setAttribute("aria-expanded","false");
+        vibrate(6);
+        setTimeout(()=>q(".v7-summary-card.river")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+      });
+      riverHead.appendChild(close);
+    }
+
+    const tabs=qa("[data-v7-alert-tab]");
+    if(tabs.length){
+      tabs.forEach(btn=>{
+        if(btn.dataset.bound==="1")return;
+        btn.dataset.bound="1";
+        btn.addEventListener("click",()=>{
+          const sources=btn.dataset.v7AlertTab==="sources";
+          const page=q('[data-page="alerts"]');
+          page?.classList.toggle("v7-sources-mode",sources);
+          tabs.forEach(other=>{
+            const active=other===btn;
+            other.classList.toggle("active",active);
+            other.setAttribute("aria-selected",String(active));
+          });
+          vibrate(6);
+        });
+      });
+    }
   }
 
   function setupPinDots(){
@@ -406,6 +468,7 @@
       installMobileAlert,
       simplifyMobileTabBar,
       setupWeatherPortal,
+      setupMobileRedistribution,
       setupLargeTitle,
       setupPinDots,
       buildReportWizard,
