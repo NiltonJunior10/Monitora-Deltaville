@@ -2698,3 +2698,68 @@ body.map-open [data-page="map"] #mapFilters{
     bottom:calc(126px + env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* =========================================================
+   v6.3.0 — Real geographic map (OpenStreetMap)
+   ========================================================= */
+.leaflet-container{
+  background:#DCE7E2!important;
+  font-family:var(--v6-font)!important;
+}
+
+.leaflet-control-attribution{
+  border-radius:9px 0 0 0!important;
+  background:rgba(255,255,255,.78)!important;
+  color:#68727B!important;
+  font-size:8px!important;
+  line-height:1.25!important;
+  padding:3px 6px!important;
+  backdrop-filter:blur(12px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(150%)!important;
+}
+
+.leaflet-control-attribution a{
+  color:#3977A8!important;
+}
+
+:root[data-theme="dark"] .leaflet-control-attribution{
+  background:rgba(28,28,30,.78)!important;
+  color:#B8B8BE!important;
+}
+:root[data-theme="dark"] .leaflet-control-attribution a{
+  color:#70B9F4!important;
+}
+
+/* Keep labels and roads on the actual base map readable.
+   Monitoring geometry should only become prominent when selected/alerted. */
+.avenue-corridor,
+.avenue-core,
+.avenue-center-static{
+  opacity:.02!important;
+}
+
+.lake-zone-base{
+  opacity:.13!important;
+}
+
+.river-route-base{
+  opacity:.20!important;
+}
+
+@media(max-width:1179px){
+  body.map-open .leaflet-control-attribution{
+    right:6px!important;
+    bottom:calc(87px + env(safe-area-inset-bottom))!important;
+    max-width:210px!important;
+    white-space:normal!important;
+    text-align:right!important;
+    border-radius:10px!important;
+    box-shadow:0 4px 14px rgba(15,23,42,.06)!important;
+  }
+
+  /* Real-map zoom controls stay below the filter row. */
+  body.map-open [data-page="map"] .leaflet-control-zoom{
+    margin-top:66px!important;
+  }
+}
