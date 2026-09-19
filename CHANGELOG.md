@@ -1,3 +1,13 @@
+# v6.0.2 — Leitura, clima e exclusão
+
+- Reforça contraste do modo escuro em textos herdados das versões anteriores.
+- Corrige cores de títulos, textos secundários, formulários, cards e estados semânticos no tema escuro.
+- Consolida o layout do widget de previsão do tempo para impedir sobreposição entre temperatura, chuva e resumo.
+- Ajusta a previsão no mobile para quebrar o resumo em linha própria quando necessário.
+- Restaura ações claras de Editar e Apagar nas ocorrências do próprio morador.
+- Mantém a ação Apagar visível durante a edição no fluxo por etapas.
+- Exclusão continua protegida por confirmação e limitada às ocorrências do próprio usuário.
+
 # v6.0.1 — Correção de inicialização
 
 - Corrige um ciclo de observação do DOM introduzido na v6 que podia bloquear o navegador durante o carregamento inicial.
