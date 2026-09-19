@@ -1,5 +1,10 @@
 # v5.1.0 — Estabilização
 
+## v5.1.1 — Tipografia
+
+- Aumenta textos auxiliares, rótulos, cards, formulários e navegação.
+- Unifica Inter para leitura e Poppins para títulos, com melhor entrelinha e contraste em tema escuro.
+
 - Login com erro genérico, limite de tentativas atômico por unidade e IP e bloqueio progressivo. Cadastro valida PINs fracos.
 - Chave privada VAPID permanece no Vault; o cliente obtém a chave pública atual e reconhece inscrições antigas.
 - Sincronização do Rio Biguaçu protegida por segredo, logs válidos e UPSERT de correções posteriores da Epagri.
