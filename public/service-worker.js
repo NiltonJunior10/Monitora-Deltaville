@@ -1,22 +1,24 @@
-const CACHE="monitora-deltaville-v640-ios27";
+const CACHE="monitora-deltaville-v650-ios27";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+  "https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js",
+  "https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css",
   "./",
   "./index.html",
-  "./styles.css?v=640",
-  "./stability.css?v=640",
-  "./apple-ui.css?v=640",
-  "./v6.css?v=640",
-  "./auth.js?v=640",
-  "./river.js?v=640",
-  "./weather.js?v=640",
-  "./push.js?v=640",
-  "./app.js?v=640",
-  "./v6-ui.js?v=640",
-  "./stability-core.js?v=640",
-  "./theme-init.js?v=640",
+  "./styles.css?v=650",
+  "./stability.css?v=650",
+  "./apple-ui.css?v=650",
+  "./v6.css?v=650",
+  "./auth.js?v=650",
+  "./river.js?v=650",
+  "./weather.js?v=650",
+  "./push.js?v=650",
+  "./app.js?v=650",
+  "./v6-ui.js?v=650",
+  "./stability-core.js?v=650",
+  "./theme-init.js?v=650",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
@@ -79,11 +81,6 @@ self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
 
   const url=new URL(event.request.url);
-
-  if(url.origin===self.location.origin && url.pathname==="/google-maps-config.js"){
-    event.respondWith(fetch(event.request,{cache:"no-store"}));
-    return;
-  }
 
   // Dados vivos nunca devem ser atendidos por cache do SW.
   if(url.hostname.includes("supabase.co")||url.hostname.includes("open-meteo.com"))return;
