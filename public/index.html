@@ -17,11 +17,11 @@
 
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=660">
-  <link rel="stylesheet" href="stability.css?v=660">
-  <link rel="stylesheet" href="apple-ui.css?v=660">
-  <link rel="stylesheet" href="v6.css?v=660">
-  <script src="theme-init.js?v=660"></script>
+  <link rel="stylesheet" href="styles.css?v=670">
+  <link rel="stylesheet" href="stability.css?v=670">
+  <link rel="stylesheet" href="apple-ui.css?v=670">
+  <link rel="stylesheet" href="v6.css?v=670">
+  <script src="theme-init.js?v=670"></script>
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -78,7 +78,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v6.6.0</small>
+        <small>Monitora Deltaville<br>v6.7.0</small>
       </div>
     </aside>
     <header class="topbar">
@@ -147,17 +147,17 @@
           </div>
 
           <div class="v7-summary-grid">
-            <article class="v7-summary-card weather">
+            <button type="button" class="v7-summary-card weather" data-v7-weather-details aria-expanded="false" aria-controls="v7WeatherDetails">
               <span class="v7-summary-icon blue" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M7 18h9.5a4.5 4.5 0 0 0 .3-9A6 6 0 0 0 5.3 10.7 3.7 3.7 0 0 0 7 18Z"/><path d="M8 20.5l-1 1.5M13 20.5 12 22M18 20.5 17 22"/></svg>
               </span>
-              <div class="v7-summary-copy">
+              <span class="v7-summary-copy">
                 <small>Condições atuais</small>
-                <strong id="v7WeatherTemp">—</strong>
-                <span id="v7WeatherSummary">Carregando previsão…</span>
-              </div>
+                <strong id="v7WeatherRain">—</strong>
+                <span><span id="v7WeatherChance">—</span> • próximas 6h</span>
+              </span>
               <span class="v7-card-chevron">›</span>
-            </article>
+            </button>
 
             <button type="button" class="v7-summary-card river" data-v7-river-details aria-expanded="false">
               <span class="v7-summary-icon blue" aria-hidden="true">
@@ -195,6 +195,38 @@
               <span class="v7-card-chevron">›</span>
             </button>
           </div>
+
+          <section class="v7-weather-details" id="v7WeatherDetails" hidden aria-label="Detalhes das condições do tempo">
+            <div class="v7-weather-details-head">
+              <div>
+                <small>Condições do tempo</small>
+                <strong id="v7WeatherDetailSummary">Carregando previsão…</strong>
+              </div>
+              <button type="button" data-v7-weather-close>Fechar</button>
+            </div>
+            <div class="v7-weather-detail-grid">
+              <article>
+                <small>Temperatura agora</small>
+                <strong id="v7WeatherTemp">—</strong>
+                <span id="v7WeatherFeels">Sensação —</span>
+              </article>
+              <article>
+                <small>Chuva nas próximas 6h</small>
+                <strong id="v7WeatherRainDetail">—</strong>
+                <span id="v7WeatherChanceDetail">Chance —</span>
+              </article>
+              <article>
+                <small>Chuva agora</small>
+                <strong id="v7WeatherNowRain">—</strong>
+                <span id="v7WeatherHumidity">Umidade —</span>
+              </article>
+              <article>
+                <small>Hoje</small>
+                <strong id="v7WeatherMinMax">—</strong>
+                <span id="v7WeatherWind">Vento —</span>
+              </article>
+            </div>
+          </section>
 
           <section class="v7-recent-panel">
             <div class="v7-section-head">
@@ -871,7 +903,7 @@
               <button type="button" data-occ-type="drainage_clogged">🕳️ Bueiro / drenagem</button>
               <button type="button" data-occ-type="lakes_full">≈ Lago cheio</button>
               <button type="button" data-occ-type="river_level">↟ Rio subindo</button>
-              <button type="button" data-occ-type="river_overflow">⚠ Rio transbordou</button>
+              <button type="button" data-occ-type="river_overflow">🌊↑ Rio transbordou</button>
               <button type="button" data-occ-type="heavy_rain_flood_risk">☔ Chuva forte</button>
               <button type="button" data-occ-type="hail">◌ Granizo</button>
               <button type="button" data-occ-type="wind_damage">↝ Vendaval c/ danos</button>
@@ -1016,12 +1048,12 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="stability-core.js?v=660"></script>
-  <script src="auth.js?v=660"></script>
-  <script src="river.js?v=660"></script>
-  <script src="weather.js?v=660"></script>
-  <script src="push.js?v=660"></script>
-  <script src="app.js?v=660"></script>
-  <script src="v6-ui.js?v=660"></script>
+  <script src="stability-core.js?v=670"></script>
+  <script src="auth.js?v=670"></script>
+  <script src="river.js?v=670"></script>
+  <script src="weather.js?v=670"></script>
+  <script src="push.js?v=670"></script>
+  <script src="app.js?v=670"></script>
+  <script src="v6-ui.js?v=670"></script>
 </body>
 </html>
