@@ -1,3 +1,14 @@
+# v6.3.2 — Proxy same-origin para o mapa real
+
+- Corrige o carregamento de tiles que continuava falhando no Safari/iPhone dentro do workers.dev.
+- Adiciona worker.js para servir /map-tiles/{z}/{x}/{y}.png pelo próprio domínio do Monitora.
+- O Worker busca CARTO Voyager no servidor e devolve a imagem como same-origin para o navegador.
+- Ativa o Worker antes dos assets estáticos via run_worker_first e mantém os arquivos do app pelo binding ASSETS.
+- Troca o mapa visual para CARTO Voyager, mais próximo de um mapa de navegação convencional.
+- Remove o carregamento direto de tiles externos pelo iPhone.
+- Mantém cache de tiles no edge do Cloudflare e no service worker.
+- Esconde marcadores normais de lagos no filtro Todos para reduzir poluição até a recalibração geográfica final.
+
 # v6.3.1 — Correção dos tiles do mapa real
 
 - Corrige o mapa branco observado no iPhone.
