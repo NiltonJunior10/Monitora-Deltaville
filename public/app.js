@@ -884,10 +884,10 @@ function renderSelectedSegmentLayers(){
   if(!map||!seg)return;
   const pts=avenuePointsByLocationId(seg.avenueId);
   if(!pts)return;
-  const section=subRouteSelection(pts,seg.startRatio,seg.endRatio,!!seg.wrap);
-  const halo=L.polyline(section,{color:'#FFFFFF',weight:22,opacity:.72,lineCap:'round',interactive:false}).addTo(map);
-  const band=L.polyline(section,{color:'#3B9DEB',weight:16,opacity:.38,lineCap:'round',interactive:false,className:'selected-segment-band'}).addTo(map);
-  const wave=L.polyline(section,{color:'#2EC5FF',weight:10,opacity:.68,dashArray:'10 12',lineCap:'round',interactive:false,className:'selected-segment-wave'}).addTo(map);
+  const section=selectedSegmentRoute(pts,seg);
+  const halo=L.polyline(section,{color:'#FFFFFF',weight:18,opacity:.84,lineCap:'round',lineJoin:'round',interactive:false}).addTo(map);
+  const band=L.polyline(section,{color:'#0A84FF',weight:11,opacity:.94,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-band'}).addTo(map);
+  const wave=L.polyline(section,{color:'#73C6FF',weight:3.2,opacity:.92,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-wave'}).addTo(map);
   const start=pointAtRouteRatio(pts,seg.startRatio);
   const end=pointAtRouteRatio(pts,seg.endRatio);
   const startHandle=L.marker(start,{draggable:true,icon:L.divIcon({className:'',html:'<div class="segment-handle start"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map);
@@ -896,10 +896,31 @@ function renderSelectedSegmentLayers(){
     marker.on('drag',ev=>{
       const proj=projectPointOnRoute(ev.target.getLatLng(),pts);
       ev.target.setLatLng(proj.latlng);
-      if(which==='start') state.selectedSegment.startRatio=proj.ratio;
-      else state.selectedSegment.endRatio=proj.ratio;
-      state.selectedSegment.wrap=segmentUsesWrap(pts,state.selectedSegment.startRatio,state.selectedSegment.endRatio);
-      const selectedRoute=subRouteSelection(pts,state.selectedSegment.startRatio,state.selectedSegment.endRatio,!!state.selectedSegment.wrap);
+      if(routeIsClosed(pts)){
+        const currentSpan=Number.isFinite(Number(state.selectedSegment.span))
+          ?Number(state.selectedSegment.span)
+          :shortestLoopSpan(state.selectedSegment.startRatio,state.selectedSegment.endRatio);
+        if(which==='end'){
+          const currentEndContinuous=Number(state.selectedSegment.startRatio)+currentSpan;
+          const newEndContinuous=unwrapRouteRatio(proj.ratio,currentEndContinuous);
+          state.selectedSegment.span=clampLoopSpan(newEndContinuous-Number(state.selectedSegment.startRatio));
+          state.selectedSegment.endRatio=normalizeRouteRatio(newEndContinuous);
+        }else{
+          const currentStart=Number(state.selectedSegment.startRatio);
+          const currentEndContinuous=currentStart+currentSpan;
+          const newStartContinuous=unwrapRouteRatio(proj.ratio,currentStart);
+          state.selectedSegment.startRatio=normalizeRouteRatio(newStartContinuous);
+          state.selectedSegment.span=clampLoopSpan(currentEndContinuous-newStartContinuous);
+          state.selectedSegment.endRatio=normalizeRouteRatio(currentEndContinuous);
+        }
+        state.selectedSegment.wrap=selectionCrossesLoopSeam(state.selectedSegment.startRatio,state.selectedSegment.span);
+      }else{
+        if(which==='start') state.selectedSegment.startRatio=proj.ratio;
+        else state.selectedSegment.endRatio=proj.ratio;
+        state.selectedSegment.span=state.selectedSegment.endRatio-state.selectedSegment.startRatio;
+        state.selectedSegment.wrap=false;
+      }
+      const selectedRoute=selectedSegmentRoute(pts,state.selectedSegment);
       band.setLatLngs(selectedRoute);
       halo.setLatLngs(selectedRoute);
       wave.setLatLngs(selectedRoute);
@@ -943,11 +964,13 @@ function setSelectedSegmentPoint(latlng){
   if(!pts){ toast('Não foi possível localizar a avenida.'); return; }
   const proj=projectPointOnRoute(latlng,pts);
   if(!state.selectedSegment || String(state.selectedSegment.avenueId)!==String(pick.avenueId)){
-    state.selectedSegment={avenueId:pick.avenueId,startRatio:proj.ratio,endRatio:proj.ratio};
+    state.selectedSegment={avenueId:pick.avenueId,startRatio:proj.ratio,endRatio:proj.ratio,span:0,wrap:false};
   }
   if(pick.step==='start'){
     state.selectedSegment.startRatio=proj.ratio;
     state.selectedSegment.endRatio=proj.ratio;
+    state.selectedSegment.span=0;
+    state.selectedSegment.wrap=false;
     state.segmentPickMode.step='end';
     renderSelectedSegmentLayers();
     updateSegmentUI();
@@ -955,7 +978,12 @@ function setSelectedSegmentPoint(latlng){
     return;
   }
   state.selectedSegment.endRatio=proj.ratio;
-  state.selectedSegment.wrap=segmentUsesWrap(pts,state.selectedSegment.startRatio,state.selectedSegment.endRatio);
+  state.selectedSegment.span=routeIsClosed(pts)
+    ?shortestLoopSpan(state.selectedSegment.startRatio,proj.ratio)
+    :proj.ratio-state.selectedSegment.startRatio;
+  state.selectedSegment.wrap=routeIsClosed(pts)
+    ?selectionCrossesLoopSeam(state.selectedSegment.startRatio,state.selectedSegment.span)
+    :false;
   finishSegmentSelection();
   toast('Trecho delimitado. Você pode ajustar pelas alças.');
   setTimeout(()=>{
@@ -1004,19 +1032,24 @@ function bindMapPointSelection(){
     if(!gesture?.active||!gesture.avenue)return;
     const projection=projectPointOnRoute(latlng,gesture.avenue.pts);
     gesture.currentProjection=projection;
-    const wrap=segmentUsesWrap(gesture.avenue.pts,gesture.startProjection.ratio,projection.ratio);
+    const closed=routeIsClosed(gesture.avenue.pts);
+    let span=projection.ratio-gesture.startProjection.ratio;
+    if(closed){
+      const previous=Number.isFinite(gesture.lastContinuousRatio)?gesture.lastContinuousRatio:gesture.startProjection.ratio;
+      const continuous=unwrapRouteRatio(projection.ratio,previous);
+      gesture.lastContinuousRatio=continuous;
+      span=clampLoopSpan(continuous-gesture.startProjection.ratio);
+    }
+    const endRatio=closed?normalizeRouteRatio(gesture.startProjection.ratio+span):projection.ratio;
+    const wrap=closed?selectionCrossesLoopSeam(gesture.startProjection.ratio,span):false;
     state.selectedSegment={
       avenueId:gesture.avenue.loc.id,
       startRatio:gesture.startProjection.ratio,
-      endRatio:projection.ratio,
+      endRatio,
+      span,
       wrap
     };
-    const section=subRouteSelection(
-      gesture.avenue.pts,
-      gesture.startProjection.ratio,
-      projection.ratio,
-      wrap
-    );
+    const section=selectedSegmentRoute(gesture.avenue.pts,state.selectedSegment);
     if(!gesture.liveLayers?.length){
       const halo=L.polyline(section,{
         color:"#FFFFFF",weight:24,opacity:.72,lineCap:"round",lineJoin:"round",
@@ -1034,7 +1067,7 @@ function bindMapPointSelection(){
     }else{
       gesture.liveLayers.forEach(layer=>layer.setLatLngs(section));
     }
-    const delta=Math.abs(projection.ratio-gesture.startProjection.ratio);
+    const delta=Math.abs(Number(state.selectedSegment?.span)||0);
     gesture.dragged=delta>.006;
     if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=gesture.avenue.loc.name;
     if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent=gesture.dragged?"Solte para marcar este trecho":"Arraste pela via";
@@ -1060,11 +1093,14 @@ function bindMapPointSelection(){
       clearSegmentSelection({silent:true});
       gesture.startProjection=avenue.projection;
       gesture.currentProjection=avenue.projection;
+      gesture.lastContinuousRatio=avenue.projection.ratio;
       gesture.liveLayers=[];
       state.selectedSegment={
         avenueId:avenue.loc.id,
         startRatio:avenue.projection.ratio,
-        endRatio:avenue.projection.ratio
+        endRatio:avenue.projection.ratio,
+        span:0,
+        wrap:false
       };
       if(!state.reportLocationIds.includes(avenue.loc.id))state.reportLocationIds.push(avenue.loc.id);
       if($("#selectedSegmentAction"))$("#selectedSegmentAction").hidden=false;
@@ -1133,7 +1169,7 @@ function bindMapPointSelection(){
     if(avenue){
       clearSelectedPoint({silent:true});
       clearSegmentSelection({silent:true});
-      state.selectedSegment={avenueId:avenue.loc.id,startRatio:avenue.projection.ratio,endRatio:avenue.projection.ratio,wrap:false};
+      state.selectedSegment={avenueId:avenue.loc.id,startRatio:avenue.projection.ratio,endRatio:avenue.projection.ratio,span:0,wrap:false};
       renderSelectedSegmentLayers();
       updateSegmentUI();
     }else setSelectedPoint(e.latlng);
@@ -1245,13 +1281,13 @@ function renderOccurrencePointMarkers(){
       if(isAvenue && meta?.mode==='segment' && o.location_id){
         const pts=avenuePointsByLocationId(o.location_id);
         if(pts){
-          const latlngs=subRouteSelection(pts,meta.startRatio,meta.endRatio,!!meta.wrap);
+          const latlngs=selectedSegmentRoute(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});
           const color=o.severity==="critical"?"#E13B4B":o.severity==="alert"?"#F27A2C":"#F4B740";
           const halo=L.polyline(latlngs,{color:'#FFFFFF',weight:20,opacity:.70,lineCap:'round',interactive:false}).addTo(map);
           const flood=L.polyline(latlngs,{color,weight:14,opacity:.62,lineCap:'round',interactive:false,className:`flood-segment flood-${o.severity}`}).addTo(map);
           const water=L.polyline(latlngs,{color:'#36C7F4',weight:9,opacity:.78,dashArray:'9 11',lineCap:'round',interactive:false,className:'flood-wave'}).addTo(map);
           const hit=L.polyline(latlngs,{color:'#000',weight:26,opacity:0,interactive:true,className:'map-hit-target'}).addTo(map);
-          const mid=segmentMidpointLatLng(pts,meta.startRatio,meta.endRatio,!!meta.wrap);
+          const mid=selectedSegmentMidpoint(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});
           const popup=`<div class="popup"><h4>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h4><p><b>${esc(locationName(o))}</b></p><p class="statusline">${severityLabels[o.severity]||o.severity} • trecho delimitado</p>${note?`<p>${esc(note)}</p>`:''}<p>${age(o.created_at)}</p></div>`;
           const marker=L.marker(mid,{icon:occurrencePointIcon(o.severity),zIndexOffset:900}).addTo(map).bindPopup(popup);
           const payload={
@@ -1485,8 +1521,64 @@ function subRouteSelection(points,startRatio,endRatio,wrap=false){
 function segmentMidpointLatLng(points,startRatio,endRatio,wrap=false){
   const section=subRouteSelection(points,startRatio,endRatio,wrap);
   if(!section?.length)return pointAtRouteRatio(points,midpointRatio(startRatio,endRatio));
-  const total=routeLength(section);
   return pointAtRouteRatio(section,.5);
+}
+function normalizeRouteRatio(value){
+  const n=Number(value)||0;
+  return ((n%1)+1)%1;
+}
+function unwrapRouteRatio(raw,previousContinuous){
+  const r=normalizeRouteRatio(raw);
+  if(!Number.isFinite(previousContinuous))return r;
+  const candidates=[r-2,r-1,r,r+1,r+2];
+  return candidates.reduce((best,value)=>Math.abs(value-previousContinuous)<Math.abs(best-previousContinuous)?value:best,candidates[0]);
+}
+function clampLoopSpan(span){
+  const n=Number(span)||0;
+  return clamp(n,-.985,.985);
+}
+function selectionCrossesLoopSeam(startRatio,span){
+  const end=Number(startRatio)+Number(span||0);
+  return end<0||end>1;
+}
+function selectedRouteFromSpan(points,startRatio,span){
+  if(!routeIsClosed(points))return subRoute(points,startRatio,normalizeRouteRatio(Number(startRatio)+Number(span||0)));
+  const start=normalizeRouteRatio(startRatio);
+  const amount=clampLoopSpan(span);
+  if(Math.abs(amount)<.0001){
+    const p=pointAtRouteRatio(points,start);
+    return [p,p];
+  }
+  const endContinuous=start+amount;
+  if(amount>0){
+    if(endContinuous<=1)return subRoute(points,start,endContinuous);
+    const first=subRoute(points,start,1);
+    const second=subRoute(points,0,normalizeRouteRatio(endContinuous));
+    return first.concat(second.slice(1));
+  }
+  if(endContinuous>=0)return subRoute(points,endContinuous,start).reverse();
+  const first=subRoute(points,0,start).reverse();
+  const second=subRoute(points,normalizeRouteRatio(endContinuous),1).reverse();
+  return first.concat(second.slice(1));
+}
+function selectedSegmentRoute(points,segment){
+  if(!segment)return [];
+  if(routeIsClosed(points)&&Number.isFinite(Number(segment.span))){
+    return selectedRouteFromSpan(points,segment.startRatio,Number(segment.span));
+  }
+  return subRouteSelection(points,segment.startRatio,segment.endRatio,!!segment.wrap);
+}
+function selectedSegmentMidpoint(points,segment){
+  const section=selectedSegmentRoute(points,segment);
+  if(!section?.length)return pointAtRouteRatio(points,midpointRatio(segment.startRatio,segment.endRatio));
+  return pointAtRouteRatio(section,.5);
+}
+function shortestLoopSpan(startRatio,endRatio){
+  const start=normalizeRouteRatio(startRatio),end=normalizeRouteRatio(endRatio);
+  let delta=end-start;
+  if(delta>.5)delta-=1;
+  if(delta<-.5)delta+=1;
+  return delta;
 }
 function avenueLocationById(id){
   return state.locations.find(l=>String(l.id)===String(id) && l.category==='avenue')||null;
@@ -2605,7 +2697,7 @@ function restoreOccurrenceGroup(items){
     if(o.exact_map_x!=null&&o.exact_map_y!=null){const ll=normalizedToLatLng(o.exact_map_x,o.exact_map_y);state.selectedPoints.push({lat:Number(ll[0]),lng:Number(ll[1]),map_x:Number(o.exact_map_x),map_y:Number(o.exact_map_y),loc:o.location_id?locationById(o.location_id):null});}
   }
   state.selectedPoint=state.selectedPoints.at(-1)||null;renderSelectedPointMarkers();
-  const seg=items.find(o=>o._meta?.mode==="segment");if(seg?.location_id){state.selectedSegment={avenueId:seg.location_id,startRatio:Number(seg._meta.startRatio)||0,endRatio:Number(seg._meta.endRatio)||0,wrap:!!seg._meta.wrap};renderSelectedSegmentLayers();}
+  const seg=items.find(o=>o._meta?.mode==="segment");if(seg?.location_id){state.selectedSegment={avenueId:seg.location_id,startRatio:Number(seg._meta.startRatio)||0,endRatio:Number(seg._meta.endRatio)||0,span:Number.isFinite(Number(seg._meta.span))?Number(seg._meta.span):undefined,wrap:!!seg._meta.wrap};renderSelectedSegmentLayers();}
   $("#occurrenceType").value=first.occurrence_type;setOccurrenceType(first.occurrence_type,{keepLocations:true});if(first.avenue_condition)$("#avenueCondition").value=first.avenue_condition;const sev=$(`input[name="severity"][value="${first.severity}"]`);if(sev)sev.checked=true;$("#notes").value=noteText(first)||"";$("#manualReportFields").hidden=false;$("#smartResult").hidden=true;renderLocationChips();renderDamageUI();updateSelectedPointUI();updateReportReadyState();
 }
 function openReport(source="general"){
@@ -2696,7 +2788,7 @@ function buildReportTargets(){
   if(type==="avenue_flooding"&&state.selectedSegment){
     const locId=String(state.selectedSegment.avenueId);
     if(state.reportLocationIds.some(id=>String(id)===locId)){
-      const pts=avenuePointsByLocationId(locId);if(pts){const mid=segmentMidpointLatLng(pts,state.selectedSegment.startRatio,state.selectedSegment.endRatio,!!state.selectedSegment.wrap),n=latLngToNormalized({lat:mid[0],lng:mid[1]});targets.push({location_id:locId,custom_location:null,exact_map_x:n.map_x,exact_map_y:n.map_y,segment:{startRatio:state.selectedSegment.startRatio,endRatio:state.selectedSegment.endRatio,wrap:!!state.selectedSegment.wrap}});represented.add(locId);}
+      const pts=avenuePointsByLocationId(locId);if(pts){const mid=selectedSegmentMidpoint(pts,state.selectedSegment),n=latLngToNormalized({lat:mid[0],lng:mid[1]});targets.push({location_id:locId,custom_location:null,exact_map_x:n.map_x,exact_map_y:n.map_y,segment:{startRatio:state.selectedSegment.startRatio,endRatio:state.selectedSegment.endRatio,span:Number(state.selectedSegment.span)||0,wrap:!!state.selectedSegment.wrap}});represented.add(locId);}
     }
   }
   state.selectedPoints.forEach((point,index)=>{
@@ -2736,7 +2828,7 @@ function makeOccurrencePayloads(){
       ...(t.condominiumId?{condominiumId:t.condominiumId}:{}),
       ...(type==="wind_damage"&&state.reportDamageTypes.length?{damageTypes:[...state.reportDamageTypes]}:{})
     };
-    if(t.segment){meta.mode="segment";meta.startRatio=t.segment.startRatio;meta.endRatio=t.segment.endRatio;meta.wrap=!!t.segment.wrap;}else if(t.pointIndex){meta.mode="point";meta.pointIndex=t.pointIndex;}
+    if(t.segment){meta.mode="segment";meta.startRatio=t.segment.startRatio;meta.endRatio=t.segment.endRatio;meta.span=Number(t.segment.span)||0;meta.wrap=!!t.segment.wrap;}else if(t.pointIndex){meta.mode="point";meta.pointIndex=t.pointIndex;}
     return {location_id:t.location_id,custom_location:t.custom_location,occurrence_type:type,avenue_condition:avenueCondition,severity,notes:encodeOccurrenceNotes(note,meta),exact_map_x:t.exact_map_x,exact_map_y:t.exact_map_y,reporter_id:state.user.id};
   });
 }
