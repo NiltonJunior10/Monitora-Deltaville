@@ -92,6 +92,7 @@
         <img src="assets/brand-mark.svg" alt="">
         <span><b>Monitora</b><strong>Deltaville</strong></span>
       </button>
+      <button type="button" class="v7-mobile-avatar" id="mobileAvatar" data-nav="profile" aria-label="Abrir meu perfil">MD</button>
 
       <section class="top-weather" aria-label="Previsão local">
         <div class="top-weather-main">
@@ -135,6 +136,89 @@
           </div>
           <span class="status-pill normal" id="overallPill">● Normal</span>
         </div>
+
+        <section class="v7-mobile-dashboard" aria-label="Painel do Deltaville">
+          <div class="v7-context-row">
+            <span class="v7-location-line">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11A6 6 0 1 0 6 10c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
+              Deltaville, Biguaçu – SC
+            </span>
+            <span class="v7-system-pill online" id="v7SystemStatus"><i></i>Sistema online</span>
+          </div>
+
+          <div class="v7-summary-grid">
+            <article class="v7-summary-card weather">
+              <span class="v7-summary-icon blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 18h9.5a4.5 4.5 0 0 0 .3-9A6 6 0 0 0 5.3 10.7 3.7 3.7 0 0 0 7 18Z"/><path d="M8 20.5l-1 1.5M13 20.5 12 22M18 20.5 17 22"/></svg>
+              </span>
+              <div class="v7-summary-copy">
+                <small>Condições atuais</small>
+                <strong id="v7WeatherTemp">—</strong>
+                <span id="v7WeatherSummary">Carregando previsão…</span>
+              </div>
+              <span class="v7-card-chevron">›</span>
+            </article>
+
+            <button type="button" class="v7-summary-card river" data-v7-river-details aria-expanded="false">
+              <span class="v7-summary-icon blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 7c2.1 0 2.1-1.8 4.2-1.8S9.3 7 11.4 7s2.1-1.8 4.2-1.8S17.7 7 21 7"/><path d="M3 12c2.1 0 2.1-1.8 4.2-1.8s2.1 1.8 4.2 1.8 2.1-1.8 4.2-1.8 2.1 1.8 5.4 1.8"/><path d="M3 17c2.1 0 2.1-1.8 4.2-1.8s2.1 1.8 4.2 1.8 2.1-1.8 4.2-1.8 2.1 1.8 5.4 1.8"/></svg>
+              </span>
+              <span class="v7-summary-copy">
+                <small>Nível do Rio Biguaçu</small>
+                <strong id="v7RiverLevel">—</strong>
+                <span class="v7-status-line"><i id="v7RiverDot"></i><span id="v7RiverStatus">Aguardando dados</span></span>
+              </span>
+              <span class="v7-card-chevron">›</span>
+            </button>
+
+            <button type="button" class="v7-summary-card reports" data-nav="reports">
+              <span class="v7-summary-icon blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.8 19c.7-4 2.4-6 5.2-6s4.5 2 5.2 6"/><path d="M16 5.5a2.6 2.6 0 0 1 0 5.1M16.5 13.3c2.2.5 3.5 2.4 3.9 5.2"/></svg>
+              </span>
+              <span class="v7-summary-copy">
+                <small>Relatos nas últimas 24h</small>
+                <strong id="v7Reports24h">0</strong>
+                <span id="v7ReportsCaption">Registros recentes</span>
+              </span>
+              <span class="v7-card-chevron">›</span>
+            </button>
+
+            <button type="button" class="v7-summary-card active" data-nav="alerts">
+              <span class="v7-summary-icon green" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.8 8.2 7 10 4.2-1.8 7-5.3 7-10V6Z"/><path d="m9 12 2 2 4-5"/></svg>
+              </span>
+              <span class="v7-summary-copy">
+                <small>Ocorrências ativas</small>
+                <strong id="v7ActiveCount">0</strong>
+                <span id="v7ActiveStatus">Tudo sob controle</span>
+              </span>
+              <span class="v7-card-chevron">›</span>
+            </button>
+          </div>
+
+          <section class="v7-recent-panel">
+            <div class="v7-section-head">
+              <div>
+                <span class="v7-section-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                </span>
+                <b>Ocorrências recentes</b>
+              </div>
+              <button type="button" data-nav="alerts">Ver todas <span>›</span></button>
+            </div>
+            <div class="v7-recent-list" id="v7RecentList">
+              <div class="v7-recent-empty">Carregando ocorrências…</div>
+            </div>
+          </section>
+
+          <button type="button" class="v7-community-cta" id="v7CommunityReport">
+            <span class="v7-community-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c.7-4.3 2.5-6.4 5.5-6.4s4.8 2.1 5.5 6.4M14 14.2c3.7-.6 6 1.3 7 5.8"/></svg>
+            </span>
+            <span><b>A sua voz faz a diferença</b><small>Relate situações na sua região e ajude a manter a comunidade segura.</small></span>
+            <i>›</i>
+          </button>
+        </section>
 
         <section class="status-card">
           <div>
@@ -454,13 +538,27 @@
           <div><p class="kicker">COMUNIDADE</p><h1>Alertas e ocorrências</h1></div>
           <span class="count" id="alertsCount">0</span>
         </div>
-        <div class="chips" id="alertFilters">
-          <button class="selected" data-alert-filter="all">Todos</button>
-          <button data-alert-filter="attention">Atenção</button>
-          <button data-alert-filter="alert">Alerta</button>
-          <button data-alert-filter="critical">Crítico</button>
+        <div class="v7-alert-tabs" role="tablist" aria-label="Monitoramento">
+          <button type="button" class="active" data-v7-alert-tab="community" role="tab" aria-selected="true">Comunidade</button>
+          <button type="button" data-v7-alert-tab="sources" role="tab" aria-selected="false">Fontes de monitoramento</button>
         </div>
-        <div id="alertsPageList" class="cards"></div>
+        <div class="v7-alert-community">
+          <div class="chips" id="alertFilters">
+            <button class="selected" data-alert-filter="all">Todos</button>
+            <button data-alert-filter="attention">Atenção</button>
+            <button data-alert-filter="alert">Alerta</button>
+            <button data-alert-filter="critical">Crítico</button>
+          </div>
+          <div id="alertsPageList" class="cards"></div>
+        </div>
+        <section class="v7-sources-panel" id="v7SourcesPanel" hidden>
+          <div class="v7-sources-card">
+            <div class="v7-section-head">
+              <div><span class="v7-section-icon">⌁</span><b>Fontes de monitoramento</b></div>
+            </div>
+            <div id="mobileMonitoringSources"></div>
+          </div>
+        </section>
       </section>
 
       <section class="page" data-page="profile">
