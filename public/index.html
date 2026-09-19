@@ -17,10 +17,10 @@
 
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=520">
-  <link rel="stylesheet" href="stability.css?v=520">
-  <link rel="stylesheet" href="apple-ui.css?v=520">
-  <script src="theme-init.js?v=520"></script>
+  <link rel="stylesheet" href="styles.css?v=521">
+  <link rel="stylesheet" href="stability.css?v=521">
+  <link rel="stylesheet" href="apple-ui.css?v=521">
+  <script src="theme-init.js?v=521"></script>
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -77,7 +77,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v5.2.0</small>
+        <small>Monitora Deltaville<br>v5.2.1</small>
       </div>
     </aside>
     <header class="topbar">
@@ -295,9 +295,18 @@
 
           <article class="desktop-summary-card desktop-monitor-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon pulse">⌁</span><b>Relatos da comunidade</b></div>
+              <div><span class="desktop-card-icon pulse">⌁</span><b>Monitoramento</b></div>
             </div>
-            <div id="desktopMonitoringList" class="desktop-monitoring-list"></div><h3>Fontes de monitoramento</h3><div id="homeMonitoringSources"></div>
+            <div class="desktop-monitor-sections">
+              <section class="desktop-monitor-section desktop-monitor-community">
+                <h3>Relatos da comunidade</h3>
+                <div id="desktopMonitoringList" class="desktop-monitoring-list"></div>
+              </section>
+              <section class="desktop-monitor-section desktop-monitor-sources">
+                <h3>Fontes de monitoramento</h3>
+                <div id="homeMonitoringSources"></div>
+              </section>
+            </div>
           </article>
         </section>
       </section>
@@ -909,10 +918,10 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="stability-core.js?v=512"></script>
-  <script src="auth.js?v=520"></script>
-  <script src="river.js?v=520"></script>
-  <script src="weather.js?v=520"></script>
-  <script src="push.js?v=520"></script>
-  <script src="app.js?v=520"></script>
+  <script src="auth.js?v=521"></script>
+  <script src="river.js?v=521"></script>
+  <script src="weather.js?v=521"></script>
+  <script src="push.js?v=521"></script>
+  <script src="app.js?v=521"></script>
 </body>
 </html>
