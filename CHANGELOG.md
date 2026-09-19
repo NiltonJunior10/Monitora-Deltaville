@@ -1,3 +1,17 @@
+# v6.1.0 — Redistribuição mobile iOS 27
+
+- Reorganiza a Home mobile seguindo a distribuição aprovada, mantendo o visual Apple/iOS 27 já adotado.
+- Remove a foto/hero do bairro: a Home passa direto do contexto local para os dados úteis.
+- Cria grade 2x2 com Condições atuais, Nível do Rio Biguaçu, Relatos nas últimas 24h e Ocorrências ativas.
+- Mantém o monitor completo do Rio Biguaçu recolhido por padrão e acessível ao tocar no card do rio.
+- Adiciona lista compacta de ocorrências recentes e CTA comunitário “A sua voz faz a diferença”.
+- Header mobile passa a ter logo/nome, sino e avatar do morador.
+- Bottom navigation volta ao fluxo Painel, Mapa, Registrar, Alertas e Perfil.
+- Tela de Alertas ganha abas Comunidade e Fontes de monitoramento.
+- Dados compactos são alimentados pelas fontes reais já existentes de clima, rio, ocorrências e conexão.
+- Mantém glassmorphism, SF Pro, dark mode, blur e feedbacks da linguagem iOS 27.
+- Inclui weather.js na verificação sintática do projeto.
+
 # v6.0.6 — Nome da marca no mobile
 
 - Exibe “Monitora Deltaville” ao lado da logo no cabeçalho mobile.
