@@ -1,6 +1,6 @@
-# Monitora Deltaville — v5.1.0
+# Monitora Deltaville — v6.9.0
 
-Versão de estabilização do dashboard comunitário, com redesign responsivo para desktop/mobile e tema claro/escuro.
+Dashboard comunitário responsivo com interface mobile e web em linguagem visual iOS 27, tema claro/escuro e monitoramento climático local.
 
 ## Estrutura
 
