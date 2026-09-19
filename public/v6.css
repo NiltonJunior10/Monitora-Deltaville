@@ -3174,7 +3174,7 @@ body.map-open .leaflet-control-attribution{
   }
 
   .v7-summary-card.weather{
-    min-height:126px!important;
+    min-height:138px!important;
   }
   .v7-weather-condition-icon{
     color:var(--v6-blue)!important;
