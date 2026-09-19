@@ -592,3 +592,186 @@ h1,h2,h3,h4,
   .bottom-nav b{font-size:10px!important;font-weight:500!important}
   .nav-icon svg,.report-icon svg{stroke-width:1.8!important}
 }
+
+
+/* v5.2.1 — desktop summary cards: prevent clipping and overlap */
+@media (min-width:1180px) and (pointer:fine){
+  .desktop-bottom-grid{
+    grid-template-columns:.82fr 1.05fr 1.55fr!important;
+    align-items:stretch!important;
+  }
+
+  .desktop-summary-card{
+    height:auto!important;
+    min-height:232px!important;
+    overflow:hidden!important;
+  }
+
+  .desktop-card-head{
+    min-height:30px!important;
+    height:auto!important;
+    margin-bottom:12px!important;
+  }
+
+  .desktop-recent-list{
+    height:auto!important;
+    overflow:visible!important;
+    display:grid!important;
+    gap:0!important;
+  }
+
+  .desktop-recent-row{
+    min-height:54px!important;
+    height:auto!important;
+    padding:8px 0!important;
+    grid-template-columns:34px minmax(0,1fr) auto!important;
+    gap:10px!important;
+  }
+
+  .desktop-recent-icon{
+    width:32px!important;
+    height:32px!important;
+    border-radius:10px!important;
+  }
+
+  .desktop-recent-row b{
+    font-size:14px!important;
+    line-height:1.2!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .desktop-recent-row small{
+    margin-top:3px!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .desktop-recent-row em{
+    padding:5px 8px!important;
+    font-size:10px!important;
+    line-height:1!important;
+  }
+
+  .desktop-monitor-card{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  .desktop-monitor-sections{
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)!important;
+    gap:18px!important;
+    flex:1 1 auto!important;
+  }
+
+  .desktop-monitor-section{
+    min-width:0!important;
+    padding:0!important;
+  }
+
+  .desktop-monitor-section + .desktop-monitor-section{
+    border-left:1px solid var(--apple-line)!important;
+    padding-left:18px!important;
+  }
+
+  .desktop-monitor-section h3,
+  .desktop-monitor-card h3{
+    margin:0 0 8px!important;
+    color:var(--apple-secondary)!important;
+    font-family:var(--apple-font)!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+    font-weight:600!important;
+    letter-spacing:0!important;
+  }
+
+  .desktop-monitoring-list{
+    height:auto!important;
+    overflow:visible!important;
+    display:grid!important;
+    align-content:start!important;
+  }
+
+  .desktop-monitoring-list>div{
+    min-height:24px!important;
+    height:auto!important;
+    padding:4px 0!important;
+    border-bottom:1px solid var(--apple-line)!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+  }
+
+  .desktop-monitoring-list span{
+    font-size:11px!important;
+    line-height:1.25!important;
+    color:var(--apple-secondary)!important;
+  }
+
+  .desktop-monitoring-list b{
+    font-size:10px!important;
+    line-height:1.2!important;
+    white-space:nowrap!important;
+  }
+
+  .desktop-monitoring-list b i{
+    width:6px!important;
+    height:6px!important;
+    flex:0 0 6px!important;
+  }
+
+  #homeMonitoringSources{
+    display:grid!important;
+    gap:0!important;
+  }
+
+  #homeMonitoringSources p{
+    margin:0!important;
+    padding:4px 0!important;
+    border-bottom:1px solid var(--apple-line)!important;
+    color:var(--apple-secondary)!important;
+    font-size:10.5px!important;
+    line-height:1.28!important;
+  }
+
+  #homeMonitoringSources p:last-child{
+    border-bottom:0!important;
+    padding-top:7px!important;
+    color:var(--apple-tertiary)!important;
+    font-size:9.5px!important;
+  }
+
+  #homeMonitoringSources b{
+    color:var(--apple-label)!important;
+    font-weight:600!important;
+  }
+
+  .desktop-severity-grid{
+    height:auto!important;
+    min-height:160px!important;
+  }
+}
+
+@media (min-width:1180px) and (max-width:1380px) and (pointer:fine){
+  .desktop-bottom-grid{
+    grid-template-columns:.8fr 1fr 1.45fr!important;
+  }
+  .desktop-monitor-sections{
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+  .desktop-monitor-section + .desktop-monitor-section{
+    border-left:0!important;
+    border-top:1px solid var(--apple-line)!important;
+    padding-left:0!important;
+    padding-top:12px!important;
+  }
+  .desktop-summary-card{
+    min-height:300px!important;
+  }
+}
