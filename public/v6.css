@@ -2763,3 +2763,31 @@ body.map-open [data-page="map"] #mapFilters{
     margin-top:66px!important;
   }
 }
+
+
+/* v6.3.1 — real tile visibility + cleaner map */
+.leaflet-tile-pane{
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+}
+.leaflet-tile{
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+}
+.leaflet-map-pane,
+.leaflet-pane{
+  transform-style:flat;
+}
+body.map-open .leaflet-control-attribution{
+  z-index:900!important;
+}
+@media(max-width:1179px){
+  body.map-open .leaflet-control-attribution{
+    bottom:calc(90px + env(safe-area-inset-bottom))!important;
+    font-size:7.5px!important;
+    padding:3px 5px!important;
+  }
+}
