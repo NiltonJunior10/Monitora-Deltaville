@@ -1,3 +1,15 @@
+# v6.2.1 — Vias conectadas e seleção estilo Maps
+
+- Corrige o painel “Trecho marcado” para ficar acima da navegação inferior.
+- Remove o botão redundante “Marcar ponto” do mapa mobile; long press passa a ser o gesto principal.
+- Deixa a geometria de reconhecimento das vias quase invisível para preservar o desenho original do mapa.
+- Mantém azul forte somente no trecho selecionado.
+- Conecta os nós das avenidas nos cruzamentos conhecidos.
+- Modela a Av. Deltaville como circuito fechado/oval ao redor do canteiro central.
+- Adiciona suporte a seleção que atravessa o ponto de fechamento do circuito usando o arco mais curto.
+- Persiste a informação de trecho circular nas ocorrências para reabrir e editar corretamente.
+- Move cartões de detalhe do mapa para uma zona segura acima da barra inferior.
+
 # v6.2.0 — Mapa redesenhado e seleção por arraste
 
 - Mantém a nova Home mobile no padrão Apple/iOS 27 aprovado.
