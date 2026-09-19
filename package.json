@@ -5,7 +5,7 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "test": "node --test tests/*.test.cjs",
-    "check": "node --check public/app.js && node --check public/service-worker.js"
+    "check": "node --check public/app.js && node --check public/v6-ui.js && node --check public/service-worker.js"
   },
   "devDependencies": {
     "wrangler": "4.134.0"
