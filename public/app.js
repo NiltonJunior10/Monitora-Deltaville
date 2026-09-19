@@ -997,7 +997,7 @@ function bindMapPointSelection(){
     if(gesture)gesture.liveLayers=[];
   };
 
-  const updateLiveRoadSelection=gesture,latlng=>{
+  const updateLiveRoadSelection=(gesture,latlng)=>{
     if(!gesture?.active||!gesture.avenue)return;
     const projection=projectPointOnRoute(latlng,gesture.avenue.pts);
     gesture.currentProjection=projection;
