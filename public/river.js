@@ -92,6 +92,26 @@ function updateRiverPeriodMetrics(pts,hours){
   if(maxEl)maxEl.textContent=`${Math.max(...vals).toFixed(2).replace(".",",")} m`;
   if(minEl)minEl.textContent=`${Math.min(...vals).toFixed(2).replace(".",",")} m`;
 }
+function riverSmoothSegments(points){
+  if(!points||points.length<2)return "";
+  let out="";
+  for(let i=0;i<points.length-1;i++){
+    const p0=points[i-1]||points[i];
+    const p1=points[i];
+    const p2=points[i+1];
+    const p3=points[i+2]||p2;
+    const cp1x=p1.x+(p2.x-p0.x)/6;
+    const cp1y=p1.y+(p2.y-p0.y)/6;
+    const cp2x=p2.x-(p3.x-p1.x)/6;
+    const cp2y=p2.y-(p3.y-p1.y)/6;
+    out+=` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return out;
+}
+function riverPointDelta(pts,index){
+  if(index<=0||!pts[index]||!pts[index-1])return null;
+  return pts[index].v-pts[index-1].v;
+}
 function renderRiverChart(series=[]){
   const host=$("#riverChart");if(!host)return;
 
@@ -106,14 +126,15 @@ function renderRiverChart(series=[]){
 
   if(pts.length<2){
     riverChartView=null;
-    host.innerHTML='<div class="river-chart-empty">Ainda não há medições suficientes neste período.</div>';
+    host.removeAttribute("tabindex");
+    host.innerHTML='<div class="river-chart-empty"><b>Histórico insuficiente</b><span>Ainda não há medições suficientes neste período.</span></div>';
     return;
   }
 
   const vals=pts.map(x=>x.v);
   const {min,max,span}=niceRiverBounds(vals);
-  const width=720,height=235;
-  const pad={l:52,r:20,t:18,b:34};
+  const width=760,height=250;
+  const pad={l:62,r:28,t:34,b:44};
   const plotW=width-pad.l-pad.r,plotH=height-pad.t-pad.b;
 
   const xy=pts.map((x,i)=>{
@@ -122,8 +143,10 @@ function renderRiverChart(series=[]){
     return {...x,x:px,y:py};
   });
 
-  const coords=xy.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const area=`${pad.l},${height-pad.b} ${coords} ${width-pad.r},${height-pad.b}`;
+  const segments=riverSmoothSegments(xy);
+  const first=xy[0],last=xy[xy.length-1],baseline=height-pad.b;
+  const linePath=`M ${first.x.toFixed(1)} ${first.y.toFixed(1)}${segments}`;
+  const areaPath=`M ${first.x.toFixed(1)} ${baseline.toFixed(1)} L ${first.x.toFixed(1)} ${first.y.toFixed(1)}${segments} L ${last.x.toFixed(1)} ${baseline.toFixed(1)} Z`;
 
   const yTicks=Array.from({length:4},(_,i)=>{
     const value=max-(span*(i/3));
@@ -131,51 +154,61 @@ function renderRiverChart(series=[]){
     return {value,y};
   });
 
-  const tickCount=Math.min(5,pts.length);
+  const tickCount=Math.min(riverWindowHours>=168?4:5,pts.length);
   const idxs=[...new Set(Array.from({length:tickCount},(_,i)=>
     Math.round(i*(pts.length-1)/(tickCount-1))
   ))];
 
   const yGrid=yTicks.map(t=>`
     <line x1="${pad.l}" y1="${t.y.toFixed(1)}" x2="${width-pad.r}" y2="${t.y.toFixed(1)}" class="river-grid-line"/>
-    <text x="${pad.l-9}" y="${(t.y+3).toFixed(1)}" text-anchor="end" class="river-axis-label">${t.value.toFixed(2).replace(".",",")} m</text>
+    <text x="${pad.l-10}" y="${(t.y+4).toFixed(1)}" text-anchor="end" class="river-axis-label river-axis-y">${t.value.toFixed(2).replace(".",",")} m</text>
   `).join("");
 
-  const xLabels=idxs.map(i=>{
+  const xLabels=idxs.map((i,pos)=>{
     const p=xy[i];
-    return `<text x="${p.x.toFixed(1)}" y="${height-10}" text-anchor="middle" class="river-axis-label">${formatRiverAxisTime(p.t,riverWindowHours)}</text>`;
+    const anchor=pos===0?"start":pos===idxs.length-1?"end":"middle";
+    const x=pos===0?pad.l:pos===idxs.length-1?width-pad.r:p.x;
+    return `<text x="${x.toFixed(1)}" y="${height-14}" text-anchor="${anchor}" class="river-axis-label river-axis-x">${formatRiverAxisTime(p.t,riverWindowHours)}</text>`;
   }).join("");
 
-  const last=xy[xy.length-1];
-
   host.innerHTML=`
+    <div class="river-chart-inspector" id="riverChartInspector" aria-live="polite">
+      <span id="riverInspectorLabel">Última medição</span>
+      <strong id="riverInspectorLevel">${last.v.toFixed(2).replace(".",",")} m</strong>
+      <small id="riverInspectorTime">${formatRiverTooltipTime(last.t)}</small>
+      <em id="riverInspectorDelta"></em>
+    </div>
     <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução do nível do Rio Biguaçu em ${riverPeriodText(riverWindowHours).toLowerCase()}">
       <defs>
         <linearGradient id="riverFill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="#1681EF" stop-opacity=".28"/>
-          <stop offset="100%" stop-color="#1681EF" stop-opacity=".025"/>
+          <stop offset="0%" stop-color="#0A84FF" stop-opacity=".34"/>
+          <stop offset="58%" stop-color="#0A84FF" stop-opacity=".12"/>
+          <stop offset="100%" stop-color="#0A84FF" stop-opacity=".015"/>
         </linearGradient>
         <filter id="riverDotShadow" x="-100%" y="-100%" width="300%" height="300%">
           <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".18"/>
         </filter>
       </defs>
       ${yGrid}
-      <polygon points="${area}" fill="url(#riverFill)"/>
-      <polyline points="${coords}" class="river-chart-line"/>
-      <line id="riverCrosshair" x1="${last.x}" y1="${pad.t}" x2="${last.x}" y2="${height-pad.b}" class="river-crosshair" visibility="hidden"/>
-      <circle id="riverHoverDot" cx="${last.x}" cy="${last.y}" r="5" class="river-hover-dot" visibility="hidden"/>
+      <path d="${areaPath}" class="river-chart-area"/>
+      <path d="${linePath}" class="river-chart-line"/>
+      <line id="riverCrosshair" x1="${last.x}" y1="${pad.t}" x2="${last.x}" y2="${baseline}" class="river-crosshair" visibility="hidden"/>
+      <circle id="riverHoverDot" cx="${last.x}" cy="${last.y}" r="6" class="river-hover-dot" visibility="hidden"/>
       <circle cx="${last.x}" cy="${last.y}" r="6" class="river-last-dot" filter="url(#riverDotShadow)"/>
       ${xLabels}
     </svg>
-    <div class="river-current-label" style="left:${(last.x/width*100).toFixed(2)}%;top:${(last.y/height*100).toFixed(2)}%">
+    <div class="river-current-label" style="left:${Math.min(92,Math.max(8,last.x/width*100)).toFixed(2)}%;top:${Math.min(78,Math.max(18,last.y/height*100)).toFixed(2)}%">
       ${last.v.toFixed(2).replace(".",",")} m
     </div>
-    <div class="river-tooltip" id="riverTooltip">
+    <div class="river-tooltip" id="riverTooltip" hidden>
       <strong id="riverTooltipLevel">${last.v.toFixed(2).replace(".",",")} m</strong>
       <span id="riverTooltipTime">${formatRiverTooltipTime(last.t)}</span>
-    </div>`;
+    </div>
+    <div class="river-chart-help">Toque, arraste ou passe o mouse sobre o gráfico</div>`;
 
-  riverChartView={pts:xy,width,height,pad};
+  host.setAttribute("tabindex","0");
+  host.setAttribute("aria-label","Gráfico interativo do nível do Rio Biguaçu. Use as setas para navegar pelas medições.");
+  riverChartView={pts:xy,width,height,pad,selectedIndex:xy.length-1};
   bindRiverChartInteraction();
 }
 function bindRiverChartInteraction(){
@@ -185,43 +218,104 @@ function bindRiverChartInteraction(){
   const tooltip=$("#riverTooltip");
   const cross=$("#riverCrosshair");
   const dot=$("#riverHoverDot");
-  const latest=view.pts[view.pts.length-1];
+  const currentLabel=$(".river-current-label",host);
+  let touching=false;
+  let resetTimer=null;
 
-  function paintPoint(nearest,active=true){
+  function paintPoint(index,active=true){
+    index=Math.max(0,Math.min(view.pts.length-1,index));
+    const nearest=view.pts[index];
     if(!nearest)return;
+    view.selectedIndex=index;
+
     cross?.setAttribute("x1",nearest.x);
     cross?.setAttribute("x2",nearest.x);
     cross?.setAttribute("visibility",active?"visible":"hidden");
     dot?.setAttribute("cx",nearest.x);
     dot?.setAttribute("cy",nearest.y);
     dot?.setAttribute("visibility",active?"visible":"hidden");
+
     if($("#riverTooltipLevel"))$("#riverTooltipLevel").textContent=`${nearest.v.toFixed(2).replace(".",",")} m`;
     if($("#riverTooltipTime"))$("#riverTooltipTime").textContent=formatRiverTooltipTime(nearest.t);
-    if(tooltip)tooltip.hidden=false;
+
+    const inspectorLabel=$("#riverInspectorLabel"),inspectorLevel=$("#riverInspectorLevel"),inspectorTime=$("#riverInspectorTime"),inspectorDelta=$("#riverInspectorDelta");
+    if(inspectorLabel)inspectorLabel.textContent=index===view.pts.length-1?"Última medição":"Medição selecionada";
+    if(inspectorLevel)inspectorLevel.textContent=`${nearest.v.toFixed(2).replace(".",",")} m`;
+    if(inspectorTime)inspectorTime.textContent=formatRiverTooltipTime(nearest.t);
+    const delta=riverPointDelta(view.pts,index);
+    if(inspectorDelta){
+      inspectorDelta.textContent=delta===null?"":`${formatRiverDelta(delta)} vs. anterior`;
+      inspectorDelta.className=delta===null?"":Math.abs(delta)<.0005?"stable":delta>0?"rising":"falling";
+    }
+
+    if(tooltip){
+      if(active){
+        const rect=host.getBoundingClientRect();
+        const x=(nearest.x/view.width)*rect.width;
+        const y=(nearest.y/view.height)*rect.height;
+        const half=58;
+        tooltip.style.left=`${Math.max(half+6,Math.min(rect.width-half-6,x))}px`;
+        tooltip.style.top=`${Math.max(62,Math.min(rect.height-22,y-4))}px`;
+        tooltip.hidden=false;
+      }else{
+        tooltip.hidden=true;
+      }
+    }
+    if(currentLabel)currentLabel.style.opacity=active?"0":"1";
+  }
+
+  function nearestIndex(clientX){
+    const rect=host.getBoundingClientRect();
+    if(rect.width<=0)return view.pts.length-1;
+    const svgX=Math.max(view.pad.l,Math.min(view.width-view.pad.r,(clientX-rect.left)/rect.width*view.width));
+    let idx=0,dist=Infinity;
+    view.pts.forEach((p,i)=>{
+      const d=Math.abs(p.x-svgX);
+      if(d<dist){dist=d;idx=i;}
+    });
+    return idx;
   }
 
   function showAt(clientX){
-    const rect=host.getBoundingClientRect();
-    if(rect.width<=0)return;
-    const svgX=Math.max(view.pad.l,Math.min(view.width-view.pad.r,(clientX-rect.left)/rect.width*view.width));
-    let nearest=view.pts[0],dist=Infinity;
-    for(const p of view.pts){
-      const d=Math.abs(p.x-svgX);
-      if(d<dist){dist=d;nearest=p;}
-    }
-    paintPoint(nearest,true);
+    clearTimeout(resetTimer);
+    paintPoint(nearestIndex(clientX),true);
   }
 
-  function reset(){paintPoint(latest,false);}
+  function resetSoon(delay=900){
+    clearTimeout(resetTimer);
+    resetTimer=setTimeout(()=>paintPoint(view.pts.length-1,false),delay);
+  }
 
   host.onpointermove=e=>{
-    if(e.pointerType==="touch")return;
+    if(e.pointerType==="touch"&&!touching)return;
     showAt(e.clientX);
   };
-  host.onpointerdown=e=>showAt(e.clientX);
-  host.onpointerleave=reset;
-  host.onpointercancel=reset;
-  reset();
+  host.onpointerdown=e=>{
+    touching=e.pointerType==="touch";
+    try{host.setPointerCapture?.(e.pointerId);}catch(_){}
+    showAt(e.clientX);
+  };
+  host.onpointerup=e=>{
+    touching=false;
+    try{host.releasePointerCapture?.(e.pointerId);}catch(_){}
+    resetSoon(e.pointerType==="touch"?2400:1100);
+  };
+  host.onpointerleave=()=>{if(!touching)resetSoon(250);};
+  host.onpointercancel=()=>{touching=false;resetSoon(250);};
+  host.onfocus=()=>paintPoint(view.selectedIndex??view.pts.length-1,true);
+  host.onblur=()=>paintPoint(view.pts.length-1,false);
+  host.onkeydown=e=>{
+    if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight"&&e.key!=="Home"&&e.key!=="End")return;
+    e.preventDefault();
+    let idx=view.selectedIndex??view.pts.length-1;
+    if(e.key==="ArrowLeft")idx--;
+    if(e.key==="ArrowRight")idx++;
+    if(e.key==="Home")idx=0;
+    if(e.key==="End")idx=view.pts.length-1;
+    paintPoint(idx,true);
+  };
+
+  paintPoint(view.pts.length-1,false);
 }
 function bindRiverWindowControls(){
   const wrap=$("#riverWindowChips");
