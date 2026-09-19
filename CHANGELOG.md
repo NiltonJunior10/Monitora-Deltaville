@@ -1,3 +1,14 @@
+# v6.3.0 — Mapa geográfico real
+
+- Substitui o mapa estático do loteamento por OpenStreetMap real usando Leaflet.
+- A visualização inicial cobre o Deltaville atual e a área do Deltaville Marine ao norte.
+- Preserva ocorrências e pontos existentes através de uma transformação de compatibilidade entre as coordenadas do mapa antigo e latitude/longitude.
+- Pontos novos passam a ser posicionados sobre coordenadas geográficas reais, mantendo os campos legados para compatibilidade com o banco atual.
+- Ajusta cálculos de distância e snap de vias para metros.
+- Mantém long press + arraste, seleção de trechos, filtros, lagos, rio e ocorrências sobre o mapa real.
+- Mantém a geometria antiga praticamente invisível; o destaque aparece somente em monitoramento/seleção.
+- Adiciona atribuição obrigatória do OpenStreetMap e reposiciona a atribuição no mobile.
+
 # v6.2.2 — Circuito contínuo e seleção vetorial
 
 - Mantém a direção real do arraste em vias fechadas, sem trocar de lado ao cruzar o ponto de fechamento.
