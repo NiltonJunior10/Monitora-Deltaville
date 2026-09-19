@@ -1,3 +1,16 @@
+# v6.0.3 — Gráfico do Rio Biguaçu
+
+- Redesenha o gráfico como área suavizada em vez de linha quebrada simples.
+- Adiciona interação real por mouse, toque/arraste e teclado.
+- Corrige posicionamento do tooltip, que antes podia ficar invisível ou fora do gráfico.
+- Adiciona inspector com nível, horário e variação em relação à medição anterior.
+- Mantém a última medição visível quando o usuário não está interagindo.
+- Corrige corte de rótulos nas bordas e melhora eixos de nível/horário.
+- Melhora contraste do gráfico no modo escuro.
+- Mantém os filtros de 1h, 3h, 6h, 12h, 24h e 7d.
+- Corrige o erro de sintaxe introduzido na ação direta de apagar ocorrência.
+- Inclui river.js na verificação de sintaxe do projeto.
+
 # v6.0.2 — Leitura, clima e exclusão
 
 - Reforça contraste do modo escuro em textos herdados das versões anteriores.
