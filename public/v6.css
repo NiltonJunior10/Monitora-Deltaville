@@ -720,3 +720,286 @@ body.map-open [data-page="map"] #mapFilters{
   #reportModal .report-sheet-v4{width:min(760px,calc(100vw - 60px))!important;max-height:92dvh!important;border-radius:30px!important;padding:20px!important}
   .type-chip-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
+
+
+/* =========================================================
+   v6.0.2 — dark mode readability + weather layout + owner actions
+   ========================================================= */
+
+/* Strong dark-mode contrast reset for legacy v5 descendants. */
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .app-shell,
+:root[data-theme="dark"] main,
+:root[data-theme="dark"] .page,
+:root[data-theme="dark"] .section,
+:root[data-theme="dark"] .status-card,
+:root[data-theme="dark"] .river-level-card,
+:root[data-theme="dark"] .desktop-kpi,
+:root[data-theme="dark"] .desktop-summary-card,
+:root[data-theme="dark"] .reports-panel,
+:root[data-theme="dark"] .reports-summary-grid article,
+:root[data-theme="dark"] .profile-card,
+:root[data-theme="dark"] .theme-settings-card,
+:root[data-theme="dark"] .push-settings-card,
+:root[data-theme="dark"] .info-card,
+:root[data-theme="dark"] .sheet{
+  color:var(--v6-label)!important;
+}
+
+:root[data-theme="dark"] .section h1,
+:root[data-theme="dark"] .section h2,
+:root[data-theme="dark"] .section h3,
+:root[data-theme="dark"] .section h4,
+:root[data-theme="dark"] .status-card b,
+:root[data-theme="dark"] .status-card strong,
+:root[data-theme="dark"] .river-level-card b,
+:root[data-theme="dark"] .river-level-card strong,
+:root[data-theme="dark"] .event-card h3,
+:root[data-theme="dark"] .event-card p b,
+:root[data-theme="dark"] .reports-panel b,
+:root[data-theme="dark"] .reports-type-row b,
+:root[data-theme="dark"] .reports-type-row strong,
+:root[data-theme="dark"] .desktop-summary-card b,
+:root[data-theme="dark"] .desktop-kpi b,
+:root[data-theme="dark"] .desktop-kpi strong,
+:root[data-theme="dark"] .theme-settings-card b,
+:root[data-theme="dark"] .push-settings-card b,
+:root[data-theme="dark"] .info-card b,
+:root[data-theme="dark"] .info-card h3,
+:root[data-theme="dark"] .map-focus-card h3,
+:root[data-theme="dark"] .map-focus-card b,
+:root[data-theme="dark"] .form label,
+:root[data-theme="dark"] .form legend,
+:root[data-theme="dark"] .compact-block b,
+:root[data-theme="dark"] .compact-title-row b,
+:root[data-theme="dark"] .smart-result b,
+:root[data-theme="dark"] .report-photo-head b{
+  color:var(--v6-label)!important;
+}
+
+:root[data-theme="dark"] .section p,
+:root[data-theme="dark"] .section small,
+:root[data-theme="dark"] .event-card p,
+:root[data-theme="dark"] .event-card small,
+:root[data-theme="dark"] .desktop-recent-row small,
+:root[data-theme="dark"] .desktop-monitoring-list span,
+:root[data-theme="dark"] .desktop-monitor-section h3,
+:root[data-theme="dark"] #homeMonitoringSources p,
+:root[data-theme="dark"] .river-level-card p,
+:root[data-theme="dark"] .river-level-card small,
+:root[data-theme="dark"] .map-focus-card__desc,
+:root[data-theme="dark"] .map-focus-card__meta,
+:root[data-theme="dark"] .push-settings-card small,
+:root[data-theme="dark"] .theme-settings-card small,
+:root[data-theme="dark"] .info-card p,
+:root[data-theme="dark"] .compact-title-row small,
+:root[data-theme="dark"] .report-photo-head small,
+:root[data-theme="dark"] .report-subtitle,
+:root[data-theme="dark"] .report-expiry-v4,
+:root[data-theme="dark"] .field-clean em{
+  color:var(--v6-secondary)!important;
+}
+
+:root[data-theme="dark"] .event-card,
+:root[data-theme="dark"] .river-chart-metrics>div,
+:root[data-theme="dark"] .status-stats article,
+:root[data-theme="dark"] .map-legend-card,
+:root[data-theme="dark"] .location-chip,
+:root[data-theme="dark"] .type-chip-grid button,
+:root[data-theme="dark"] .report-photo-actions button,
+:root[data-theme="dark"] .map-tools-v4,
+:root[data-theme="dark"] .publish-summary{
+  background:rgba(255,255,255,.065)!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+
+:root[data-theme="dark"] .location-chip.selected,
+:root[data-theme="dark"] .type-chip-grid button.selected{
+  background:rgba(10,132,255,.17)!important;
+  border-color:rgba(10,132,255,.72)!important;
+  color:#79BFFF!important;
+}
+
+:root[data-theme="dark"] .secondary,
+:root[data-theme="dark"] .text-action,
+:root[data-theme="dark"] .link{
+  color:#64B5FF!important;
+}
+:root[data-theme="dark"] .secondary{
+  background:rgba(255,255,255,.07)!important;
+  border-color:rgba(255,255,255,.12)!important;
+}
+
+/* Semantic pills need brighter foregrounds in dark mode. */
+:root[data-theme="dark"] .status-pill.normal{color:#63E985!important;background:rgba(48,209,88,.16)!important}
+:root[data-theme="dark"] .status-pill.attention{color:#FFE45C!important;background:rgba(255,214,10,.16)!important}
+:root[data-theme="dark"] .status-pill.alert{color:#FFB84D!important;background:rgba(255,159,10,.17)!important}
+:root[data-theme="dark"] .status-pill.critical{color:#FF7B73!important;background:rgba(255,69,58,.17)!important}
+
+/* Weather: one canonical layout; prevents legacy flex/grid collisions. */
+.top-weather{
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.top-weather-main{
+  width:100%!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(92px,1fr) 1px minmax(92px,.9fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.top-weather-icon{
+  width:40px!important;
+  height:40px!important;
+  display:grid!important;
+  place-items:center!important;
+  flex:none!important;
+}
+.top-weather-now,
+.top-weather-rain{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:2px!important;
+}
+.top-weather-now span,
+.top-weather-rain span{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+}
+.top-weather-now strong{
+  display:block!important;
+  font-size:20px!important;
+  line-height:1.05!important;
+  white-space:nowrap!important;
+}
+.top-weather-rain b{
+  display:block!important;
+  font-size:15px!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+.top-weather-divider{
+  width:1px!important;
+  height:36px!important;
+  background:var(--v6-separator)!important;
+}
+.top-weather-summary{
+  display:block!important;
+  width:100%!important;
+  margin-top:7px!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+:root[data-theme="dark"] .top-weather{
+  background:rgba(28,28,30,.82)!important;
+}
+:root[data-theme="dark"] .top-weather-now span,
+:root[data-theme="dark"] .top-weather-rain span,
+:root[data-theme="dark"] .top-weather-summary{
+  color:#B9B9BF!important;
+}
+:root[data-theme="dark"] .top-weather-now strong,
+:root[data-theme="dark"] .top-weather-rain b{
+  color:#FFFFFF!important;
+}
+
+@media(max-width:1179px){
+  .v6-mobile-weather .top-weather{
+    padding:13px 14px!important;
+  }
+  .v6-mobile-weather .top-weather-main{
+    grid-template-columns:42px minmax(0,1fr) 1px minmax(92px,.8fr)!important;
+  }
+  .v6-mobile-weather .top-weather-summary{
+    margin-top:8px!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    min-height:0!important;
+  }
+}
+
+@media(max-width:390px){
+  .v6-mobile-weather .top-weather-main{
+    grid-template-columns:38px minmax(0,1fr) 1px 84px!important;
+    gap:8px!important;
+  }
+  .top-weather-icon{width:38px!important;height:38px!important}
+  .top-weather-now strong{font-size:19px!important}
+  .top-weather-rain b{font-size:14px!important}
+}
+
+/* Owner controls: clearly expose Edit and Delete on own occurrences. */
+.event-owner-actions{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:6px!important;
+  align-self:center!important;
+  margin-left:6px!important;
+}
+.edit-occurrence-btn,
+.delete-occurrence-inline{
+  min-width:64px!important;
+  min-height:34px!important;
+  padding:7px 10px!important;
+  border-radius:11px!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:650!important;
+  white-space:nowrap!important;
+}
+.edit-occurrence-btn{
+  background:rgba(10,132,255,.10)!important;
+  border:1px solid rgba(10,132,255,.16)!important;
+  color:var(--v6-blue)!important;
+}
+.delete-occurrence-inline{
+  background:rgba(255,69,58,.09)!important;
+  border:1px solid rgba(255,69,58,.16)!important;
+  color:#D9362E!important;
+}
+:root[data-theme="dark"] .edit-occurrence-btn{color:#67B7FF!important;background:rgba(10,132,255,.16)!important;border-color:rgba(10,132,255,.24)!important}
+:root[data-theme="dark"] .delete-occurrence-inline{color:#FF817A!important;background:rgba(255,69,58,.15)!important;border-color:rgba(255,69,58,.24)!important}
+
+#deleteOccurrenceBtn{
+  min-height:48px!important;
+  border-radius:15px!important;
+  border:1px solid rgba(255,69,58,.20)!important;
+  background:rgba(255,69,58,.08)!important;
+  color:#D9362E!important;
+  font-weight:650!important;
+}
+:root[data-theme="dark"] #deleteOccurrenceBtn{
+  color:#FF817A!important;
+  background:rgba(255,69,58,.14)!important;
+  border-color:rgba(255,69,58,.24)!important;
+}
+
+@media(max-width:520px){
+  .event-owner-actions{
+    flex-direction:row!important;
+    grid-column:1/-1!important;
+    width:100%!important;
+    margin:7px 0 0!important;
+    justify-content:flex-end!important;
+  }
+  .edit-occurrence-btn,
+  .delete-occurrence-inline{
+    min-width:78px!important;
+  }
+}
