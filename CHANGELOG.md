@@ -1,3 +1,14 @@
+# v6.8.0 — Ícones unificados e previsão ampliada
+
+- Redesenha todos os ícones de ocorrências em um único sistema visual vetorial, com traços finos, cantos arredondados e leitura consistente.
+- Alagamento de rua passa a usar carro visto de frente com linhas discretas de água, evitando o efeito de “onda/tsunami”.
+- Rio subindo, lago cheio e transbordamento usam linhas horizontais como linguagem padrão de água.
+- Transbordamento de rio usa régua de nível + linhas de água + seta ascendente, seguindo a referência enviada.
+- O card “Condições atuais” passa a mostrar ícone dinâmico da condição do tempo, temperatura e chuva prevista em milímetros para as próximas 6 horas.
+- A previsão expandida passa a consultar também códigos meteorológicos, vento e rajadas para sinalizar possibilidade de granizo e vendaval nas próximas 6 horas.
+- Mantém chuva atual, probabilidade de chuva, sensação térmica, umidade, vento atual e máxima/mínima do dia.
+- Atualiza o cache do PWA para a nova interface.
+
 # v6.7.0 — Retorno do mapa estável e clima detalhado
 
 - Restaura o mapa estático local que funcionava antes da migração para mapas externos/mestre: `mapa-deltaville-clean.webp` + `mapa-entorno-fade.webp`.

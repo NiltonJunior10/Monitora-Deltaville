@@ -191,15 +191,127 @@ const conditionLabels = {
 };
 const severityLabels = {attention:"Atenção",alert:"Alerta",critical:"Crítico"};
 const severityRank = {normal:0,attention:1,alert:2,critical:3};
-const occurrenceIcons = {
-  avenue_flooding:"🌊", lakes_full:"≈", heavy_rain_flood_risk:"☔", hail:"◌",
-  wind_damage:"↝", wind_no_damage:"↝", river_level:"≋", river_overflow:"🌊↑",
-  public_lighting:"💡", drainage_clogged:"◉", tree_hazard:"🌳", road_damage:"▰",
-  power_outage:"⚡", sewer_issue:"≈", waste_accumulation:"◆", signage_issue:"⚑",
-  sidewalk_obstruction:"↥", water_supply:"🚰", infrastructure_damage:"▦",
-  other_neighborhood_issue:"!"
+const occurrenceIconShapes = {
+  avenue_flooding:`
+    <path d="M7.2 12.2 8.5 8.5h7l1.3 3.7"/>
+    <path d="M5.5 12.5h13v3.4h-13z"/>
+    <circle cx="8" cy="15.9" r=".8"/><circle cx="16" cy="15.9" r=".8"/>
+    <path d="M3 18.7c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/>
+    <path d="M4 21c1.3-.8 2.6-.8 3.9 0s2.6.8 3.9 0 2.6-.8 3.9 0 2.6.8 4 0"/>
+  `,
+  drainage_clogged:`
+    <circle cx="12" cy="12" r="7.2"/>
+    <path d="M7.5 9.2h9M6.8 12h10.4M7.5 14.8h9M9.2 6.9v10.2M12 5.7v12.6M14.8 6.9v10.2"/>
+  `,
+  lakes_full:`
+    <path d="M3 9.4c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/>
+    <path d="M3 13.3c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/>
+    <path d="M3 17.2c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/>
+  `,
+  river_level:`
+    <path d="M5 5v14M3.5 8H5M3.5 11H5M3.5 14H5M3.5 17H5"/>
+    <path d="M7.5 10.5c1.3-.9 2.6-.9 3.9 0s2.6.9 3.9 0 2.6-.9 3.9 0"/>
+    <path d="M7.5 14.3c1.3-.9 2.6-.9 3.9 0s2.6.9 3.9 0 2.6-.9 3.9 0"/>
+    <path d="M7.5 18.1c1.3-.9 2.6-.9 3.9 0s2.6.9 3.9 0 2.6-.9 3.9 0"/>
+  `,
+  river_overflow:`
+    <path d="M5 5v14M3.5 8H5M3.5 11H5M3.5 14H5M3.5 17H5"/>
+    <path d="M7.5 11c1.3-.9 2.6-.9 3.9 0s2.6.9 3.9 0 2.6-.9 3.9 0"/>
+    <path d="M7.5 14.8c1.3-.9 2.6-.9 3.9 0s2.6.9 3.9 0 2.6-.9 3.9 0"/>
+    <path d="M7.5 18.6c1.3-.9 2.6-.9 3.9 0s2.6.9 3.9 0 2.6-.9 3.9 0"/>
+    <path d="M17.5 10V5.5M15.5 7.4l2-2 2 2"/>
+  `,
+  heavy_rain_flood_risk:`
+    <path d="M6.2 14.2h10.3a3.5 3.5 0 0 0 .2-7 4.7 4.7 0 0 0-8.9 1.2 3 3 0 0 0-1.6 5.8Z"/>
+    <path d="M8 16.8 7.3 19M12 16.8 11.3 19M16 16.8 15.3 19"/>
+    <path d="M5 21c1.2-.7 2.4-.7 3.6 0s2.4.7 3.6 0 2.4-.7 3.6 0 2.4.7 3.6 0"/>
+  `,
+  hail:`
+    <path d="M6.2 13.4h10.3a3.5 3.5 0 0 0 .2-7 4.7 4.7 0 0 0-8.9 1.2 3 3 0 0 0-1.6 5.8Z"/>
+    <circle cx="8" cy="17.2" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="16" cy="17.2" r="1"/>
+  `,
+  wind_damage:`
+    <path d="M3.5 8h10.3c2.5 0 2.5-3 0-3-1.2 0-1.9.6-2.1 1.4"/>
+    <path d="M3.5 12h14c3 0 3 4 0 4-1.5 0-2.3-.8-2.5-1.8"/>
+    <path d="M4.5 16h6.8"/>
+    <path d="m17.3 18.5 2.7-2.7M18.4 20l2.2-2.2"/>
+  `,
+  wind_no_damage:`
+    <path d="M3.5 8h10.3c2.5 0 2.5-3 0-3-1.2 0-1.9.6-2.1 1.4"/>
+    <path d="M3.5 12h14c3 0 3 4 0 4-1.5 0-2.3-.8-2.5-1.8"/>
+    <path d="M4.5 16h6.8"/>
+  `,
+  public_lighting:`
+    <path d="M9 19h6M10 16h4M9.2 12.5a5 5 0 1 1 5.6 0c-.9.6-1.3 1.3-1.4 2.1h-2.8c-.1-.8-.5-1.5-1.4-2.1Z"/>
+    <path d="M12 2.2v1.5M4.7 5.2l1.1 1.1M19.3 5.2l-1.1 1.1"/>
+  `,
+  tree_hazard:`
+    <path d="M12 20v-5M8.5 20h7"/>
+    <path d="M12 4.2 8.5 9h2.1L7.8 13h8.4l-2.8-4H15Z"/>
+    <path d="M18.3 14.8v3.1M18.3 20.2v.1"/>
+  `,
+  road_damage:`
+    <path d="M8 21 10 3M16 21 14 3"/>
+    <path d="m12.3 8-1.6 2.3 2 1.5-1.8 2.7 2.4 1.7-1.4 2.1"/>
+  `,
+  power_outage:`
+    <path d="M8 21V7l4-3 4 3v14M6 10h12M7 15h10"/>
+    <path d="m13 8-2 4h2l-2 4"/>
+  `,
+  sewer_issue:`
+    <path d="M4 8h8v4h5v3"/>
+    <path d="M3 17c1.4-.9 2.8-.9 4.2 0s2.8.9 4.2 0 2.8-.9 4.2 0 2.8.9 4.2 0"/>
+    <path d="M3 20c1.4-.9 2.8-.9 4.2 0s2.8.9 4.2 0 2.8-.9 4.2 0 2.8.9 4.2 0"/>
+  `,
+  waste_accumulation:`
+    <path d="M7 8h10l-.8 11H7.8Z"/>
+    <path d="M6 8h12M9 8l1-3h4l1 3M10 11v5M14 11v5"/>
+  `,
+  signage_issue:`
+    <path d="M12 21V4M12 5h7l-2 3 2 3h-7"/>
+    <path d="M8 21h8"/>
+  `,
+  sidewalk_obstruction:`
+    <path d="M4 17h16M6 13h5l2-4 2 4h3"/>
+    <path d="M7 17v3M17 17v3"/>
+  `,
+  water_supply:`
+    <path d="M5 9h8v4h5M8 9V6h5"/>
+    <path d="M18 13v2.2"/>
+    <path d="M14.5 18c1.1-.7 2.2-.7 3.3 0s2.2.7 3.3 0"/>
+    <path d="M14.5 20.5c1.1-.7 2.2-.7 3.3 0s2.2.7 3.3 0"/>
+  `,
+  infrastructure_damage:`
+    <path d="M5 21V6l7-3 7 3v15M5 10h14M9 10v11M15 10v11"/>
+    <path d="m12 10-1.4 3 1.7 1.7-1.5 3.3"/>
+  `,
+  other_neighborhood_issue:`
+    <circle cx="12" cy="12" r="8"/>
+    <path d="M12 8v8M8 12h8"/>
+  `
 };
-function occurrenceIcon(type){return occurrenceIcons[type]||"!";}
+
+function occurrenceIconMarkup(type){
+  const shape=occurrenceIconShapes[type]||occurrenceIconShapes.other_neighborhood_issue;
+  return `<svg class="occ-icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${shape}</svg>`;
+}
+
+function decorateOccurrenceTypeButtons(){
+  $$("[data-occ-type]").forEach(btn=>{
+    if(btn.dataset.iconReady==="1")return;
+    const label=btn.textContent.trim();
+    btn.textContent="";
+    const icon=document.createElement("span");
+    icon.className="occ-type-icon";
+    icon.setAttribute("aria-hidden","true");
+    icon.innerHTML=occurrenceIconMarkup(btn.dataset.occType);
+    const text=document.createElement("span");
+    text.className="occ-type-label";
+    text.textContent=label;
+    btn.append(icon,text);
+    btn.dataset.iconReady="1";
+  });
+}
 
 const META_PREFIX = "[[MDMETA]]";
 const META_SUFFIX = "[[/MDMETA]]";
@@ -2089,7 +2201,7 @@ function renderDesktopSeverity(){
 function recentOccurrenceRow(o){
   const when=o.resolved_at||o.created_at;
   return `<div class="desktop-recent-row">
-    <span class="desktop-recent-icon">${esc(occurrenceIcon(o.occurrence_type))}</span>
+    <span class="desktop-recent-icon">${occurrenceIconMarkup(o.occurrence_type)}</span>
     <div><b>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</b><small>${esc(locationName(o))} • ${age(when)}</small></div>
     <em>Resolvida</em>
   </div>`;
@@ -2117,7 +2229,7 @@ function renderReports(){
   const host=$("#reportsTypeList");
   if(host)host.innerHTML=ranked.length?ranked.map(([type,count])=>`
     <div class="reports-type-row">
-      <span>${esc(occurrenceIcon(type))}</span>
+      <span>${occurrenceIconMarkup(type)}</span>
       <div><b>${esc(occurrenceLabels[type]||type)}</b><i><u style="width:${Math.max(8,Math.round(count/max*100))}%"></u></i></div>
       <strong>${count}</strong>
     </div>`).join(""):'<div class="empty">Ainda não há registros suficientes para o relatório.</div>';
@@ -2129,10 +2241,10 @@ function mobileRecentRow(item){
   const where=locationName(o)||"Deltaville";
   const when=item.when||o.created_at;
   const sev=item.severity||o.severity||"attention";
-  const icon=occurrenceIcon(o.occurrence_type);
+  const icon=occurrenceIconMarkup(o.occurrence_type);
   const tag=item.resolved?"Resolvida":"Ativa";
   const cls=item.resolved?"":" active";
-  const inner=`<span class="v7-recent-icon ${esc(sev)}">${esc(icon)}</span>
+  const inner=`<span class="v7-recent-icon ${esc(sev)}">${icon}</span>
     <span class="v7-recent-copy"><b>${esc(title)}</b><span>${esc(where)}</span><small>${age(when)}</small></span>
     <span class="v7-recent-state${cls}">${tag}</span>`;
   return item.resolved
@@ -2232,7 +2344,7 @@ function occurrenceGroupCard(group,allowEdit=false){
   const locLine=names.length<=2?names.join(" + "):`${names.slice(0,2).join(" + ")} +${names.length-2}`;
   const photos=occurrencePhotoList(items).filter(ph=>ph?.url);
   const photoStrip=photos.length?`<div class="event-photo-strip">${photos.slice(0,3).map((ph,i)=>`<button type="button" class="event-photo-thumb" data-view-photo="${esc(ph.url)}" aria-label="Abrir foto ${i+1}"><img src="${esc(ph.url)}" alt="" loading="lazy"></button>`).join("")}</div>`:"";
-  return `<article class="event-card occurrence-clickable" data-open-occurrence="${o.id}" role="button" tabindex="0" aria-label="Abrir ocorrência no mapa"><div class="event-icon ${severity}">${esc(occurrenceIcon(o.occurrence_type))}</div><div><h3>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h3><p><b>${esc(locLine||"Local informado")}</b>${o.avenue_condition?` • ${esc(conditionLabels[o.avenue_condition])}`:""}</p>${noteText(o)?`<p>${esc(noteText(o))}</p>`:""}${photoStrip}${modeTag}<small>${person} • ${age(o.created_at)}</small></div>${allowEdit&&own?`<div class="event-owner-actions"><button class="edit-occurrence-btn" data-edit-occurrence="${o.id}" type="button">Editar</button><button class="delete-occurrence-inline" data-delete-occurrence="${o.id}" type="button">Apagar</button></div>`:""}</article>`;
+  return `<article class="event-card occurrence-clickable" data-open-occurrence="${o.id}" role="button" tabindex="0" aria-label="Abrir ocorrência no mapa"><div class="event-icon ${severity}">${occurrenceIconMarkup(o.occurrence_type)}</div><div><h3>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h3><p><b>${esc(locLine||"Local informado")}</b>${o.avenue_condition?` • ${esc(conditionLabels[o.avenue_condition])}`:""}</p>${noteText(o)?`<p>${esc(noteText(o))}</p>`:""}${photoStrip}${modeTag}<small>${person} • ${age(o.created_at)}</small></div>${allowEdit&&own?`<div class="event-owner-actions"><button class="edit-occurrence-btn" data-edit-occurrence="${o.id}" type="button">Editar</button><button class="delete-occurrence-inline" data-delete-occurrence="${o.id}" type="button">Apagar</button></div>`:""}</article>`;
 }
 function occurrenceCard(o,allowEdit=false){return occurrenceGroupCard({id:groupIdOf(o),items:[o]},allowEdit);}
 function alertCard(a){
@@ -3165,6 +3277,7 @@ $("#deleteOccurrenceBtn").addEventListener("click",deleteEditingOccurrence);
 
 
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(console.warn));
+decorateOccurrenceTypeButtons();
 initTheme();
 bootstrap();
 
