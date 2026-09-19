@@ -1,3 +1,10 @@
+# v6.0.6 — Nome da marca no mobile
+
+- Exibe “Monitora Deltaville” ao lado da logo no cabeçalho mobile.
+- Mantém o header compacto de 52–54 pt.
+- Usa cores adaptativas para modo claro e escuro.
+- Preserva o sino de alertas à direita sem aumentar a altura da barra.
+
 # v6.0.5 — Cabeçalho mobile compacto
 
 - Reduz o cabeçalho mobile para aproximadamente 52–54 pt.
