@@ -1,3 +1,12 @@
+# v6.7.0 — Retorno do mapa estável e clima detalhado
+
+- Restaura o mapa estático local que funcionava antes da migração para mapas externos/mestre: `mapa-deltaville-clean.webp` + `mapa-entorno-fade.webp`.
+- Volta ao sistema de coordenadas original 1601×982, preservando seleção de pontos, trechos, avenidas, lagos, rio e ocorrências.
+- O card “Condições atuais” volta a destacar a quantidade prevista de chuva, em milímetros, para as próximas 6 horas.
+- O card do clima agora é clicável e abre temperatura atual, sensação térmica, chuva atual, probabilidade de chuva, umidade, vento e mínima/máxima do dia.
+- Troca o ícone de alagamento por 🌊 e diferencia transbordamento de rio com 🌊↑.
+- Atualiza o cache do PWA para carregar imediatamente os novos arquivos e o mapa restaurado.
+
 # v6.6.0 — Mapa mestre estático local
 
 - Remove Google Maps, OpenFreeMap, MapLibre e a dependência de tiles externos.
