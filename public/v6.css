@@ -2877,3 +2877,117 @@ body.map-open .leaflet-control-attribution{
     z-index:2200!important;
   }
 }
+
+
+/* =========================================================
+   v6.5.0 — OpenFreeMap + MapLibre (free, no API key)
+   ========================================================= */
+.free-map-underlay{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  height:100%!important;
+  pointer-events:none!important;
+  background:#EAF2EF!important;
+  overflow:hidden!important;
+}
+
+.free-map-underlay .maplibregl-map,
+.free-map-underlay .maplibregl-canvas-container,
+.free-map-underlay .maplibregl-canvas{
+  width:100%!important;
+  height:100%!important;
+}
+
+.free-map-underlay .maplibregl-control-container{
+  pointer-events:none!important;
+}
+
+.free-map-underlay .maplibregl-ctrl-bottom-left,
+.free-map-underlay .maplibregl-ctrl-bottom-right{
+  bottom:4px!important;
+}
+
+.free-map-underlay .maplibregl-ctrl-attrib{
+  margin:0 6px 0 0!important;
+  padding:2px 5px!important;
+  border-radius:8px!important;
+  background:rgba(255,255,255,.78)!important;
+  color:#6B747D!important;
+  font-size:8px!important;
+  line-height:1.2!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+}
+
+.free-map-status{
+  position:absolute!important;
+  z-index:1150!important;
+  left:50%!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:min(300px,calc(100% - 40px))!important;
+  padding:12px 15px!important;
+  border:1px solid var(--v6-glass-border)!important;
+  border-radius:18px!important;
+  background:rgba(248,248,250,.88)!important;
+  color:var(--v6-secondary)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.12)!important;
+  backdrop-filter:blur(24px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(170%)!important;
+  text-align:center!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  pointer-events:none!important;
+}
+
+.free-map-status[data-kind="error"]{
+  color:#9A4B00!important;
+  background:rgba(255,248,232,.92)!important;
+  border-color:rgba(255,159,10,.20)!important;
+}
+
+:root[data-theme="dark"] .free-map-status{
+  background:rgba(28,28,30,.90)!important;
+  color:#D1D1D6!important;
+}
+
+:root[data-theme="dark"] .free-map-underlay .maplibregl-ctrl-attrib{
+  background:rgba(28,28,30,.78)!important;
+  color:#B8B8BE!important;
+}
+
+/* Leaflet remains the interaction/monitoring layer only. */
+.leaflet-container{
+  background:transparent!important;
+}
+.leaflet-tile-pane{
+  display:none!important;
+}
+
+@media(max-width:1179px){
+  body.free-map-active.map-open main{
+    inset:0!important;
+  }
+
+  body.free-map-active.map-open [data-page="map"] .map-bottom-action,
+  body.free-map-active.map-open [data-page="map"] #mapFocusCard{
+    bottom:calc(132px + env(safe-area-inset-bottom))!important;
+  }
+
+  body.free-map-active.map-open .bottom-nav{
+    z-index:2200!important;
+  }
+
+  body.free-map-active.map-open .free-map-underlay .maplibregl-ctrl-bottom-right{
+    bottom:calc(92px + env(safe-area-inset-bottom))!important;
+  }
+}
+
+@media(max-width:390px){
+  body.free-map-active.map-open [data-page="map"] .map-bottom-action,
+  body.free-map-active.map-open [data-page="map"] #mapFocusCard{
+    bottom:calc(126px + env(safe-area-inset-bottom))!important;
+  }
+}
