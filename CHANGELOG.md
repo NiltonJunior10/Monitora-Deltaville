@@ -1,3 +1,13 @@
+# v5.2.0 — Front-end Apple
+
+- Reorganiza a home com hierarquia visual mais limpa no desktop e no mobile.
+- Consolida tipografia com a pilha nativa Apple/SF Pro quando disponível.
+- Adota superfícies neutras, cards mais leves, espaçamento consistente e azul de ação inspirado no iOS.
+- Refina sidebar desktop, cabeçalho, clima, KPIs, mapa, ocorrências, módulo do Rio Biguaçu e navegação inferior.
+- Preserva toda a lógica atual de autenticação, clima, rio, relatos, mapa e notificações.
+- Adiciona uma camada visual final isolada em `public/apple-ui.css` para reduzir conflitos com estilos históricos.
+- Atualiza cache da PWA para evitar a interface antiga após o deploy.
+
 # v5.1.0 — Estabilização
 
 ## v5.1.2 — Interface Apple
