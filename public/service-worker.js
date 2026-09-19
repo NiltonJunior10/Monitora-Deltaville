@@ -1,31 +1,28 @@
-const CACHE="monitora-deltaville-v650-ios27";
+const CACHE="monitora-deltaville-v660-ios27";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js",
-  "https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css",
   "./",
   "./index.html",
-  "./styles.css?v=650",
-  "./stability.css?v=650",
-  "./apple-ui.css?v=650",
-  "./v6.css?v=650",
-  "./auth.js?v=650",
-  "./river.js?v=650",
-  "./weather.js?v=650",
-  "./push.js?v=650",
-  "./app.js?v=650",
-  "./v6-ui.js?v=650",
-  "./stability-core.js?v=650",
-  "./theme-init.js?v=650",
+  "./styles.css?v=660",
+  "./stability.css?v=660",
+  "./apple-ui.css?v=660",
+  "./v6.css?v=660",
+  "./auth.js?v=660",
+  "./river.js?v=660",
+  "./weather.js?v=660",
+  "./push.js?v=660",
+  "./app.js?v=660",
+  "./v6-ui.js?v=660",
+  "./stability-core.js?v=660",
+  "./theme-init.js?v=660",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
-  "./assets/mapa-deltaville-clean.webp",
-  "./assets/mapa-entorno-fade.webp"
+  "./assets/mapa-deltaville-master.svg",
 ];
 
 self.addEventListener("install",event=>{
@@ -103,16 +100,7 @@ self.addEventListener("fetch",event=>{
   ){
     event.respondWith(cacheFirst(event.request));
     return;
-  }
-
-  // Map tiles: keep the last successful tiles for faster reopen/offline tolerance.
-  if(
-    url.hostname.endsWith("basemaps.cartocdn.com") ||
-    url.hostname==="tile.openstreetmap.org"
-  ){
-    event.respondWith(staleWhileRevalidate(event.request));
-  }
-});
+  }});
 
 self.addEventListener("push",event=>{
   let data={};
