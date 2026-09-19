@@ -1,3 +1,11 @@
+# v5.2.1 — Correção do resumo desktop
+
+- Corrige sobreposição entre “Relatos da comunidade” e “Fontes de monitoramento”.
+- Divide o card de monitoramento em duas áreas internas no desktop.
+- Remove alturas rígidas que cortavam conteúdo.
+- Aumenta a altura das linhas de “Ocorrências recentes” e ajusta tipografia/ellipsis.
+- Adapta o bloco para larguras menores de desktop sem sobreposição.
+
 # v5.2.0 — Front-end Apple
 
 - Reorganiza a home com hierarquia visual mais limpa no desktop e no mobile.
