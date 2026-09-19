@@ -1,3 +1,15 @@
+# v6.6.0 — Mapa mestre estático local
+
+- Remove Google Maps, OpenFreeMap, MapLibre e a dependência de tiles externos.
+- Volta o Leaflet para `L.CRS.Simple`.
+- Adiciona `public/assets/mapa-deltaville-master.svg`, construído a partir dos masterplans fornecidos do Deltaville atual e Deltaville Marine.
+- Usa a foto aérea como referência complementar de orientação e relação entre as áreas.
+- Mantém o mapa-base como um asset local e determinístico, adequado para cache/offline do PWA.
+- Preserva ocorrências antigas através de transformação entre o sistema legado 1601×982 e a área correspondente do novo mapa mestre.
+- Mantém long press, marcação de pontos, seleção de trechos, filtros e ocorrências em camadas independentes sobre a arte.
+- Remove o proxy de tiles do Cloudflare Worker.
+- A união visual Deltaville/Marine é uma composição vetorial baseada nos documentos fornecidos e pode ser refinada sem trocar a arquitetura do mapa.
+
 # v6.5.0 — Mapa real gratuito
 
 - Remove a dependência do Google Maps e qualquer necessidade de API key/faturamento.
