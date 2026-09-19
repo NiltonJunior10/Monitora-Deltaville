@@ -2677,7 +2677,8 @@ document.addEventListener("click",e=>{
   if(e.target.closest("#reportHereBtn")){if(state.multiPointMode){state.multiPointMode=false;setPointPickMode(false,{multi:false});openReport("map");}else{prefillOccurrenceFromSelectedPoint();openReport("map");}return;}
   if(e.target.closest("#reportSegmentBtn")){openReport("map");return;}
   const close=e.target.closest("[data-close]");if(close){closeModal(close.dataset.close==="report"?"reportModal":"profileModal");return;}
-  const removeOccurrence=e.target.closest("[data-delete-occurrence]");if(removeOccurrence){e.preventDefault();e.stopPropagation();deleteOwnOccurrenceById(removeOccurrence.dataset.deleteOccurrence);return;}\n  const edit=e.target.closest("[data-edit-occurrence]");if(edit){e.stopPropagation();openEditOccurrence(edit.dataset.editOccurrence);return;}
+  const removeOccurrence=e.target.closest("[data-delete-occurrence]");if(removeOccurrence){e.preventDefault();e.stopPropagation();deleteOwnOccurrenceById(removeOccurrence.dataset.deleteOccurrence);return;}
+  const edit=e.target.closest("[data-edit-occurrence]");if(edit){e.stopPropagation();openEditOccurrence(edit.dataset.editOccurrence);return;}
   const occ=e.target.closest("[data-open-occurrence]");if(occ){focusOccurrenceOnMap(occ.dataset.openOccurrence);return;}
   const focus=e.target.closest("[data-focus-location]");if(focus){focusLocationById(focus.dataset.focusLocation);return;}
   const mf=e.target.closest("[data-filter]");if(mf){$$("[data-filter]").forEach(x=>x.classList.remove("selected"));mf.classList.add("selected");state.filter=mf.dataset.filter;hideMapFocusCard();renderMapMarkers();return;}
