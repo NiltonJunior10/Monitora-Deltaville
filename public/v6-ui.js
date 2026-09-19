@@ -279,7 +279,7 @@
     const expiry=q(".report-expiry-v4");
     if(expiry)expiry.style.display=wizard.step===wizard.max?"block":"none";
     const del=q("#deleteOccurrenceBtn");
-    if(del&&wizard.step!==wizard.max)del.style.display="none";
+    if(del)del.style.display=wizard.step===wizard.max&&!del.hidden?"block":"none";
     q("#reportModal .report-sheet-v4")?.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -290,6 +290,12 @@
       if(Number(el.dataset.v6Step)!==wizard.step)el.classList.remove("v6-step-active");
       else if(!el.hidden)el.classList.add("v6-step-active");
     });
+    const summary=q("#publishSummary");
+    if(summary)summary.style.display=wizard.step===wizard.max&&!summary.hidden?"flex":"none";
+    const submit=q("#submitReport");
+    if(submit)submit.style.display=wizard.step===wizard.max?"block":"none";
+    const del=q("#deleteOccurrenceBtn");
+    if(del)del.style.display=wizard.step===wizard.max&&!del.hidden?"block":"none";
   }
 
   function manualAlwaysOpen(){
