@@ -1,3 +1,18 @@
+# v6.2.0 — Mapa redesenhado e seleção por arraste
+
+- Mantém a nova Home mobile no padrão Apple/iOS 27 aprovado.
+- Remove o título “Mapa do Deltaville” do topo no mobile; permanecem somente Voltar e os filtros.
+- Transforma Centralizar e Legenda em controles flutuantes compactos.
+- Torna o mapa realmente full-screen atrás das superfícies de vidro.
+- Reduz a espessura visual dos overlays das avenidas para preservar os nomes e detalhes do mapa-base.
+- Refina os traçados internos das avenidas com mais pontos de snap.
+- Aumenta apenas a área invisível de toque das vias, facilitando seleção sem engrossar o desenho.
+- Implementa long press + arraste sobre avenida: o app identifica a via, trava a seleção nela e delimita o trecho conforme o dedo se move.
+- Ao soltar, o trecho fica salvo no mapa e pode ser ajustado pelas duas alças.
+- Long press fora de uma avenida continua marcando ponto exato.
+- Durante o arraste, o pan/zoom é temporariamente suspenso para evitar conflito de gestos.
+- Atualiza instruções do mapa para explicar o novo gesto.
+
 # v6.1.0 — Redistribuição mobile iOS 27
 
 - Reorganiza a Home mobile seguindo a distribuição aprovada, mantendo o visual Apple/iOS 27 já adotado.
