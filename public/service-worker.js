@@ -1,22 +1,22 @@
-const CACHE="monitora-deltaville-v632-ios27";
+const CACHE="monitora-deltaville-v640-ios27";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "./",
   "./index.html",
-  "./styles.css?v=632",
-  "./stability.css?v=632",
-  "./apple-ui.css?v=632",
-  "./v6.css?v=632",
-  "./auth.js?v=632",
-  "./river.js?v=632",
-  "./weather.js?v=632",
-  "./push.js?v=632",
-  "./app.js?v=632",
-  "./v6-ui.js?v=632",
-  "./stability-core.js?v=632",
-  "./theme-init.js?v=632",
+  "./styles.css?v=640",
+  "./stability.css?v=640",
+  "./apple-ui.css?v=640",
+  "./v6.css?v=640",
+  "./auth.js?v=640",
+  "./river.js?v=640",
+  "./weather.js?v=640",
+  "./push.js?v=640",
+  "./app.js?v=640",
+  "./v6-ui.js?v=640",
+  "./stability-core.js?v=640",
+  "./theme-init.js?v=640",
   "./manifest.webmanifest",
   "./assets/brand-mark.svg",
   "./assets/logo-horizontal.svg",
@@ -79,6 +79,11 @@ self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
 
   const url=new URL(event.request.url);
+
+  if(url.origin===self.location.origin && url.pathname==="/google-maps-config.js"){
+    event.respondWith(fetch(event.request,{cache:"no-store"}));
+    return;
+  }
 
   // Dados vivos nunca devem ser atendidos por cache do SW.
   if(url.hostname.includes("supabase.co")||url.hostname.includes("open-meteo.com"))return;
