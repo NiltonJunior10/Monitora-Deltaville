@@ -1003,3 +1003,260 @@ body.map-open [data-page="map"] #mapFilters{
     min-width:78px!important;
   }
 }
+
+
+/* =========================================================
+   v6.0.3 — River Biguaçu chart: readable + truly interactive
+   ========================================================= */
+.river-level-card{
+  overflow:visible!important;
+}
+.river-chart-wrap{
+  position:relative!important;
+  overflow:visible!important;
+  min-width:0!important;
+}
+.river-chart{
+  position:relative!important;
+  min-height:250px!important;
+  overflow:visible!important;
+  border:1px solid var(--v6-separator)!important;
+  border-radius:16px!important;
+  background:
+    linear-gradient(180deg,rgba(10,132,255,.045),rgba(10,132,255,.012)),
+    var(--v6-surface-solid)!important;
+  cursor:crosshair!important;
+  touch-action:pan-y!important;
+  outline:none!important;
+}
+.river-chart:focus-visible{
+  box-shadow:0 0 0 3px rgba(10,132,255,.18)!important;
+  border-color:rgba(10,132,255,.55)!important;
+}
+.river-chart svg{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:760 / 250!important;
+  min-height:220px!important;
+  overflow:visible!important;
+}
+.river-chart-area{
+  fill:url(#riverFill)!important;
+  stroke:none!important;
+}
+.river-chart-line{
+  fill:none!important;
+  stroke:var(--v6-blue)!important;
+  stroke-width:3.2!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+  vector-effect:non-scaling-stroke;
+}
+.river-grid-line{
+  stroke:var(--v6-separator)!important;
+  stroke-width:1!important;
+  stroke-dasharray:3 7!important;
+  vector-effect:non-scaling-stroke;
+}
+.river-axis-label{
+  fill:var(--v6-secondary)!important;
+  font-family:var(--v6-font)!important;
+  font-size:10px!important;
+  font-weight:600!important;
+}
+.river-axis-y{font-variant-numeric:tabular-nums!important}
+.river-last-dot,
+.river-hover-dot{
+  fill:var(--v6-surface-solid)!important;
+  stroke:var(--v6-blue)!important;
+  stroke-width:4!important;
+  vector-effect:non-scaling-stroke;
+}
+.river-crosshair{
+  stroke:var(--v6-blue)!important;
+  stroke-width:1.2!important;
+  stroke-dasharray:4 5!important;
+  opacity:.62!important;
+  vector-effect:non-scaling-stroke;
+}
+.river-chart-inspector{
+  position:absolute!important;
+  z-index:7!important;
+  top:8px!important;
+  left:72px!important;
+  right:14px!important;
+  min-height:24px!important;
+  display:flex!important;
+  align-items:baseline!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  pointer-events:none!important;
+  white-space:nowrap!important;
+}
+.river-chart-inspector span{
+  color:var(--v6-secondary)!important;
+  font-size:9px!important;
+  font-weight:600!important;
+}
+.river-chart-inspector strong{
+  color:var(--v6-label)!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.river-chart-inspector small{
+  color:var(--v6-secondary)!important;
+  font-size:9px!important;
+}
+.river-chart-inspector em{
+  padding:3px 6px!important;
+  border-radius:999px!important;
+  color:var(--v6-secondary)!important;
+  background:var(--v6-fill)!important;
+  font-size:8px!important;
+  font-style:normal!important;
+  font-weight:650!important;
+}
+.river-chart-inspector em.rising{color:#0E8B42!important;background:rgba(48,209,88,.12)!important}
+.river-chart-inspector em.falling{color:#0876D9!important;background:rgba(10,132,255,.10)!important}
+.river-chart-inspector em.stable{color:var(--v6-secondary)!important}
+
+.river-current-label{
+  z-index:5!important;
+  transform:translate(-50%,-150%)!important;
+  padding:5px 8px!important;
+  border:1px solid rgba(10,132,255,.20)!important;
+  border-radius:9px!important;
+  background:rgba(255,255,255,.92)!important;
+  color:#0876D9!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.08)!important;
+  font-family:var(--v6-font)!important;
+  font-size:9px!important;
+  font-weight:700!important;
+  transition:opacity .12s ease!important;
+}
+.river-tooltip{
+  z-index:10!important;
+  min-width:112px!important;
+  padding:8px 10px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:12px!important;
+  background:rgba(20,20,22,.92)!important;
+  color:white!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.22)!important;
+  backdrop-filter:blur(16px)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
+  pointer-events:none!important;
+}
+.river-tooltip[hidden]{display:none!important}
+.river-tooltip strong{
+  color:white!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.river-tooltip span{
+  color:rgba(255,255,255,.72)!important;
+  font-size:9px!important;
+}
+.river-chart-help{
+  position:absolute!important;
+  z-index:4!important;
+  right:10px!important;
+  bottom:4px!important;
+  color:var(--v6-tertiary)!important;
+  font-size:8px!important;
+  font-weight:500!important;
+  pointer-events:none!important;
+}
+.river-chart-empty{
+  min-height:220px!important;
+  display:grid!important;
+  align-content:center!important;
+  justify-items:center!important;
+  gap:5px!important;
+  color:var(--v6-secondary)!important;
+}
+.river-chart-empty b{color:var(--v6-label)!important;font-size:13px!important}
+.river-chart-empty span{color:var(--v6-secondary)!important;font-size:10px!important}
+
+.river-chart-metrics span{
+  color:var(--v6-secondary)!important;
+}
+.river-chart-metrics strong{
+  color:var(--v6-label)!important;
+  font-size:12px!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+/* Dark graph keeps all labels readable instead of inheriting old blue-on-dark colors. */
+:root[data-theme="dark"] .river-chart{
+  background:
+    linear-gradient(180deg,rgba(10,132,255,.10),rgba(10,132,255,.025)),
+    #18181A!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+:root[data-theme="dark"] .river-current-label{
+  background:rgba(28,28,30,.94)!important;
+  color:#72BEFF!important;
+  border-color:rgba(10,132,255,.30)!important;
+}
+:root[data-theme="dark"] .river-axis-label{fill:#B7B7BD!important}
+:root[data-theme="dark"] .river-grid-line{stroke:rgba(255,255,255,.10)!important}
+:root[data-theme="dark"] .river-last-dot,
+:root[data-theme="dark"] .river-hover-dot{fill:#1C1C1E!important}
+:root[data-theme="dark"] .river-chart-inspector strong{color:#FFFFFF!important}
+:root[data-theme="dark"] .river-chart-inspector span,
+:root[data-theme="dark"] .river-chart-inspector small{color:#B7B7BD!important}
+
+@media(max-width:1179px){
+  .river-chart-wrap{padding:13px!important}
+  .river-chart{
+    min-height:235px!important;
+  }
+  .river-chart svg{
+    min-height:215px!important;
+  }
+  .river-chart-inspector{
+    left:58px!important;
+    right:10px!important;
+    gap:5px!important;
+    justify-content:flex-start!important;
+    flex-wrap:wrap!important;
+    white-space:normal!important;
+  }
+  .river-chart-inspector span{display:none!important}
+  .river-chart-inspector strong{font-size:14px!important}
+  .river-chart-inspector small{font-size:8.5px!important}
+  .river-chart-help{display:none!important}
+}
+
+@media(max-width:420px){
+  .river-chart{
+    min-height:220px!important;
+  }
+  .river-chart svg{
+    min-height:200px!important;
+  }
+  .river-chart-inspector em{
+    max-width:122px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  .river-axis-label{
+    font-size:9px!important;
+  }
+}
+
+@media(min-width:1180px) and (pointer:fine){
+  .river-chart{
+    min-height:240px!important;
+  }
+  .river-chart svg{
+    min-height:225px!important;
+  }
+  .river-chart-wrap{
+    padding:14px!important;
+  }
+}
