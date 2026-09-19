@@ -1260,3 +1260,136 @@ body.map-open [data-page="map"] #mapFilters{
     padding:14px!important;
   }
 }
+
+
+/* =========================================================
+   v6.0.4 — Weather mobile structure hotfix
+   The previous .v6-mobile-weather .top-weather selector kept the
+   outer card as a grid and forced the summary into the main row.
+   ========================================================= */
+@media(max-width:1179px){
+  .v6-mobile-weather{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0 0 14px!important;
+  }
+
+  .v6-mobile-weather .top-weather{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:14px!important;
+    overflow:hidden!important;
+  }
+
+  .v6-mobile-weather .top-weather-main{
+    display:grid!important;
+    grid-template-columns:44px minmax(0,1fr) 1px minmax(86px,auto)!important;
+    grid-template-rows:auto!important;
+    align-items:center!important;
+    column-gap:11px!important;
+    row-gap:0!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important;
+  }
+
+  .v6-mobile-weather .top-weather-icon{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:44px!important;
+    height:44px!important;
+    font-size:24px!important;
+    border-radius:14px!important;
+  }
+
+  .v6-mobile-weather .top-weather-now{
+    grid-column:2!important;
+    grid-row:1!important;
+    min-width:0!important;
+  }
+
+  .v6-mobile-weather .top-weather-divider{
+    grid-column:3!important;
+    grid-row:1!important;
+    align-self:stretch!important;
+    width:1px!important;
+    height:auto!important;
+    min-height:38px!important;
+  }
+
+  .v6-mobile-weather .top-weather-rain{
+    grid-column:4!important;
+    grid-row:1!important;
+    min-width:0!important;
+    align-items:flex-start!important;
+  }
+
+  .v6-mobile-weather .top-weather-now span,
+  .v6-mobile-weather .top-weather-rain span{
+    margin:0 0 3px!important;
+    font-size:10px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+  }
+
+  .v6-mobile-weather .top-weather-now strong{
+    margin:0!important;
+    font-size:22px!important;
+    line-height:1!important;
+    letter-spacing:-.02em!important;
+  }
+
+  .v6-mobile-weather .top-weather-rain b{
+    margin:0!important;
+    font-size:15px!important;
+    line-height:1.05!important;
+  }
+
+  .v6-mobile-weather .top-weather-summary{
+    display:block!important;
+    position:static!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:11px 0 0!important;
+    padding:10px 0 0!important;
+    border-top:1px solid var(--v6-separator)!important;
+    color:var(--v6-secondary)!important;
+    font-size:11px!important;
+    line-height:1.38!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    word-break:normal!important;
+  }
+}
+
+@media(max-width:390px){
+  .v6-mobile-weather .top-weather{
+    padding:12px!important;
+  }
+  .v6-mobile-weather .top-weather-main{
+    grid-template-columns:40px minmax(0,1fr) 1px 78px!important;
+    column-gap:9px!important;
+  }
+  .v6-mobile-weather .top-weather-icon{
+    width:40px!important;
+    height:40px!important;
+    font-size:22px!important;
+  }
+  .v6-mobile-weather .top-weather-now strong{
+    font-size:20px!important;
+  }
+  .v6-mobile-weather .top-weather-rain b{
+    font-size:14px!important;
+  }
+  .v6-mobile-weather .top-weather-summary{
+    font-size:10.5px!important;
+  }
+}
