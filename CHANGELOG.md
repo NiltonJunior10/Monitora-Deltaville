@@ -1,3 +1,13 @@
+# v6.9.0 — Home web no padrão iOS 27
+
+- Reorganiza a home desktop em uma hierarquia mais clara: hero, indicadores, ação principal, mapa, ocorrências, rio e painéis de apoio.
+- Adiciona um hero ilustrado inspirado nos arcos de entrada do Deltaville, transformando os arcos em elemento visual da identidade do Monitora.
+- Substitui a lateral escura por navegação flutuante em glassmorphism, coerente com a linguagem visual do app mobile.
+- Aplica superfícies translúcidas, blur, bordas suaves, cantos amplos e sombras leves nos cards da versão web.
+- Redesenha cabeçalho, clima, KPIs, botão de ocorrência, mapa, feed e monitoramento do rio para manter o mesmo sistema visual.
+- Mantém as mudanças restritas ao desktop, sem alterar a distribuição aprovada do mobile.
+- Atualiza o cache do PWA para os novos estilos.
+
 # v6.8.0 — Ícones unificados e previsão ampliada
 
 - Redesenha todos os ícones de ocorrências em um único sistema visual vetorial, com traços finos, cantos arredondados e leitura consistente.
