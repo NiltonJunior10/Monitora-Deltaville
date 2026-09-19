@@ -1,3 +1,14 @@
+# v6.5.0 — Mapa real gratuito
+
+- Remove a dependência do Google Maps e qualquer necessidade de API key/faturamento.
+- Usa MapLibre GL JS com OpenFreeMap, baseado em dados OpenStreetMap.
+- Estilo base Positron para manter o visual claro e compatível com o padrão iOS 27.
+- Mantém Leaflet como camada de interação e monitoramento sobre o mapa vetorial.
+- Preserva filtros, ocorrências, lagos, rio e seleção de trechos.
+- Mantém a área inicial cobrindo Deltaville e expansão para o Deltaville Marine.
+- Remove configuração e documentação da chave Google Maps.
+- Adiciona MapLibre aos recursos estáticos do PWA.
+
 # v6.4.0 — Google Maps
 
 - Troca a camada-base do mapa para Google Maps JavaScript API.
