@@ -17,14 +17,19 @@ As alterações desta versão estão descritas em [CHANGELOG.md](CHANGELOG.md). 
 
 
 
-## Mapa gratuito
+## Mapa estático local
 
-O mapa real usa **MapLibre GL JS** com a instância pública do **OpenFreeMap**.
+O Monitora usa **Leaflet + CRS.Simple** com o arquivo local:
 
-- Não exige API key.
-- Não exige cadastro.
-- Não exige faturamento/cartão.
-- Os dados cartográficos vêm do OpenStreetMap.
-- O estilo usado pelo app é o Positron do OpenFreeMap.
+`public/assets/mapa-deltaville-master.svg`
 
-A atribuição cartográfica deve permanecer visível no mapa.
+A base foi reconstruída vetorialmente a partir dos masterplans fornecidos do Deltaville atual e do Deltaville Marine, usando a foto aérea como referência de orientação.
+
+- Sem Google Maps.
+- Sem API key.
+- Sem cartão/faturamento.
+- Sem tiles externos.
+- Funciona como asset local do PWA e pode ser armazenado em cache.
+- Ocorrências e seleção de trechos continuam como camadas interativas independentes.
+
+Os registros antigos continuam usando o sistema legado `map_x/map_y`; o app aplica uma transformação de compatibilidade para posicioná-los no mapa mestre.
