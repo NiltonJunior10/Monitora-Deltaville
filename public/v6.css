@@ -2648,3 +2648,53 @@ body.map-open [data-page="map"] #mapFilters{
     bottom:calc(94px + env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* =========================================================
+   v6.2.2 — continuous route selection polish
+   ========================================================= */
+@media(max-width:1179px){
+  body.map-open [data-page="map"] .map-bottom-action,
+  body.map-open [data-page="map"] #mapFocusCard{
+    bottom:calc(132px + env(safe-area-inset-bottom))!important;
+  }
+
+  /* Selected segment reads as one continuous Maps-like route. */
+  .selected-segment-band,
+  .road-drag-band{
+    opacity:.96!important;
+    filter:drop-shadow(0 2px 3px rgba(10,132,255,.16))!important;
+  }
+
+  .selected-segment-wave,
+  .road-drag-core{
+    stroke-dasharray:none!important;
+    opacity:.96!important;
+  }
+
+  .road-drag-halo{
+    opacity:.86!important;
+  }
+
+  .segment-handle{
+    width:18px!important;
+    height:18px!important;
+    border:3px solid #fff!important;
+    background:#0A84FF!important;
+    box-shadow:0 3px 10px rgba(10,132,255,.30)!important;
+  }
+
+  /* The underlying avenue geometry is for hit testing, not decoration. */
+  .avenue-corridor,
+  .avenue-core,
+  .avenue-center-static{
+    pointer-events:none!important;
+  }
+}
+
+@media(max-width:390px){
+  body.map-open [data-page="map"] .map-bottom-action,
+  body.map-open [data-page="map"] #mapFocusCard{
+    bottom:calc(126px + env(safe-area-inset-bottom))!important;
+  }
+}
