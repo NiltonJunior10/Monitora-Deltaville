@@ -1,3 +1,15 @@
+# v6.3.1 — Correção dos tiles do mapa real
+
+- Corrige o mapa branco observado no iPhone.
+- Troca a camada principal por CARTO Light baseada em dados OpenStreetMap.
+- Adiciona fallback automático para tiles diretos do OpenStreetMap se a camada principal falhar.
+- Remove cross-origin forçado que podia impedir imagens de tiles em alguns contextos mobile/PWA.
+- Força visibilidade normal do tile pane para neutralizar estilos legados.
+- Adiciona cache stale-while-revalidate para tiles CARTO/OSM.
+- Oculta os antigos polígonos decorativos de avenidas, lagos e rio sobre o mapa real.
+- Reduz etiquetas permanentes de lagos no filtro “Todos”; nomes aparecem no filtro Lagos ou quando há ocorrência.
+- Mantém geometria invisível de snap e seleção enquanto as vias reais são recalibradas.
+
 # v6.3.0 — Mapa geográfico real
 
 - Substitui o mapa estático do loteamento por OpenStreetMap real usando Leaflet.
