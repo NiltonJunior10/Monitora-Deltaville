@@ -728,39 +728,20 @@ function makeMap(id, preview=false){
     '<a href="https://carto.com/attributions" target="_blank" rel="noopener">© CARTO</a>'
   );
 
-  let fallbackStarted=false;
-  let tileErrors=0;
-  let baseLayer=null;
-
-  const addOsmFallback=()=>{
-    if(fallbackStarted)return;
-    fallbackStarted=true;
-    if(baseLayer){
-      try{map.removeLayer(baseLayer);}catch(_){}
-    }
-    baseLayer=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
-      minZoom:14,
-      maxZoom:20,
-      maxNativeZoom:19,
-      detectRetina:false,
-      updateWhenIdle:true,
-      keepBuffer:4
-    }).addTo(map);
-  };
-
-  baseLayer=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
-    subdomains:"abcd",
+  const baseLayer=L.tileLayer("/map-tiles/{z}/{x}/{y}.png",{
     minZoom:14,
     maxZoom:20,
     maxNativeZoom:20,
-    detectRetina:true,
+    detectRetina:false,
     updateWhenIdle:true,
-    keepBuffer:4
+    keepBuffer:5,
+    errorTileUrl:"data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
   });
 
+  let tileErrorCount=0;
   baseLayer.on("tileerror",()=>{
-    tileErrors++;
-    if(tileErrors>=3)addOsmFallback();
+    tileErrorCount++;
+    if(tileErrorCount===3)toast("Mapa-base indisponível no momento. Tentando novamente…");
   });
   baseLayer.addTo(map);
 
@@ -2095,6 +2076,7 @@ function renderMapMarkers(){
       if(which==="full"&&state.filter==="avenue")return;
       if(which==="full"&&state.filter==="alerts"&&status==="normal")return;
       const latest=state.occurrences.find(o=>o.location_id===loc.id);
+      if(USE_REAL_MAP&&which==="full"&&state.filter==="all"&&!latest)return;
       const marker=L.marker(coord(loc),{icon:markerIcon(loc,status,!!latest),zIndexOffset:540}).addTo(map);
       const payload={
         title:loc.name,
