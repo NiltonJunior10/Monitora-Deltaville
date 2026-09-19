@@ -279,7 +279,7 @@
     const expiry=q(".report-expiry-v4");
     if(expiry)expiry.style.display=wizard.step===wizard.max?"block":"none";
     const del=q("#deleteOccurrenceBtn");
-    if(del)del.style.display=wizard.step===wizard.max&&!del.hidden?"block":"none";
+    if(del)del.style.display=!del.hidden?"block":"none";
     q("#reportModal .report-sheet-v4")?.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -295,7 +295,7 @@
     const submit=q("#submitReport");
     if(submit)submit.style.display=wizard.step===wizard.max?"block":"none";
     const del=q("#deleteOccurrenceBtn");
-    if(del)del.style.display=wizard.step===wizard.max&&!del.hidden?"block":"none";
+    if(del)del.style.display=!del.hidden?"block":"none";
   }
 
   function manualAlwaysOpen(){
