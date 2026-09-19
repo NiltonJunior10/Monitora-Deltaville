@@ -1938,6 +1938,7 @@ function renderOccurrences(){
   renderDesktopSeverity();
   renderDesktopRecent();
   renderReports();
+  renderMobileHomeDashboard();
 }
 function renderAlertsPage(){
   let items=[...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
