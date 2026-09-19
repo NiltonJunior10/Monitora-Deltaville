@@ -2109,7 +2109,7 @@ function renderMapMarkers(){
         if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
         else showMapFocusCard(payload);
       });
-      if(which==="full"){
+      if(which==="full"&&(state.filter==="lake"||latest)){
         marker.bindTooltip(shortLakeName(loc.name),{permanent:true,direction:"top",offset:[0,-17],className:"lake-name-tooltip"}).openTooltip();
       }
       state.markers[which].push(marker);
