@@ -27,6 +27,8 @@ function renderWeatherSnapshot(snapshot){
   $("#weatherHeadline").textContent="Biguaçu agora";
   $("#topWeatherRain").textContent=rainText;
   $("#weatherDetail").textContent=snapshot.detail||"Previsão local";
+  if($("#v7WeatherTemp"))$("#v7WeatherTemp").textContent=tempText;
+  if($("#v7WeatherSummary"))$("#v7WeatherSummary").textContent=snapshot.short_summary||snapshot.detail||"Previsão local";
   if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=snapshot.icon||"🌤️";
   if($("#desktopRain6h"))$("#desktopRain6h").textContent=rainText;
 }
@@ -79,11 +81,13 @@ async function loadWeather(){
     const weatherDetail=`${summary} • ${prob}% • ${max}°/${min}°`;
     const weatherIcon=weatherIconForCode(w.current.weather_code,w.current.is_day);
     $("#weatherDetail").textContent=weatherDetail;
+    if($("#v7WeatherTemp"))$("#v7WeatherTemp").textContent=`${temp}°`;
+    if($("#v7WeatherSummary"))$("#v7WeatherSummary").textContent=summary;
     if($("#topWeatherIcon"))$("#topWeatherIcon").textContent=weatherIcon;
     if($("#desktopRain6h"))$("#desktopRain6h").textContent=`${rain.toFixed(1)} mm`;
     try{
       localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify({
-        saved_at:Date.now(),rain,prob,temp,detail:weatherDetail,icon:weatherIcon
+        saved_at:Date.now(),rain,prob,temp,detail:weatherDetail,short_summary:summary,icon:weatherIcon
       }));
     }catch(_){}
   }catch(e){
@@ -105,6 +109,8 @@ async function loadWeather(){
       $("#weatherHeadline").textContent="Biguaçu agora";
       $("#topWeatherRain").textContent="—";
       $("#weatherDetail").textContent="Previsão temporariamente indisponível";
+      if($("#v7WeatherTemp"))$("#v7WeatherTemp").textContent="—";
+      if($("#v7WeatherSummary"))$("#v7WeatherSummary").textContent="Previsão indisponível";
       if($("#topWeatherIcon"))$("#topWeatherIcon").textContent="🌥️";
     }
   }
