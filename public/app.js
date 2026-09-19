@@ -697,6 +697,134 @@ async function moveExistingPhotosToOccurrence(occurrenceId){
 }
 
 
+
+let googleMapsApiPromise=null;
+const googleBaseMaps=new Map();
+
+function googleMapsConfig(){
+  const cfg=window.MONITORA_GOOGLE_MAPS||{};
+  return {
+    apiKey:String(cfg.apiKey||"").trim(),
+    mapId:String(cfg.mapId||"").trim()
+  };
+}
+
+function loadGoogleMapsApi(){
+  if(window.google?.maps?.Map)return Promise.resolve(window.google.maps);
+  if(googleMapsApiPromise)return googleMapsApiPromise;
+
+  const {apiKey}=googleMapsConfig();
+  if(!apiKey){
+    googleMapsApiPromise=Promise.reject(new Error("Google Maps API key não configurada."));
+    googleMapsApiPromise.catch(()=>{});
+    return googleMapsApiPromise;
+  }
+
+  googleMapsApiPromise=new Promise((resolve,reject)=>{
+    const callback="__monitoraGoogleMapsReady";
+    const previous=window[callback];
+    window[callback]=()=>{
+      try{ if(typeof previous==="function")previous(); }catch(_){}
+      resolve(window.google.maps);
+      try{delete window[callback];}catch(_){window[callback]=undefined;}
+    };
+
+    const script=document.createElement("script");
+    const params=new URLSearchParams({
+      key:apiKey,
+      v:"weekly",
+      loading:"async",
+      callback
+    });
+    script.src=`https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+    script.async=true;
+    script.defer=true;
+    script.referrerPolicy="strict-origin-when-cross-origin";
+    script.onerror=()=>reject(new Error("Não foi possível carregar o Google Maps."));
+    document.head.appendChild(script);
+  });
+
+  return googleMapsApiPromise;
+}
+
+function setGoogleMapStatus(container,message,kind="loading"){
+  if(!container)return;
+  let status=container.querySelector(":scope > .google-map-status");
+  if(!status){
+    status=document.createElement("div");
+    status.className="google-map-status";
+    container.appendChild(status);
+  }
+  status.dataset.kind=kind;
+  status.textContent=message||"";
+  status.hidden=!message;
+}
+
+function mountGoogleMapBase(leafletMap,id){
+  const container=document.getElementById(id);
+  if(!container)return;
+
+  let host=container.querySelector(":scope > .google-map-underlay");
+  if(!host){
+    host=document.createElement("div");
+    host.className="google-map-underlay";
+    host.setAttribute("aria-hidden","true");
+    container.insertBefore(host,container.firstChild);
+  }
+
+  setGoogleMapStatus(container,"Carregando Google Maps…","loading");
+
+  loadGoogleMapsApi().then(maps=>{
+    const cfg=googleMapsConfig();
+    const center=leafletMap.getCenter();
+    const options={
+      center:{lat:center.lat,lng:center.lng},
+      zoom:leafletMap.getZoom(),
+      disableDefaultUI:true,
+      gestureHandling:"none",
+      keyboardShortcuts:false,
+      clickableIcons:false,
+      mapTypeId:maps.MapTypeId.ROADMAP,
+      backgroundColor:"#EAF2EF",
+      isFractionalZoomEnabled:true
+    };
+    if(cfg.mapId)options.mapId=cfg.mapId;
+
+    const googleMap=new maps.Map(host,options);
+    googleBaseMaps.set(id,googleMap);
+    document.body.classList.add("google-map-active");
+    setGoogleMapStatus(container,"");
+
+    let syncing=false;
+    const sync=()=>{
+      if(syncing)return;
+      syncing=true;
+      try{
+        const pos=leafletMap.getCenter();
+        googleMap.setCenter({lat:pos.lat,lng:pos.lng});
+        googleMap.setZoom(leafletMap.getZoom());
+      }finally{
+        requestAnimationFrame(()=>{syncing=false;});
+      }
+    };
+
+    leafletMap.on("move zoom resize",sync);
+    leafletMap.on("moveend zoomend",sync);
+    sync();
+  }).catch(err=>{
+    console.warn("Google Maps indisponível:",err);
+    document.body.classList.add("google-map-missing-key");
+    const keyMissing=!googleMapsConfig().apiKey;
+    setGoogleMapStatus(
+      container,
+      keyMissing
+        ?"Google Maps precisa da chave de API para carregar."
+        :"Não foi possível carregar o Google Maps.",
+      "error"
+    );
+  });
+}
+
 function makeMap(id, preview=false){
   const map=L.map(id,{
     minZoom:14,
@@ -722,30 +850,8 @@ function makeMap(id, preview=false){
     preferCanvas:true
   });
 
-  const attribution=L.control.attribution({position:"bottomright",prefix:false}).addTo(map);
-  attribution.addAttribution(
-    '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> · '+
-    '<a href="https://carto.com/attributions" target="_blank" rel="noopener">© CARTO</a>'
-  );
-
-  const baseLayer=L.tileLayer("/map-tiles/{z}/{x}/{y}.png",{
-    minZoom:14,
-    maxZoom:20,
-    maxNativeZoom:20,
-    detectRetina:false,
-    updateWhenIdle:true,
-    keepBuffer:5,
-    errorTileUrl:"data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-  });
-
-  let tileErrorCount=0;
-  baseLayer.on("tileerror",()=>{
-    tileErrorCount++;
-    if(tileErrorCount===3)toast("Mapa-base indisponível no momento. Tentando novamente…");
-  });
-  baseLayer.addTo(map);
-
   map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false,maxZoom:17});
+  mountGoogleMapBase(map,id);
   map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),120));
   if(preview)map.on("click",()=>navigate("map"));
   return map;
