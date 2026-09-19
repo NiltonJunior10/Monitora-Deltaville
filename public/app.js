@@ -1843,7 +1843,7 @@ function occurrenceGroupCard(group,allowEdit=false){
   const locLine=names.length<=2?names.join(" + "):`${names.slice(0,2).join(" + ")} +${names.length-2}`;
   const photos=occurrencePhotoList(items).filter(ph=>ph?.url);
   const photoStrip=photos.length?`<div class="event-photo-strip">${photos.slice(0,3).map((ph,i)=>`<button type="button" class="event-photo-thumb" data-view-photo="${esc(ph.url)}" aria-label="Abrir foto ${i+1}"><img src="${esc(ph.url)}" alt="" loading="lazy"></button>`).join("")}</div>`:"";
-  return `<article class="event-card occurrence-clickable" data-open-occurrence="${o.id}" role="button" tabindex="0" aria-label="Abrir ocorrência no mapa"><div class="event-icon ${severity}">${esc(occurrenceIcon(o.occurrence_type))}</div><div><h3>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h3><p><b>${esc(locLine||"Local informado")}</b>${o.avenue_condition?` • ${esc(conditionLabels[o.avenue_condition])}`:""}</p>${noteText(o)?`<p>${esc(noteText(o))}</p>`:""}${photoStrip}${modeTag}<small>${person} • ${age(o.created_at)}</small></div>${allowEdit&&own?`<button class="edit-occurrence-btn" data-edit-occurrence="${o.id}">Editar</button>`:""}</article>`;
+  return `<article class="event-card occurrence-clickable" data-open-occurrence="${o.id}" role="button" tabindex="0" aria-label="Abrir ocorrência no mapa"><div class="event-icon ${severity}">${esc(occurrenceIcon(o.occurrence_type))}</div><div><h3>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h3><p><b>${esc(locLine||"Local informado")}</b>${o.avenue_condition?` • ${esc(conditionLabels[o.avenue_condition])}`:""}</p>${noteText(o)?`<p>${esc(noteText(o))}</p>`:""}${photoStrip}${modeTag}<small>${person} • ${age(o.created_at)}</small></div>${allowEdit&&own?`<div class="event-owner-actions"><button class="edit-occurrence-btn" data-edit-occurrence="${o.id}" type="button">Editar</button><button class="delete-occurrence-inline" data-delete-occurrence="${o.id}" type="button">Apagar</button></div>`:""}</article>`;
 }
 function occurrenceCard(o,allowEdit=false){return occurrenceGroupCard({id:groupIdOf(o),items:[o]},allowEdit);}
 function alertCard(a){
@@ -2546,6 +2546,37 @@ async function submitReport(e){
     btn.disabled=false;
   }
 }
+async function deleteOwnOccurrenceById(id){
+  const first=state.occurrences.find(x=>String(x.id)===String(id));
+  if(!first||first.reporter_id!==state.user?.id){toast("Você só pode apagar suas próprias ocorrências.");return;}
+  const gid=groupIdOf(first);
+  const items=gid?state.occurrences.filter(o=>groupIdOf(o)===gid):[first];
+  const ids=items.map(o=>o.id);
+  const label=ids.length>1?`Apagar esta ocorrência com ${ids.length} locais?`:"Apagar esta ocorrência?";
+  if(!confirm(`${label} Essa ação não pode ser desfeita.`))return;
+  try{
+    const photos=occurrencePhotoList(items);
+    const paths=photos.map(ph=>ph.storage_path).filter(Boolean);
+    if(paths.length){
+      try{
+        const {error:storageError}=await db.storage.from("occurrence-photos").remove(paths);
+        if(storageError)console.warn("Não foi possível remover todos os arquivos de foto:",storageError);
+      }catch(err){console.warn(err);}
+    }
+    const {error}=await db.from("occurrences")
+      .delete()
+      .in("id",ids)
+      .eq("reporter_id",state.user.id);
+    if(error)throw error;
+    toast("Ocorrência apagada.");
+    await loadDataSafe();
+    renderAll();
+  }catch(err){
+    console.error(err);
+    toast("Não foi possível apagar a ocorrência.");
+  }
+}
+
 async function deleteEditingOccurrence(){
   const ids=state.editingOccurrenceIds.length?state.editingOccurrenceIds:(state.editingOccurrenceId?[state.editingOccurrenceId]:[]);
   if(!ids.length)return;
@@ -2646,7 +2677,7 @@ document.addEventListener("click",e=>{
   if(e.target.closest("#reportHereBtn")){if(state.multiPointMode){state.multiPointMode=false;setPointPickMode(false,{multi:false});openReport("map");}else{prefillOccurrenceFromSelectedPoint();openReport("map");}return;}
   if(e.target.closest("#reportSegmentBtn")){openReport("map");return;}
   const close=e.target.closest("[data-close]");if(close){closeModal(close.dataset.close==="report"?"reportModal":"profileModal");return;}
-  const edit=e.target.closest("[data-edit-occurrence]");if(edit){e.stopPropagation();openEditOccurrence(edit.dataset.editOccurrence);return;}
+  const removeOccurrence=e.target.closest("[data-delete-occurrence]");if(removeOccurrence){e.preventDefault();e.stopPropagation();deleteOwnOccurrenceById(removeOccurrence.dataset.deleteOccurrence);return;}\n  const edit=e.target.closest("[data-edit-occurrence]");if(edit){e.stopPropagation();openEditOccurrence(edit.dataset.editOccurrence);return;}
   const occ=e.target.closest("[data-open-occurrence]");if(occ){focusOccurrenceOnMap(occ.dataset.openOccurrence);return;}
   const focus=e.target.closest("[data-focus-location]");if(focus){focusLocationById(focus.dataset.focusLocation);return;}
   const mf=e.target.closest("[data-filter]");if(mf){$$("[data-filter]").forEach(x=>x.classList.remove("selected"));mf.classList.add("selected");state.filter=mf.dataset.filter;hideMapFocusCard();renderMapMarkers();return;}
