@@ -109,28 +109,32 @@ const state = {
   reportPhotos:[], removedPhotoIds:[], photoViewerUrls:[], reportDamageTypes:[],
   pushEnabled:false, pushMinSeverity:"attention", pushSubscription:null
 };
-const MAP_W=1601, MAP_H=982;
+const LEGACY_W=1601, LEGACY_H=982;
+const MAP_W=2380, MAP_H=1540;
 
-/* Real geographic map (OpenStreetMap).
-   The affine transform keeps all existing legacy map_x/map_y data compatible
-   while the visible map uses real latitude/longitude. */
-const GEO_AFFINE={
-  latX:0.000005191925,
-  latY:-0.000004352891,
-  latC:-27.488551396880,
-  lonX:0.000007222143,
-  lonY:0.000007950977,
-  lonC:-48.677440202553,
-  inv00:109339.76022122,
-  inv01:59859.82328865,
-  inv10:-99317.01553082,
-  inv11:71397.98995981
-};
-const MAP_CENTER=[-27.48655,-48.66875];
-const USE_REAL_MAP=true;
-/* Includes the original Deltaville and the Deltaville Marine area to the north. */
-const MAP_BOUNDS=[[-27.4962,-48.6765],[-27.4772,-48.6603]];
-const MAP_EXTENDED_BOUNDS=[[-27.5055,-48.6865],[-27.4690,-48.6515]];
+/* Mapa mestre estático local.
+   O banco continua guardando map_x/map_y no sistema legado 1601×982.
+   Esta transformação coloca esses registros sobre a área do Deltaville atual
+   dentro do novo mapa composto Deltaville + Marine. */
+const LEGACY_RECT={x:20,y:500,w:1125,h:1000};
+const MAP_BOUNDS=[[0,0],[MAP_H,MAP_W]];
+const MAP_EXTENDED_BOUNDS=[[-110,-140],[MAP_H+110,MAP_W+140]];
+const USE_STATIC_MASTER=true;
+
+function legacyXYToMaster(x,y){
+  return {
+    x:LEGACY_RECT.x+(Number(x)/LEGACY_W)*LEGACY_RECT.w,
+    y:LEGACY_RECT.y+(Number(y)/LEGACY_H)*LEGACY_RECT.h
+  };
+}
+function masterToLegacyXY(latlng){
+  const mx=Number(latlng.lng);
+  const my=MAP_H-Number(latlng.lat);
+  return {
+    x:((mx-LEGACY_RECT.x)/LEGACY_RECT.w)*LEGACY_W,
+    y:((my-LEGACY_RECT.y)/LEGACY_RECT.h)*LEGACY_H
+  };
+}
 
 /* Visual anchors are tied to this map artwork and remain stable at every zoom. */
 const visualAnchors={
@@ -185,10 +189,10 @@ function reportLocationName(id){
 function condominiumNormalized(name){
   const xy=condominiumAnchors[name];
   if(!xy)return {map_x:.5,map_y:.5};
-  return {map_x:xy[0]/MAP_W,map_y:xy[1]/MAP_H};
+  return {map_x:xy[0]/LEGACY_W,map_y:xy[1]/LEGACY_H};
 }
 function neighborhoodNormalized(){
-  return {map_x:neighborhoodAnchor[0]/MAP_W,map_y:neighborhoodAnchor[1]/MAP_H};
+  return {map_x:neighborhoodAnchor[0]/LEGACY_W,map_y:neighborhoodAnchor[1]/LEGACY_H};
 }
 
 
@@ -321,7 +325,12 @@ function refreshFullMapLayout(){
     if(window.matchMedia("(pointer:fine)").matches)map.scrollWheelZoom.enable();
     map.invalidateSize({animate:false,pan:false});
     map.setMaxBounds(MAP_EXTENDED_BOUNDS);
-    map.fitBounds(MAP_BOUNDS,{padding:[12,12],animate:false,maxZoom:17});
+
+    const coverZoom=map.getBoundsZoom(MAP_BOUNDS,true,[12,12]);
+    if(Number.isFinite(coverZoom)){
+      map.setMinZoom(coverZoom-.22);
+      map.fitBounds(MAP_BOUNDS,{padding:[12,12],animate:false});
+    }
     renderMapMarkers();
     return true;
   };
@@ -336,24 +345,20 @@ function ensureMapLayout(map,fit=false){
   map.invalidateSize({animate:false});
   map.setMaxBounds(MAP_EXTENDED_BOUNDS);
   if(fit){
-    map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false,maxZoom:17});
+    const coverZoom=map.getBoundsZoom(MAP_BOUNDS,true,[0,0]);
+    if(Number.isFinite(coverZoom)){
+      map.setMinZoom(coverZoom-.18);
+      map.setView([MAP_H/2,MAP_W/2],coverZoom,{animate:false});
+    }
     map.__visibleFitDone=true;
   }
 }
 function xyToLatLng(x,y){
-  const px=Number(x),py=Number(y);
-  return [
-    GEO_AFFINE.latX*px + GEO_AFFINE.latY*py + GEO_AFFINE.latC,
-    GEO_AFFINE.lonX*px + GEO_AFFINE.lonY*py + GEO_AFFINE.lonC
-  ];
+  const p=legacyXYToMaster(x,y);
+  return [MAP_H-p.y,p.x];
 }
 function latLngToLegacyXY(latlng){
-  const dLat=Number(latlng.lat)-GEO_AFFINE.latC;
-  const dLon=Number(latlng.lng)-GEO_AFFINE.lonC;
-  return {
-    x:GEO_AFFINE.inv00*dLat + GEO_AFFINE.inv01*dLon,
-    y:GEO_AFFINE.inv10*dLat + GEO_AFFINE.inv11*dLon
-  };
+  return masterToLegacyXY(latlng);
 }
 function shortLakeName(name){
   return String(name)
@@ -698,95 +703,11 @@ async function moveExistingPhotosToOccurrence(occurrenceId){
 
 
 
-const mapLibreBaseMaps=new Map();
-
-function setFreeMapStatus(container,message,kind="loading"){
-  if(!container)return;
-  let status=container.querySelector(":scope > .free-map-status");
-  if(!status){
-    status=document.createElement("div");
-    status.className="free-map-status";
-    container.appendChild(status);
-  }
-  status.dataset.kind=kind;
-  status.textContent=message||"";
-  status.hidden=!message;
-}
-
-function mountFreeMapBase(leafletMap,id){
-  const container=document.getElementById(id);
-  if(!container)return;
-
-  let host=container.querySelector(":scope > .free-map-underlay");
-  if(!host){
-    host=document.createElement("div");
-    host.className="free-map-underlay";
-    host.setAttribute("aria-hidden","true");
-    container.insertBefore(host,container.firstChild);
-  }
-
-  if(!window.maplibregl?.Map){
-    setFreeMapStatus(container,"Mapa-base indisponível.","error");
-    return;
-  }
-
-  setFreeMapStatus(container,"Carregando mapa…","loading");
-
-  try{
-    const center=leafletMap.getCenter();
-    const base=new maplibregl.Map({
-      container:host,
-      style:"https://tiles.openfreemap.org/styles/positron",
-      center:[center.lng,center.lat],
-      zoom:leafletMap.getZoom(),
-      interactive:false,
-      attributionControl:true,
-      fadeDuration:0,
-      preserveDrawingBuffer:false,
-      renderWorldCopies:false
-    });
-
-    mapLibreBaseMaps.set(id,base);
-
-    const sync=()=>{
-      const pos=leafletMap.getCenter();
-      try{
-        base.jumpTo({
-          center:[pos.lng,pos.lat],
-          zoom:leafletMap.getZoom(),
-          bearing:0,
-          pitch:0
-        });
-      }catch(_){}
-    };
-
-    base.on("load",()=>{
-      document.body.classList.add("free-map-active");
-      setFreeMapStatus(container,"");
-      sync();
-    });
-
-    base.on("error",ev=>{
-      console.warn("OpenFreeMap/MapLibre:",ev?.error||ev);
-    });
-
-    leafletMap.on("move zoom resize",sync);
-    leafletMap.on("moveend zoomend",sync);
-
-    const resize=()=>{try{base.resize();sync();}catch(_){}};
-    leafletMap.on("resize",resize);
-    setTimeout(resize,120);
-    setTimeout(resize,420);
-  }catch(err){
-    console.warn("Falha ao iniciar OpenFreeMap:",err);
-    setFreeMapStatus(container,"Não foi possível carregar o mapa-base.","error");
-  }
-}
-
 function makeMap(id, preview=false){
   const map=L.map(id,{
-    minZoom:14,
-    maxZoom:20,
+    crs:L.CRS.Simple,
+    minZoom:preview?-1.55:-1.30,
+    maxZoom:2.7,
     zoomControl:!preview,
     attributionControl:false,
     scrollWheelZoom:preview?false:window.matchMedia("(pointer:fine)").matches,
@@ -797,9 +718,9 @@ function makeMap(id, preview=false){
     wheelDebounceTime:35,
     wheelPxPerZoomLevel:90,
     maxBounds:MAP_EXTENDED_BOUNDS,
-    maxBoundsViscosity:.92,
-    zoomSnap:.25,
-    zoomDelta:.5,
+    maxBoundsViscosity:.97,
+    zoomSnap:.1,
+    zoomDelta:.25,
     fadeAnimation:true,
     markerZoomAnimation:true,
     zoomAnimation:true,
@@ -808,9 +729,15 @@ function makeMap(id, preview=false){
     preferCanvas:true
   });
 
-  map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false,maxZoom:17});
-  mountFreeMapBase(map,id);
-  map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),120));
+  const overlay=L.imageOverlay("assets/mapa-deltaville-master.svg?v=660",MAP_BOUNDS,{
+    interactive:false,
+    className:"map-master-layer",
+    opacity:1
+  }).addTo(map);
+
+  map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false});
+  overlay.on("load",()=>ensureMapLayout(map,true));
+  map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),80));
   if(preview)map.on("click",()=>navigate("map"));
   return map;
 }
@@ -830,19 +757,17 @@ function initMaps(){
 function coord(loc){
   const anchor=visualAnchors[loc?.name];
   if(anchor)return xyToLatLng(anchor[0],anchor[1]);
-  return xyToLatLng(MAP_W*Number(loc?.map_x||.5),MAP_H*Number(loc?.map_y||.5));
+  return normalizedToLatLng(Number(loc?.map_x||.5),Number(loc?.map_y||.5));
 }
 function latLngToNormalized(latlng){
   const legacy=latLngToLegacyXY(latlng);
   return {
-    /* Keep legacy numeric fields for database/backward compatibility.
-       Values slightly outside 0–1 are intentional for the Marine expansion. */
-    map_x:legacy.x/MAP_W,
-    map_y:legacy.y/MAP_H
+    map_x:legacy.x/LEGACY_W,
+    map_y:legacy.y/LEGACY_H
   };
 }
 function normalizedToLatLng(x,y){
-  return xyToLatLng(MAP_W*Number(x),MAP_H*Number(y));
+  return xyToLatLng(LEGACY_W*Number(x),LEGACY_H*Number(y));
 }
 function precisePointIcon(index=1){
   return L.divIcon({className:"",html:`<div class="precise-pin precise-pin-numbered"><span>${index}</span></div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16]});
@@ -851,22 +776,20 @@ function occurrencePointIcon(severity){
   return L.divIcon({className:"",html:`<div class="occurrence-map-pin ${severity}">!</div>`,iconSize:[22,22],iconAnchor:[11,11],popupAnchor:[0,-12]});
 }
 function pointToSegmentDistance(p,a,b){
-  const mean=(Number(a.lat)+Number(b.lat))*Math.PI/360;
-  const scaleX=111320*Math.cos(mean),scaleY=110540;
-  const ABx=(b.lng-a.lng)*scaleX,ABy=(b.lat-a.lat)*scaleY;
-  const APx=(p.lng-a.lng)*scaleX,APy=(p.lat-a.lat)*scaleY;
+  const ABx=b.lng-a.lng,ABy=b.lat-a.lat;
+  const APx=p.lng-a.lng,APy=p.lat-a.lat;
   const ab2=ABx*ABx+ABy*ABy||1;
   const t=clamp((APx*ABx+APy*ABy)/ab2,0,1);
-  const cx=ABx*t,cy=ABy*t;
-  return Math.hypot(APx-cx,APy-cy);
+  const cx=a.lng+t*ABx,cy=a.lat+t*ABy;
+  return Math.hypot(p.lng-cx,p.lat-cy);
 }
 function nearestFeatureForPoint(latlng){
   let best=null;
-  const lakeThreshold=85,avenueThreshold=38;
+  const lakeThreshold=58,avenueThreshold=46;
   state.locations.forEach(loc=>{
     if(loc.category==="lake"){
       const c=coord(loc);
-      const d=state.maps.full?.distance?.(latlng,L.latLng(c[0],c[1])) ?? 999999;
+      const d=Math.hypot(Number(latlng.lng)-c[1],Number(latlng.lat)-c[0]);
       if(d<=lakeThreshold&&(!best||d<best.distance))best={category:"lake",loc,distance:d};
       return;
     }
@@ -887,7 +810,7 @@ function nearestFeatureForPoint(latlng){
       for(let i=0;i<pts.length-1;i++){
         min=Math.min(min,pointToSegmentDistance(latlng,{lat:pts[i][0],lng:pts[i][1]},{lat:pts[i+1][0],lng:pts[i+1][1]}));
       }
-      if(min<=85&&(!best||min<best.distance))best={category:"river",loc,distance:min};
+      if(min<=62&&(!best||min<best.distance))best={category:"river",loc,distance:min};
     }
   });
   return best;
@@ -1183,7 +1106,7 @@ function bindMapPointSelection(){
   const activateLongPress=(gesture)=>{
     if(!gesture||gesture.cancelled)return;
     const latlng=clientToLatLng(gesture.startX,gesture.startY);
-    const avenue=nearestAvenueProjection(latlng,42);
+    const avenue=nearestAvenueProjection(latlng,52);
     gesture.active=true;
     gesture.startLatLng=latlng;
     gesture.avenue=avenue;
@@ -1272,7 +1195,7 @@ function bindMapPointSelection(){
   map.on("contextmenu",e=>{
     if(e.originalEvent?.preventDefault)e.originalEvent.preventDefault();
     if(state.segmentPickMode?.active){setSelectedSegmentPoint(e.latlng);return;}
-    const avenue=nearestAvenueProjection(e.latlng,38);
+    const avenue=nearestAvenueProjection(e.latlng,46);
     if(avenue){
       clearSelectedPoint({silent:true});
       clearSegmentSelection({silent:true});
@@ -1521,35 +1444,28 @@ const riverRoute=[
 function routeToLatLng(points){
   return points.map(([x,y])=>xyToLatLng(x,y));
 }
-function geoSegmentMeters(a,b){
-  const lat1=Number(a[0]),lon1=Number(a[1]),lat2=Number(b[0]),lon2=Number(b[1]);
-  const mean=(lat1+lat2)*Math.PI/360;
-  const dx=(lon2-lon1)*111320*Math.cos(mean);
-  const dy=(lat2-lat1)*110540;
-  return Math.hypot(dx,dy);
-}
 function routeLength(points){
   let total=0;
-  for(let i=0;i<points.length-1;i++)total+=geoSegmentMeters(points[i],points[i+1]);
+  for(let i=0;i<points.length-1;i++){
+    const a=points[i],b=points[i+1];
+    total+=Math.hypot(b[1]-a[1],b[0]-a[0]);
+  }
   return total||1;
 }
-function projectPointOnRoute(latlng, points){
+function projectPointOnRoute(latlng,points){
   const p={lat:Number(latlng.lat),lng:Number(latlng.lng)};
   let best={distance:Infinity,ratio:0,latlng:L.latLng(points[0][0],points[0][1])};
   let walked=0;
   const total=routeLength(points);
   for(let i=0;i<points.length-1;i++){
     const a=points[i],b=points[i+1];
-    const mean=(a[0]+b[0])*Math.PI/360;
-    const scaleX=111320*Math.cos(mean),scaleY=110540;
-    const ABx=(b[1]-a[1])*scaleX,ABy=(b[0]-a[0])*scaleY;
-    const APx=(p.lng-a[1])*scaleX,APy=(p.lat-a[0])*scaleY;
+    const ABx=b[1]-a[1],ABy=b[0]-a[0];
+    const APx=p.lng-a[1],APy=p.lat-a[0];
     const ab2=ABx*ABx+ABy*ABy||1;
     const segLen=Math.sqrt(ab2);
     const t=clamp((APx*ABx+APy*ABy)/ab2,0,1);
     const proj=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
-    const dx=(p.lng-proj[1])*scaleX,dy=(p.lat-proj[0])*scaleY;
-    const d=Math.hypot(dx,dy);
+    const d=Math.hypot(p.lng-proj[1],p.lat-proj[0]);
     if(d<best.distance){
       best={
         distance:d,
@@ -1567,7 +1483,7 @@ function pointAtRouteRatio(points, ratio){
   let walked=0;
   for(let i=0;i<points.length-1;i++){
     const a=points[i], b=points[i+1];
-    const segLen=geoSegmentMeters(a,b);
+    const segLen=Math.hypot(b[1]-a[1],b[0]-a[0]);
     if(wanted<=walked+segLen || i===points.length-2){
       const t=segLen?clamp((wanted-walked)/segLen,0,1):0;
       return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];
@@ -1585,7 +1501,7 @@ function subRoute(points, startRatio, endRatio){
   const out=[];
   for(let i=0;i<points.length-1;i++){
     const p1=points[i], p2=points[i+1];
-    const segLen=geoSegmentMeters(p1,p2);
+    const segLen=Math.hypot(p2[1]-p1[1],p2[0]-p1[0]);
     const segStart=walked, segEnd=walked+segLen;
     if(segEnd<startDist){ walked=segEnd; continue; }
     if(segStart>endDist) break;
@@ -1704,7 +1620,7 @@ function avenuePointsByLocationId(id){
   return route?routeToLatLng(route):null;
 }
 
-function nearestAvenueProjection(latlng,maxDistance=38){
+function nearestAvenueProjection(latlng,maxDistance=46){
   let best=null;
   for(const loc of state.locations.filter(item=>item.category==="avenue")){
     const pts=avenuePointsByLocationId(loc.id);
@@ -1782,7 +1698,7 @@ function focusLocationById(id){
   navigate("map");
   setTimeout(()=>{
     const target=coord(loc);
-    state.maps.full?.flyTo(target,Math.max(state.maps.full.getZoom(),18),{duration:.45});
+    state.maps.full?.flyTo(target,Math.max(state.maps.full.getZoom(),-.15),{duration:.45});
     const st=statusForLocation(loc.id);
     const latest=state.occurrences.find(o=>o.location_id===loc.id);
     showMapFocusCard({
@@ -2128,19 +2044,19 @@ function renderMapMarkers(){
     state.markers[which].forEach(m=>m.remove());
     state.markers[which]=[];
     const map=state.maps[which];
-    if(!USE_REAL_MAP){
+    if(!USE_STATIC_MASTER){
       renderAvenues(which);
       renderLakeZones(which);
       renderRiverZone(which);
     }
 
     state.locations.filter(loc=>loc.category==="lake").forEach(loc=>{
-      if(USE_REAL_MAP&&which==="full"&&state.filter!=="all"&&state.filter!=="lake"&&state.filter!=="alerts")return;
+      if(USE_STATIC_MASTER&&which==="full"&&state.filter!=="all"&&state.filter!=="lake"&&state.filter!=="alerts")return;
       const status=statusForLocation(loc.id);
       if(which==="full"&&state.filter==="avenue")return;
       if(which==="full"&&state.filter==="alerts"&&status==="normal")return;
       const latest=state.occurrences.find(o=>o.location_id===loc.id);
-      if(USE_REAL_MAP&&which==="full"&&state.filter==="all"&&!latest)return;
+      if(USE_STATIC_MASTER&&which==="full"&&state.filter==="all"&&!latest)return;
       const marker=L.marker(coord(loc),{icon:markerIcon(loc,status,!!latest),zIndexOffset:540}).addTo(map);
       const payload={
         title:loc.name,
@@ -2334,8 +2250,8 @@ function focusOccurrenceOnMap(id){
       else if(o.location_id){const loc=locationById(o.location_id);if(loc)target=coord(loc);}
       if(target)targets.push(target);
     }
-    if(state.maps.full&&targets.length>1)state.maps.full.fitBounds(L.latLngBounds(targets),{padding:[70,70],maxZoom:18,animate:true});
-    else if(state.maps.full&&targets.length===1)state.maps.full.flyTo(targets[0],Math.max(state.maps.full.getZoom(),18),{duration:.45});
+    if(state.maps.full&&targets.length>1)state.maps.full.fitBounds(L.latLngBounds(targets),{padding:[70,70],maxZoom:.55,animate:true});
+    else if(state.maps.full&&targets.length===1)state.maps.full.flyTo(targets[0],Math.max(state.maps.full.getZoom(),-.15),{duration:.45});
     const names=[...new Set(items.map(locationName).filter(Boolean))];
     showMapFocusCard({title:items.length>1?`${occurrenceLabels[first.occurrence_type]||"Ocorrência"} • ${items.length} locais`:(occurrenceLabels[first.occurrence_type]||"Ocorrência"),description:noteText(first)||names.join(" • "),status:highestSeverity(items)||"alert",category:"occurrence",locationId:first.location_id||null,typeLabel:items.length>1?"Ocorrência em vários locais":(first._meta?.mode==="segment"?"Trecho alagado":(first.exact_map_x!=null?"Ponto exato":"Ocorrência ativa")),timeLabel:age(first.created_at),photos:occurrencePhotoList(items)});
   },180);
