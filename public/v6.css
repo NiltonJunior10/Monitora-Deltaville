@@ -2791,3 +2791,89 @@ body.map-open .leaflet-control-attribution{
     padding:3px 5px!important;
   }
 }
+
+
+/* =========================================================
+   v6.4.0 — Google Maps base + Leaflet monitoring overlay
+   ========================================================= */
+.google-map-underlay{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  height:100%!important;
+  pointer-events:none!important;
+  background:#EAF2EF!important;
+}
+
+.google-map-underlay>div{
+  width:100%!important;
+  height:100%!important;
+}
+
+.leaflet-container{
+  background:transparent!important;
+}
+
+.leaflet-tile-pane{
+  display:none!important;
+}
+
+.leaflet-map-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane{
+  background:transparent!important;
+}
+
+.google-map-status{
+  position:absolute!important;
+  z-index:1150!important;
+  left:50%!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:min(310px,calc(100% - 40px))!important;
+  padding:12px 15px!important;
+  border:1px solid var(--v6-glass-border)!important;
+  border-radius:18px!important;
+  background:rgba(248,248,250,.88)!important;
+  color:var(--v6-secondary)!important;
+  box-shadow:0 14px 36px rgba(15,23,42,.12)!important;
+  backdrop-filter:blur(24px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(170%)!important;
+  text-align:center!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  pointer-events:none!important;
+}
+
+.google-map-status[data-kind="error"]{
+  color:#9A4B00!important;
+  background:rgba(255,248,232,.92)!important;
+  border-color:rgba(255,159,10,.20)!important;
+}
+
+:root[data-theme="dark"] .google-map-status{
+  background:rgba(28,28,30,.90)!important;
+  color:#D1D1D6!important;
+}
+:root[data-theme="dark"] .google-map-status[data-kind="error"]{
+  color:#FFD08A!important;
+}
+
+/* Keep Google's logo/attribution visible above the floating app navigation. */
+@media(max-width:1179px){
+  body.google-map-active.map-open main{
+    inset:0 0 calc(var(--v6-tab-h) + 18px + env(safe-area-inset-bottom)) 0!important;
+  }
+
+  body.google-map-active.map-open [data-page="map"] .map-bottom-action,
+  body.google-map-active.map-open [data-page="map"] #mapFocusCard{
+    bottom:44px!important;
+  }
+
+  body.google-map-active.map-open .bottom-nav{
+    z-index:2200!important;
+  }
+}
