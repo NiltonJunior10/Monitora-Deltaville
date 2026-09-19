@@ -394,29 +394,33 @@
   }
 
   function watchDynamicUI(){
-    const target=q("#app")||document.body;
-    const observer=new MutationObserver(()=>{
-      syncAlertDot();
-      setupPinDots();
-      refreshReportWizard();
-    });
-    observer.observe(target,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["hidden","class"]});
+    const alerts=q("#alertsCount");
+    if(alerts){
+      const observer=new MutationObserver(()=>syncAlertDot());
+      observer.observe(alerts,{subtree:true,childList:true,characterData:true});
+    }
   }
 
   function boot(){
-    installMobileAlert();
-    simplifyMobileTabBar();
-    setupWeatherPortal();
-    setupLargeTitle();
-    setupPinDots();
-    buildReportWizard();
-    observeReportModal();
-    setupMapSheetSwipe();
-    setupPullToRefresh();
-    watchDynamicUI();
-    syncAlertDot();
+    const tasks=[
+      installMobileAlert,
+      simplifyMobileTabBar,
+      setupWeatherPortal,
+      setupLargeTitle,
+      setupPinDots,
+      buildReportWizard,
+      observeReportModal,
+      setupMapSheetSwipe,
+      setupPullToRefresh,
+      watchDynamicUI,
+      syncAlertDot
+    ];
+    for(const task of tasks){
+      try{ task(); }
+      catch(error){ console.warn("v6 enhancement skipped:",task.name,error); }
+    }
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});
-  else boot();
+  else setTimeout(boot,0);
 })();
