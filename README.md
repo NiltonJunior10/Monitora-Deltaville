@@ -17,16 +17,14 @@ As alterações desta versão estão descritas em [CHANGELOG.md](CHANGELOG.md). 
 
 
 
-## Google Maps
+## Mapa gratuito
 
-O mapa real usa a **Maps JavaScript API**. A chave não deve ser commitada no repositório.
+O mapa real usa **MapLibre GL JS** com a instância pública do **OpenFreeMap**.
 
-No Cloudflare Worker, configure o segredo:
+- Não exige API key.
+- Não exige cadastro.
+- Não exige faturamento/cartão.
+- Os dados cartográficos vêm do OpenStreetMap.
+- O estilo usado pelo app é o Positron do OpenFreeMap.
 
-`GOOGLE_MAPS_API_KEY`
-
-Opcionalmente, para um Map ID próprio:
-
-`GOOGLE_MAPS_MAP_ID`
-
-A chave deve ter a **Maps JavaScript API** habilitada e ser restringida ao domínio usado pelo Monitora Deltaville.
+A atribuição cartográfica deve permanecer visível no mapa.
