@@ -95,7 +95,7 @@ function isMapGestureTarget(target){
 }
 
 const state = {
-  user:null, profile:null, condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null,
+  user:null, profile:null, isAdmin:false, adminUsers:[], adminOccurrences:[], adminAlerts:[], condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null,
   maps:{}, markers:{home:[],full:[]}, filter:"all", alertFilter:"all",
   installPrompt:null, initialized:false, realtimeChannel:null,
   avenueLayers:{home:[],full:[]}, lakeLayers:{home:[],full:[]}, riverLayers:{home:[],full:[]},
@@ -378,7 +378,8 @@ function highestSeverity(items){
 }
 function locationName(o){return o.monitored_locations?.name || o.custom_location || "Local informado";}
 function navigate(page){
-  $$(".page").forEach(p=>p.classList.toggle("active",p.dataset.page===page));
+  if(page==="admin"&&!state.isAdmin){toast("Acesso restrito à administração.");page="profile";}
+  $(".page").forEach(p=>p.classList.toggle("active",p.dataset.page===page));
   $$(".bottom-nav [data-nav]").forEach(b=>{
     const active=b.dataset.nav===page;
     b.classList.toggle("active",active);
@@ -394,6 +395,7 @@ function navigate(page){
   document.body.classList.toggle("map-open",page==="map");
   window.scrollTo({top:0,behavior:"smooth"});
   if(page==="reports")renderReports();
+  if(page==="admin")loadAdminData();
   if(page==="map"){
     setTimeout(syncMapBottomUI,30);
     refreshFullMapLayout();
@@ -466,6 +468,7 @@ async function bootstrap(){
     restoreSnapshot();
     await loadLookups();
     await loadProfile();
+    await loadAdminAccess();
 
     // Sessões anônimas criadas em outro contexto sem perfil não são úteis.
     if(!state.profile){
@@ -530,6 +533,113 @@ async function loadLookups(){
 async function loadProfile(){
   const {data,error}=await db.from("profiles").select("*, condominiums(name)").eq("user_id",state.user.id).maybeSingle();
   if(error)throw error; state.profile=data||null;
+}
+
+async function loadAdminAccess(){
+  if(!state.user||state.user.is_anonymous===true){state.isAdmin=false;return false;}
+  const {data,error}=await db.from("app_admins").select("user_id").eq("user_id",state.user.id).maybeSingle();
+  if(error){console.warn("Admin check indisponível:",error);state.isAdmin=false;return false;}
+  state.isAdmin=!!data;
+  return state.isAdmin;
+}
+
+async function loadAdminData(){
+  if(!state.isAdmin)return;
+  const refresh=$("#adminRefreshBtn");
+  if(refresh)refresh.disabled=true;
+  try{
+    const [usersRes,occRes,alertsRes]=await Promise.all([
+      db.from("profiles").select("user_id,first_name,last_name,house_or_lot,created_at,condominiums(name)").order("created_at",{ascending:false}),
+      db.from("occurrences").select("id,reporter_id,occurrence_type,severity,status,created_at,resolved_at,reporter_first_name,reporter_last_name,reporter_condominium,custom_location,monitored_locations(name,category)").order("created_at",{ascending:false}).limit(40),
+      db.from("alerts").select("id,title,message,severity,source_type,active,created_at,starts_at,ends_at").order("created_at",{ascending:false}).limit(30)
+    ]);
+    if(usersRes.error)throw usersRes.error;
+    if(occRes.error)throw occRes.error;
+    if(alertsRes.error)throw alertsRes.error;
+    state.adminUsers=usersRes.data||[];
+    state.adminOccurrences=occRes.data||[];
+    state.adminAlerts=alertsRes.data||[];
+    renderAdmin();
+  }catch(error){
+    console.error("Falha ao carregar administração:",error);
+    toast("Não foi possível carregar os dados administrativos.");
+  }finally{
+    if(refresh)refresh.disabled=false;
+  }
+}
+
+function renderAdmin(){
+  if(!state.isAdmin)return;
+  const users=state.adminUsers||[], occs=state.adminOccurrences||[], alerts=state.adminAlerts||[];
+  const active=occs.filter(o=>o.status==="active"&&(!o.expires_at||new Date(o.expires_at)>new Date())).length;
+  const resolved=occs.filter(o=>o.status==="resolved").length;
+  const activeAlerts=alerts.filter(a=>a.active!==false&&(!a.ends_at||new Date(a.ends_at)>new Date())).length;
+  if($("#adminUsersCount"))$("#adminUsersCount").textContent=users.length;
+  if($("#adminActiveCount"))$("#adminActiveCount").textContent=active;
+  if($("#adminResolvedCount"))$("#adminResolvedCount").textContent=resolved;
+  if($("#adminAlertsCount"))$("#adminAlertsCount").textContent=activeAlerts;
+  if($("#adminUsersBadge"))$("#adminUsersBadge").textContent=users.length;
+  if($("#adminOccurrencesBadge"))$("#adminOccurrencesBadge").textContent=occs.length;
+  if($("#adminAlertsBadge"))$("#adminAlertsBadge").textContent=alerts.length;
+
+  const usersHost=$("#adminUsersList");
+  if(usersHost)usersHost.innerHTML=users.length?users.map(u=>{
+    const name=`${esc(u.first_name||"")} ${esc(u.last_name||"")}`.trim();
+    const initials=((u.first_name?.[0]||"")+(u.last_name?.[0]||"")).toUpperCase()||"—";
+    return `<article class="admin-user-row"><span class="admin-user-avatar">${esc(initials)}</span><div><b>${name||"Morador"}</b><small>${esc(u.condominiums?.name||"Sem condomínio")} • Casa/lote ${esc(u.house_or_lot||"—")}</small></div><time>${age(u.created_at)}</time></article>`;
+  }).join(""):'<p class="muted">Nenhum morador cadastrado.</p>';
+
+  const occHost=$("#adminOccurrencesList");
+  if(occHost)occHost.innerHTML=occs.length?occs.map(o=>{
+    const loc=esc(o.monitored_locations?.name||o.custom_location||o.reporter_condominium||"Deltaville");
+    const reporter=esc(`${o.reporter_first_name||""} ${o.reporter_last_name||""}`.trim()||"Morador");
+    const status=o.status==="resolved"?"Resolvida":(o.status==="active"?"Ativa":"Encerrada");
+    const actions=o.status==="active"?`<div class="admin-row-actions"><button type="button" data-admin-resolve="${esc(o.id)}">Resolver</button><button type="button" class="danger-link" data-admin-delete="${esc(o.id)}">Excluir</button></div>`:`<div class="admin-row-actions"><button type="button" class="danger-link" data-admin-delete="${esc(o.id)}">Excluir</button></div>`;
+    return `<article class="admin-occurrence-row"><div class="admin-occurrence-main"><span class="admin-severity-dot ${esc(o.severity||"attention")}"></span><div><b>${esc(typeLabel(o.occurrence_type))}</b><small>${loc} • ${reporter} • ${age(o.created_at)}</small></div><em class="${o.status==="resolved"?"resolved":""}">${status}</em></div>${actions}</article>`;
+  }).join(""):'<p class="muted">Nenhuma ocorrência encontrada.</p>';
+
+  const alertsHost=$("#adminAlertsList");
+  if(alertsHost)alertsHost.innerHTML=alerts.length?alerts.map(a=>`<article class="admin-alert-row"><span class="admin-severity-dot ${esc(a.severity||"attention")}"></span><div><b>${esc(a.title)}</b><small>${esc(a.message)} • ${age(a.created_at)}</small></div><em>${a.active!==false?"Ativo":"Encerrado"}</em></article>`).join(""):'<p class="muted">Nenhum alerta publicado.</p>';
+}
+
+async function publishAdminAlert(event){
+  event.preventDefault();
+  if(!state.isAdmin)return;
+  const title=$("#adminAlertTitle")?.value.trim(),message=$("#adminAlertMessage")?.value.trim(),severity=$("#adminAlertSeverity")?.value||"attention";
+  if(!title||!message)return;
+  const submit=event.submitter||$("#adminAlertForm button[type=submit]");
+  if(submit)submit.disabled=true;
+  try{
+    const {error}=await db.from("alerts").insert({title,message,severity,source_type:"admin",active:true,created_by:state.user.id,starts_at:new Date().toISOString()});
+    if(error)throw error;
+    $("#adminAlertForm")?.reset();
+    toast("Alerta publicado para a comunidade.");
+    await Promise.all([loadAdminData(),loadDataSafe(["alerts"])]);
+    renderAlertsPage();
+  }catch(error){
+    console.error("Falha ao publicar alerta:",error);
+    toast("Não foi possível publicar o alerta.");
+  }finally{if(submit)submit.disabled=false;}
+}
+
+async function adminResolveOccurrence(id){
+  if(!state.isAdmin||!id)return;
+  const now=new Date().toISOString();
+  const {error}=await db.from("occurrences").update({status:"resolved",resolved_at:now,resolved_by:state.user.id}).eq("id",id);
+  if(error){console.error(error);toast("Não foi possível resolver a ocorrência.");return;}
+  toast("Ocorrência marcada como resolvida.");
+  await Promise.all([loadAdminData(),loadDataSafe()]);
+  renderAll();
+}
+
+async function adminDeleteOccurrence(id){
+  if(!state.isAdmin||!id)return;
+  if(!confirm("Excluir esta ocorrência permanentemente?"))return;
+  const {error}=await db.from("occurrences").delete().eq("id",id);
+  if(error){console.error(error);toast("Não foi possível excluir a ocorrência.");return;}
+  toast("Ocorrência excluída.");
+  await Promise.all([loadAdminData(),loadDataSafe()]);
+  renderAll();
 }
 
 function occurrencePhotoList(items){
@@ -2309,11 +2419,13 @@ function renderProfile(){
   const initials=(p.first_name[0]+p.last_name[0]).toUpperCase();
   if($("#desktopAvatar"))$("#desktopAvatar").textContent=initials;
   if($("#desktopAccountName"))$("#desktopAccountName").textContent=p.first_name;
-  if($("#desktopAccountRole"))$("#desktopAccountRole").textContent=p.condominiums?.name||"Morador";
+  if($("#desktopAccountRole"))$("#desktopAccountRole").textContent=state.isAdmin?"Administrador":(p.condominiums?.name||"Morador");
   if($("#mobileAvatar"))$("#mobileAvatar").textContent=initials;
   const legacy=state.user?.is_anonymous===true;
   $("#profileView").innerHTML=`<div class="initials">${esc(initials)}</div><h2>${esc(p.first_name)} ${esc(p.last_name)}</h2><p>${esc(p.condominiums?.name||"")}</p><small>Casa/lote ${esc(p.house_or_lot)}</small><span class="profile-access-state">${legacy?"Acesso antigo • sem PIN":"Acesso com PIN"}</span>`;
   $("#upgradeLegacyBtn").hidden=!legacy;
+  if($("#adminEntryBtn"))$("#adminEntryBtn").hidden=!state.isAdmin;
+  if($("#desktopAdminNav"))$("#desktopAdminNav").hidden=!state.isAdmin;
 }
 function locationById(id){return state.locations.find(l=>String(l.id)===String(id))||null;}
 function focusOccurrenceOnMap(id){
@@ -3235,6 +3347,15 @@ $("#loginForm").addEventListener("submit",handleLogin);
 $("#registerForm").addEventListener("submit",handleRegister);
 $("#legacyForm").addEventListener("submit",handleLegacyClaim);
 $("#legacyAccessBtn").addEventListener("click",()=>switchAccessMode("legacy"));
+$("#adminEntryBtn")?.addEventListener("click",()=>navigate("admin"));
+$("#adminRefreshBtn")?.addEventListener("click",loadAdminData);
+$("#adminAlertForm")?.addEventListener("submit",publishAdminAlert);
+$("#adminOccurrencesList")?.addEventListener("click",event=>{
+  const resolveBtn=event.target.closest("[data-admin-resolve]");
+  const deleteBtn=event.target.closest("[data-admin-delete]");
+  if(resolveBtn)adminResolveOccurrence(resolveBtn.dataset.adminResolve);
+  if(deleteBtn)adminDeleteOccurrence(deleteBtn.dataset.adminDelete);
+});
 $("#editProfileBtn").addEventListener("click",()=>{const p=state.profile;if(!p)return;$("#editFirstName").value=p.first_name;$("#editLastName").value=p.last_name;$("#editCondominium").value=p.condominium_id;setHouseValue("editHouseLot",p.house_or_lot);$("#profileModal").hidden=false;});
 $("#upgradeLegacyBtn").addEventListener("click",()=>{prefillLegacyFromProfile();showAccess("legacy");});
 $("#logoutBtn").addEventListener("click",logoutAndSwitch);
