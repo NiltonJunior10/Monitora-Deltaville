@@ -379,7 +379,7 @@ function highestSeverity(items){
 function locationName(o){return o.monitored_locations?.name || o.custom_location || "Local informado";}
 function navigate(page){
   if(page==="admin"&&!state.isAdmin){toast("Acesso restrito à administração.");page="profile";}
-  $(".page").forEach(p=>p.classList.toggle("active",p.dataset.page===page));
+  Array.from(document.querySelectorAll(".page")).forEach(p=>p.classList.toggle("active",p.dataset.page===page));
   $$(".bottom-nav [data-nav]").forEach(b=>{
     const active=b.dataset.nav===page;
     b.classList.toggle("active",active);
@@ -3342,7 +3342,7 @@ $$(".password-eye").forEach(btn=>{
 });
 
 // v7.0.1 — direct navigation bindings for iOS/PWA reliability
-$("[data-nav]").forEach(btn=>{
+Array.from(document.querySelectorAll("[data-nav]")).forEach(btn=>{
   if(btn.dataset.directNavBound==="1")return;
   btn.dataset.directNavBound="1";
   btn.addEventListener("click",event=>{
