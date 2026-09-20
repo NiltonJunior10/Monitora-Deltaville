@@ -3341,6 +3341,17 @@ $$(".password-eye").forEach(btn=>{
   });
 });
 
+// v7.0.1 — direct navigation bindings for iOS/PWA reliability
+$("[data-nav]").forEach(btn=>{
+  if(btn.dataset.directNavBound==="1")return;
+  btn.dataset.directNavBound="1";
+  btn.addEventListener("click",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    navigate(btn.dataset.nav);
+  });
+});
+
 $("#editProfileForm").addEventListener("submit",submitProfile);
 $("#reportForm").addEventListener("submit",submitReport);
 $("#loginForm").addEventListener("submit",handleLogin);
