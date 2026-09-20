@@ -17,11 +17,11 @@
 
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=690">
-  <link rel="stylesheet" href="stability.css?v=690">
-  <link rel="stylesheet" href="apple-ui.css?v=690">
-  <link rel="stylesheet" href="v6.css?v=690">
-  <script src="theme-init.js?v=690"></script>
+  <link rel="stylesheet" href="styles.css?v=700">
+  <link rel="stylesheet" href="stability.css?v=700">
+  <link rel="stylesheet" href="apple-ui.css?v=700">
+  <link rel="stylesheet" href="v6.css?v=700">
+  <script src="theme-init.js?v=700"></script>
   <title>Monitora Deltaville</title>
 </head>
 <body>
@@ -65,6 +65,11 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
           </span><b>Relatórios</b>
         </button>
+        <button data-nav="admin" class="desktop-nav-item" id="desktopAdminNav" hidden>
+          <span class="desktop-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 2.8 8.2 7 10 4.2-1.8 7-5.3 7-10V6Z"/><path d="M9 12h6M12 9v6"/></svg>
+          </span><b>Administração</b>
+        </button>
         <button type="button" class="desktop-nav-item desktop-theme-toggle" id="themeToggleDesktop" role="switch" aria-checked="false">
           <span class="desktop-nav-icon theme-nav-icon">
             <svg class="theme-moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"/></svg>
@@ -78,7 +83,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v6.9.0</small>
+        <small>Monitora Deltaville<br>v7.0.0</small>
       </div>
     </aside>
     <header class="topbar">
@@ -714,6 +719,9 @@
           <p class="push-help" id="pushHelp">Ative para receber novas ocorrências mesmo quando o app estiver fechado.</p>
         </section>
 
+        <button class="admin-entry wide" id="adminEntryBtn" hidden>
+          <span>Administração</span><small>Gerenciar moradores, ocorrências e alertas</small>
+        </button>
         <button class="secondary wide" id="editProfileBtn">Editar cadastro</button>
         <button class="secondary wide legacy-access-btn" id="upgradeLegacyBtn" hidden>Criar PIN para usar em outros aparelhos</button>
         <button class="danger wide" id="logoutBtn">Sair / trocar usuário</button>
@@ -731,6 +739,54 @@
           <p>Seu número de casa/lote não é exibido nas ocorrências. Os alertas comunitários não substituem orientações da Defesa Civil ou de autoridades públicas.</p>
         </section>
         <button class="secondary wide" id="installBtn">Instalar / adicionar à tela inicial</button>
+      </section>
+
+      <section class="page admin-page" data-page="admin">
+        <div class="admin-page-head">
+          <button type="button" class="admin-back" data-nav="profile" aria-label="Voltar ao perfil">‹</button>
+          <div><p class="eyebrow">PAINEL ADMINISTRATIVO</p><h1>Administração</h1><p class="muted">Controle interno do Monitora Deltaville.</p></div>
+          <button type="button" class="secondary admin-refresh" id="adminRefreshBtn">Atualizar</button>
+        </div>
+
+        <div class="admin-stats-grid">
+          <article><small>Moradores cadastrados</small><strong id="adminUsersCount">—</strong></article>
+          <article><small>Ocorrências ativas</small><strong id="adminActiveCount">—</strong></article>
+          <article><small>Alertas ativos</small><strong id="adminAlertsCount">—</strong></article>
+          <article><small>Resolvidas</small><strong id="adminResolvedCount">—</strong></article>
+        </div>
+
+        <div class="admin-layout">
+          <section class="admin-card admin-users-card">
+            <div class="admin-card-head"><div><small>ACESSOS</small><h2>Moradores</h2></div><span id="adminUsersBadge">0</span></div>
+            <div class="admin-list" id="adminUsersList"><p class="muted">Carregando moradores…</p></div>
+          </section>
+
+          <section class="admin-card admin-alert-card">
+            <div class="admin-card-head"><div><small>COMUNICAÇÃO</small><h2>Publicar alerta</h2></div></div>
+            <form id="adminAlertForm" class="admin-alert-form">
+              <label>Título<input id="adminAlertTitle" maxlength="120" required placeholder="Ex.: Chuva intensa na região"></label>
+              <label>Mensagem<textarea id="adminAlertMessage" maxlength="1000" required rows="4" placeholder="Informe o que os moradores precisam saber."></textarea></label>
+              <label>Nível
+                <select id="adminAlertSeverity" required>
+                  <option value="attention">Atenção</option>
+                  <option value="alert">Alerta</option>
+                  <option value="critical">Crítico</option>
+                </select>
+              </label>
+              <button class="primary wide" type="submit">Publicar alerta oficial</button>
+            </form>
+          </section>
+
+          <section class="admin-card admin-occurrences-card">
+            <div class="admin-card-head"><div><small>MODERAÇÃO</small><h2>Ocorrências recentes</h2></div><span id="adminOccurrencesBadge">0</span></div>
+            <div class="admin-list admin-occurrences-list" id="adminOccurrencesList"><p class="muted">Carregando ocorrências…</p></div>
+          </section>
+
+          <section class="admin-card admin-alerts-list-card">
+            <div class="admin-card-head"><div><small>HISTÓRICO</small><h2>Alertas publicados</h2></div><span id="adminAlertsBadge">0</span></div>
+            <div class="admin-list" id="adminAlertsList"><p class="muted">Carregando alertas…</p></div>
+          </section>
+        </div>
       </section>
     </main>
 
@@ -1118,12 +1174,12 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.113.0"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="stability-core.js?v=690"></script>
-  <script src="auth.js?v=690"></script>
-  <script src="river.js?v=690"></script>
-  <script src="weather.js?v=690"></script>
-  <script src="push.js?v=690"></script>
-  <script src="app.js?v=690"></script>
-  <script src="v6-ui.js?v=690"></script>
+  <script src="stability-core.js?v=700"></script>
+  <script src="auth.js?v=700"></script>
+  <script src="river.js?v=700"></script>
+  <script src="weather.js?v=700"></script>
+  <script src="push.js?v=700"></script>
+  <script src="app.js?v=700"></script>
+  <script src="v6-ui.js?v=700"></script>
 </body>
 </html>
