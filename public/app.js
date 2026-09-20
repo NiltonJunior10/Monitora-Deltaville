@@ -550,7 +550,7 @@ async function loadAdminData(){
   try{
     const [usersRes,occRes,alertsRes]=await Promise.all([
       db.from("profiles").select("user_id,first_name,last_name,house_or_lot,created_at,condominiums(name)").order("created_at",{ascending:false}),
-      db.from("occurrences").select("id,reporter_id,occurrence_type,severity,status,created_at,resolved_at,reporter_first_name,reporter_last_name,reporter_condominium,custom_location,monitored_locations(name,category)").order("created_at",{ascending:false}).limit(40),
+      db.from("occurrences").select("id,reporter_id,occurrence_type,severity,status,created_at,expires_at,resolved_at,reporter_first_name,reporter_last_name,reporter_condominium,custom_location,monitored_locations(name,category)").order("created_at",{ascending:false}).limit(40),
       db.from("alerts").select("id,title,message,severity,source_type,active,created_at,starts_at,ends_at").order("created_at",{ascending:false}).limit(30)
     ]);
     if(usersRes.error)throw usersRes.error;
