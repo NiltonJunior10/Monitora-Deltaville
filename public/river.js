@@ -442,9 +442,10 @@ function renderDesktopRiverSummary(d,status,latest){
   const updated=$("#desktopRiverUpdated");
   if(!value||!deltaEl||!statusEl||!updated)return;
 
-  statusEl.className=`desktop-river-status ${status||"unknown"}`;
-  const statusText={normal:"Normal",attention:"Atenção",alert:"Alerta",critical:"Crítico",unknown:"Sem cota oficial"};
-  statusEl.textContent=statusText[status]||statusText.unknown;
+  statusEl.className="desktop-river-status updated";
+  statusEl.textContent=latest
+    ?`Última atualização: ${formatRiverTime(latest.measured_at)}`
+    :"Última atualização: —";
 
   const scaleMarker=$("#desktopRiverScaleMarker");
   if(!latest){
