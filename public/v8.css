@@ -1940,3 +1940,39 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     background:rgba(255,255,255,.06)!important;
   }
 }
+
+
+/* v7.0.28 — report modal true desktop centering */
+@media (min-width:1180px) and (pointer:fine){
+  #reportModal{
+    display:grid!important;
+    place-items:center!important;
+    padding:24px!important;
+    overflow:hidden!important;
+  }
+
+  #reportModal[hidden]{
+    display:none!important;
+  }
+
+  #reportModal>.backdrop{
+    position:absolute!important;
+    inset:0!important;
+  }
+
+  #reportModal .report-sheet-v4{
+    position:relative!important;
+    inset:auto!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    transform:none!important;
+    margin:0!important;
+    width:min(760px,calc(100vw - 48px))!important;
+    max-height:min(88dvh,820px)!important;
+    border-radius:30px!important;
+    overflow-y:auto!important;
+    box-sizing:border-box!important;
+  }
+}
