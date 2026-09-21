@@ -1241,7 +1241,7 @@ function renderSelectedSegmentLayers(){
   const map=state.maps.full;
   const seg=state.selectedSegment;
   if(!map||!seg)return;
-  const pts=avenuePointsByLocationId(seg.avenueId);
+  const pts=avenuePointsByLocationId(seg.avenueId,seg.routeKey||"main");
   if(!pts)return;
   const section=selectedSegmentRoute(pts,seg);
   const halo=L.polyline(section,{color:'#FFFFFF',weight:18,opacity:.84,lineCap:'round',lineJoin:'round',interactive:false}).addTo(map);
@@ -1297,7 +1297,7 @@ function positionSelectedSegmentAction(){
   const seg=state.selectedSegment;
   if(!action||!map||!seg||action.hidden)return;
 
-  const pts=avenuePointsByLocationId(seg.avenueId);
+  const pts=avenuePointsByLocationId(seg.avenueId,seg.routeKey||"main");
   if(!pts)return;
 
   // O popup acompanha o SEGUNDO ponto do gesto (fim do arraste),
@@ -1376,11 +1376,16 @@ function finishSegmentSelection(){
 function setSelectedSegmentPoint(latlng){
   const pick=state.segmentPickMode;
   if(!pick?.active)return;
-  const pts=avenuePointsByLocationId(pick.avenueId);
+
+  const sameAvenue=state.selectedSegment&&String(state.selectedSegment.avenueId)===String(pick.avenueId);
+  const routeChoice=sameAvenue
+    ?{routeKey:state.selectedSegment.routeKey||"main",pts:avenuePointsByLocationId(pick.avenueId,state.selectedSegment.routeKey||"main")}
+    :nearestAvenueProjectionForLocation(pick.avenueId,latlng);
+  const pts=routeChoice?.pts;
   if(!pts){ toast('Não foi possível localizar a avenida.'); return; }
   const proj=projectPointOnRoute(latlng,pts);
-  if(!state.selectedSegment || String(state.selectedSegment.avenueId)!==String(pick.avenueId)){
-    state.selectedSegment={avenueId:pick.avenueId,startRatio:proj.ratio,endRatio:proj.ratio,span:0,wrap:false};
+  if(!sameAvenue){
+    state.selectedSegment={avenueId:pick.avenueId,routeKey:routeChoice.routeKey||"main",startRatio:proj.ratio,endRatio:proj.ratio,span:0,wrap:false};
   }
   if(pick.step==='start'){
     state.selectedSegment.startRatio=proj.ratio;
@@ -1469,6 +1474,7 @@ function bindMapPointSelection(){
     const wrap=closed?selectionCrossesLoopSeam(gesture.startProjection.ratio,span):false;
     state.selectedSegment={
       avenueId:gesture.avenue.loc.id,
+      routeKey:gesture.avenue.routeKey||"main",
       startRatio:gesture.startProjection.ratio,
       endRatio,
       span,
@@ -1527,6 +1533,7 @@ function bindMapPointSelection(){
       gesture.liveLayers=[];
       state.selectedSegment={
         avenueId:avenue.loc.id,
+        routeKey:avenue.routeKey||"main",
         startRatio:avenue.projection.ratio,
         endRatio:avenue.projection.ratio,
         span:0,
@@ -1741,7 +1748,7 @@ function renderOccurrencePointMarkers(){
       const note=noteText(o);
 
       if(isAvenue && meta?.mode==='segment' && o.location_id){
-        const pts=avenuePointsByLocationId(o.location_id);
+        const pts=avenuePointsByLocationId(o.location_id,meta.routeKey||"main");
         if(pts){
           const latlngs=selectedSegmentRoute(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});
           const color=o.severity==="critical"?"#E13B4B":o.severity==="alert"?"#F27A2C":"#F4B740";
@@ -1847,30 +1854,50 @@ function markerIcon(loc,status,hasOccurrence=false){
 }
 
 const avenueRoutes={
-  /* Geometria de snap: os cruzamentos compartilham o mesmo nó.
-     A Av. Deltaville é um circuito fechado ao redor do canteiro/lagos centrais. */
+  /* Malha redesenhada sobre o eixo das pistas cinzas do mapa.
+     Os cruzamentos compartilham coordenadas para manter snap contínuo. */
   "Av. Egídio Abelino Richartz":[
-    [120,282],[120,326],[120,372],[120,420],[120,470],[120,520],[120,570],[120,620],[120,675]
+    [138,294],[138,340],[138,392],[138,446],[138,500],[138,552],[137,592],
+    [132,620],[122,640],[108,655],[93,665],[82,674],[76,686]
   ],
   "Av. Wilson Castelo Branco":[
-    [120,282],[210,282],[300,282],[390,282],[480,282],[570,282],[650,282],
-    [740,282],[830,282],[920,282],[1010,282],[1100,282],[1138,282]
+    [138,294],[220,294],[310,294],[400,294],[490,294],[580,294],
+    [632,294],[660,294],[688,294],[780,294],[880,294],[980,294],[1070,294],[1162,294]
   ],
   "Av. Deltaville":[
-    /* Traçado centralizado sobre a pista cinza ilustrada no mapa. */
-    [650,302],
-    [637,306],[628,315],[622,329],[620,348],
-    [620,392],[620,442],[620,501],[620,561],[620,620],[620,680],[620,739],[621,784],[625,809],
-    [633,829],[650,839],
-    [667,829],[675,809],[679,784],
-    [680,739],[680,680],[680,620],[680,561],[680,501],[680,442],[680,392],[680,348],
-    [678,329],[672,315],[663,306],[650,302]
+    /* Circuito principal ao redor do canteiro e dos lagos. */
+    [660,318],[646,320],[636,327],[630,340],[628,360],
+    [628,410],[628,465],[628,520],[628,575],[628,630],[628,685],[628,740],[628,792],[630,826],
+    [636,850],[646,870],[660,879],
+    [674,870],[684,850],[690,826],[692,792],
+    [692,740],[692,685],[692,630],[692,575],[692,520],[692,465],[692,410],[692,360],
+    [690,340],[684,327],[674,320],[660,318]
   ],
   "Av. Beira Rio":[
-    [1138,282],[1138,330],[1138,378],[1138,426],[1138,474],[1138,522],[1138,570],
-    [1138,618],[1138,666],[1138,714],[1138,762],[1138,810],[1138,840]
+    /* Continuação norte curva + eixo principal sul. */
+    [1240,18],[1237,48],[1230,82],[1220,120],[1208,160],[1195,202],[1182,240],[1170,272],
+    [1162,294],[1162,345],[1162,400],[1162,455],[1162,510],[1162,565],
+    [1162,620],[1162,675],[1162,730],[1162,780],[1162,820],[1162,846]
   ]
 };
+
+/* Ligações curtas que pertencem à avenida, mas não devem deformar a rota principal. */
+const avenueBranches={
+  "Av. Deltaville":[
+    {key:"north-west",points:[[632,294],[632,304],[634,313],[638,322],[642,327]]},
+    {key:"north-east",points:[[688,294],[688,304],[686,313],[682,322],[678,327]]}
+  ]
+};
+
+function avenueRouteDefinitions(name){
+  const main=avenueRoutes[name];
+  if(!main)return [];
+  return [
+    {key:"main",points:main},
+    ...((avenueBranches[name]||[]).map(def=>({key:def.key,points:def.points})))
+  ];
+}
+
 const riverRoute=[
   [1573,302],[1578,370],[1575,450],[1571,535],[1577,620],[1573,710],[1569,805],[1562,895]
 ];
@@ -2046,21 +2073,39 @@ function shortestLoopSpan(startRatio,endRatio){
 function avenueLocationById(id){
   return state.locations.find(l=>String(l.id)===String(id) && l.category==='avenue')||null;
 }
-function avenuePointsByLocationId(id){
+function avenuePointsByLocationId(id,routeKey="main"){
   const loc=avenueLocationById(id);
   if(!loc)return null;
-  const route=avenueRoutes[loc.name];
-  return route?routeToLatLng(route):null;
+  const def=avenueRouteDefinitions(loc.name).find(item=>item.key===(routeKey||"main"))
+    ||avenueRouteDefinitions(loc.name)[0];
+  return def?routeToLatLng(def.points):null;
+}
+
+function nearestAvenueProjectionForLocation(id,latlng,maxDistance=Infinity){
+  const loc=avenueLocationById(id);
+  if(!loc)return null;
+  let best=null;
+  for(const def of avenueRouteDefinitions(loc.name)){
+    const pts=routeToLatLng(def.points);
+    if(pts.length<2)continue;
+    const projection=projectPointOnRoute(latlng,pts);
+    if(projection.distance<=maxDistance&&(!best||projection.distance<best.projection.distance)){
+      best={loc,pts,projection,routeKey:def.key};
+    }
+  }
+  return best;
 }
 
 function nearestAvenueProjection(latlng,maxDistance=46){
   let best=null;
   for(const loc of state.locations.filter(item=>item.category==="avenue")){
-    const pts=avenuePointsByLocationId(loc.id);
-    if(!pts||pts.length<2)continue;
-    const projection=projectPointOnRoute(latlng,pts);
-    if(projection.distance<=maxDistance&&(!best||projection.distance<best.projection.distance)){
-      best={loc,pts,projection};
+    for(const def of avenueRouteDefinitions(loc.name)){
+      const pts=routeToLatLng(def.points);
+      if(pts.length<2)continue;
+      const projection=projectPointOnRoute(latlng,pts);
+      if(projection.distance<=maxDistance&&(!best||projection.distance<best.projection.distance)){
+        best={loc,pts,projection,routeKey:def.key};
+      }
     }
   }
   return best;
@@ -2300,51 +2345,11 @@ function renderAvenues(which){
   if(!visible)return;
 
   state.locations.filter(loc=>loc.category==="avenue").forEach(loc=>{
-    const route=avenueRoutes[loc.name];if(!route)return;
+    const defs=avenueRouteDefinitions(loc.name);if(!defs.length)return;
     const status=statusForLocation(loc.id);
     if(which==="full"&&state.filter==="alerts"&&status==="normal")return;
 
-    const points=routeToLatLng(route);
     const color="#1684D8";
-
-    const corridor=L.polyline(points,{
-      color,
-      weight:10,
-      opacity:.025,
-      lineCap:"round",
-      lineJoin:"round",
-      interactive:false,
-      className:"avenue-corridor"
-    }).addTo(map);
-
-    const core=L.polyline(points,{
-      color,
-      weight:2.4,
-      opacity:.16,
-      lineCap:"round",
-      lineJoin:"round",
-      interactive:false,
-      className:"avenue-core"
-    }).addTo(map);
-
-    const center=L.polyline(points,{
-      color:"#FFFFFF",
-      weight:1,
-      opacity:.08,
-      lineCap:"round",
-      interactive:false,
-      dashArray:"3 8",
-      className:"avenue-center-static"
-    }).addTo(map);
-
-    const hit=L.polyline(points,{
-      color:"#000",
-      weight:34,
-      opacity:0,
-      interactive:true,
-      className:"map-hit-target avenue-hit-target"
-    }).addTo(map);
-
     const latest=state.occurrences.find(o=>o.location_id===loc.id);
     const payload={
       title:loc.name,
@@ -2353,37 +2358,79 @@ function renderAvenues(which){
       locationId:loc.id,
       typeLabel:"Avenida monitorada",
       timeLabel:latest?age(latest.created_at):"Sem ocorrência ativa",
-      description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Segure sobre a via e arraste para selecionar o trecho."
+      description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Clique para marcar um ponto ou arraste para selecionar um trecho."
     };
 
-    hit.on("click",e=>{
-      if(which==="home"){
-        openMapFromPreview();
-        return;
-      }
-      if(Date.now()<(state.mapSuppressPointClickUntil||0))return;
-      closeMapAvenueTooltips();
-      hideMapFocusCard();
-      if(e?.latlng){
-        if(e.originalEvent)e.originalEvent.__monitoraPointHandled=true;
-        clearSegmentSelection({silent:true});
-        state.multiPointMode=false;
-        setSelectedPoint(e.latlng,{append:false});
-      }
-    });
+    defs.forEach(def=>{
+      const points=routeToLatLng(def.points);
 
-    if(which==="full"){
-      hit.bindTooltip(
-        `<b>${esc(loc.name)}</b><span>Clique e arraste para definir a área</span>`,
-        {sticky:true,className:"avenue-tooltip avenue-action-tooltip",direction:"top",opacity:1}
-      );
-      hit.on("mouseover",()=>{
-        if(state.selectedSegment || state.segmentPickMode?.active || $("#fullMap")?.classList.contains("road-drag-selecting")){
-          try{hit.closeTooltip();}catch(_){}
+      const corridor=L.polyline(points,{
+        color,
+        weight:def.key==="main"?10:8,
+        opacity:.025,
+        lineCap:"round",
+        lineJoin:"round",
+        interactive:false,
+        className:"avenue-corridor"
+      }).addTo(map);
+
+      const core=L.polyline(points,{
+        color,
+        weight:def.key==="main"?2.4:2,
+        opacity:.16,
+        lineCap:"round",
+        lineJoin:"round",
+        interactive:false,
+        className:"avenue-core"
+      }).addTo(map);
+
+      const center=L.polyline(points,{
+        color:"#FFFFFF",
+        weight:1,
+        opacity:.08,
+        lineCap:"round",
+        interactive:false,
+        dashArray:"3 8",
+        className:"avenue-center-static"
+      }).addTo(map);
+
+      const hit=L.polyline(points,{
+        color:"#000",
+        weight:def.key==="main"?34:30,
+        opacity:0,
+        interactive:true,
+        className:"map-hit-target avenue-hit-target"
+      }).addTo(map);
+
+      hit.on("click",e=>{
+        if(which==="home"){
+          openMapFromPreview();
+          return;
+        }
+        if(Date.now()<(state.mapSuppressPointClickUntil||0))return;
+        closeMapAvenueTooltips();
+        hideMapFocusCard();
+        if(e?.latlng){
+          if(e.originalEvent)e.originalEvent.__monitoraPointHandled=true;
+          clearSegmentSelection({silent:true});
+          state.multiPointMode=false;
+          setSelectedPoint(e.latlng,{append:false});
         }
       });
-    }
-    state.avenueLayers[which].push(corridor,core,center,hit);
+
+      if(which==="full"){
+        hit.bindTooltip(
+          `<b>${esc(loc.name)}</b><span>Clique para marcar • arraste para definir trecho</span>`,
+          {sticky:true,className:"avenue-tooltip avenue-action-tooltip",direction:"top",opacity:1}
+        );
+        hit.on("mouseover",()=>{
+          if(state.selectedSegment || state.segmentPickMode?.active || $("#fullMap")?.classList.contains("road-drag-selecting")){
+            try{hit.closeTooltip();}catch(_){}
+          }
+        });
+      }
+      state.avenueLayers[which].push(corridor,core,center,hit);
+    });
   });
 }
 
@@ -2700,7 +2747,7 @@ function focusOccurrenceOnMap(id){
     const targets=[];
     for(const o of items){
       const meta=o._meta||null;let target=null;
-      if(meta?.mode==="segment"&&o.location_id){const pts=avenuePointsByLocationId(o.location_id);if(pts)target=selectedSegmentMidpoint(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});}
+      if(meta?.mode==="segment"&&o.location_id){const pts=avenuePointsByLocationId(o.location_id,meta.routeKey||"main");if(pts)target=selectedSegmentMidpoint(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});}
       else if(o.exact_map_x!=null&&o.exact_map_y!=null)target=normalizedToLatLng(o.exact_map_x,o.exact_map_y);
       else if(o.location_id){const loc=locationById(o.location_id);if(loc)target=coord(loc);}
       if(target)targets.push(target);
@@ -3269,7 +3316,7 @@ function restoreOccurrenceGroup(items){
     if(o.exact_map_x!=null&&o.exact_map_y!=null){const ll=normalizedToLatLng(o.exact_map_x,o.exact_map_y);state.selectedPoints.push({lat:Number(ll[0]),lng:Number(ll[1]),map_x:Number(o.exact_map_x),map_y:Number(o.exact_map_y),loc:o.location_id?locationById(o.location_id):null});}
   }
   state.selectedPoint=state.selectedPoints.at(-1)||null;renderSelectedPointMarkers();
-  const seg=items.find(o=>o._meta?.mode==="segment");if(seg?.location_id){state.selectedSegment={avenueId:seg.location_id,startRatio:Number(seg._meta.startRatio)||0,endRatio:Number(seg._meta.endRatio)||0,span:Number.isFinite(Number(seg._meta.span))?Number(seg._meta.span):undefined,wrap:!!seg._meta.wrap};renderSelectedSegmentLayers();}
+  const seg=items.find(o=>o._meta?.mode==="segment");if(seg?.location_id){state.selectedSegment={avenueId:seg.location_id,routeKey:seg._meta.routeKey||"main",startRatio:Number(seg._meta.startRatio)||0,endRatio:Number(seg._meta.endRatio)||0,span:Number.isFinite(Number(seg._meta.span))?Number(seg._meta.span):undefined,wrap:!!seg._meta.wrap};renderSelectedSegmentLayers();}
   $("#occurrenceType").value=first.occurrence_type;setOccurrenceType(first.occurrence_type,{keepLocations:true});if(first.avenue_condition)$("#avenueCondition").value=first.avenue_condition;const sev=$(`input[name="severity"][value="${first.severity}"]`);if(sev)sev.checked=true;$("#notes").value=noteText(first)||"";$("#manualReportFields").hidden=false;$("#smartResult").hidden=true;renderLocationChips();renderDamageUI();updateSelectedPointUI();updateReportReadyState();
 }
 function openReport(source="general"){
@@ -3360,7 +3407,7 @@ function buildReportTargets(){
   if(type==="avenue_flooding"&&state.selectedSegment){
     const locId=String(state.selectedSegment.avenueId);
     if(state.reportLocationIds.some(id=>String(id)===locId)){
-      const pts=avenuePointsByLocationId(locId);if(pts){const mid=selectedSegmentMidpoint(pts,state.selectedSegment),n=latLngToNormalized({lat:mid[0],lng:mid[1]});targets.push({location_id:locId,custom_location:null,exact_map_x:n.map_x,exact_map_y:n.map_y,segment:{startRatio:state.selectedSegment.startRatio,endRatio:state.selectedSegment.endRatio,span:Number(state.selectedSegment.span)||0,wrap:!!state.selectedSegment.wrap}});represented.add(locId);}
+      const pts=avenuePointsByLocationId(locId,state.selectedSegment.routeKey||"main");if(pts){const mid=selectedSegmentMidpoint(pts,state.selectedSegment),n=latLngToNormalized({lat:mid[0],lng:mid[1]});targets.push({location_id:locId,custom_location:null,exact_map_x:n.map_x,exact_map_y:n.map_y,segment:{routeKey:state.selectedSegment.routeKey||"main",startRatio:state.selectedSegment.startRatio,endRatio:state.selectedSegment.endRatio,span:Number(state.selectedSegment.span)||0,wrap:!!state.selectedSegment.wrap}});represented.add(locId);}
     }
   }
   state.selectedPoints.forEach((point,index)=>{
@@ -3400,7 +3447,7 @@ function makeOccurrencePayloads(){
       ...(t.condominiumId?{condominiumId:t.condominiumId}:{}),
       ...(type==="wind_damage"&&state.reportDamageTypes.length?{damageTypes:[...state.reportDamageTypes]}:{})
     };
-    if(t.segment){meta.mode="segment";meta.startRatio=t.segment.startRatio;meta.endRatio=t.segment.endRatio;meta.span=Number(t.segment.span)||0;meta.wrap=!!t.segment.wrap;}else if(t.pointIndex){meta.mode="point";meta.pointIndex=t.pointIndex;}
+    if(t.segment){meta.mode="segment";meta.routeKey=t.segment.routeKey||"main";meta.startRatio=t.segment.startRatio;meta.endRatio=t.segment.endRatio;meta.span=Number(t.segment.span)||0;meta.wrap=!!t.segment.wrap;}else if(t.pointIndex){meta.mode="point";meta.pointIndex=t.pointIndex;}
     return {location_id:t.location_id,custom_location:t.custom_location,occurrence_type:type,avenue_condition:avenueCondition,severity,notes:encodeOccurrenceNotes(note,meta),exact_map_x:t.exact_map_x,exact_map_y:t.exact_map_y,reporter_id:state.user.id};
   });
 }
