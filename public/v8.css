@@ -1292,3 +1292,143 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     right:8px!important;
   }
 }
+
+
+/* v7.0.17 — flat neighborhood entrance in desktop sidebar */
+@media(min-width:1180px){
+  /* O fundo ilustrado sobe até próximo de "Tema escuro" e ocupa o espaço antes vazio. */
+  .desktop-sidebar-spacer{
+    flex:0 0 8px!important;
+  }
+  .desktop-community-note{
+    position:relative!important;
+    flex:1 1 auto!important;
+    min-height:360px!important;
+    margin:2px 0 0!important;
+    padding:0 8px 8px!important;
+    overflow:hidden!important;
+    border-radius:26px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-end!important;
+    text-align:center!important;
+    color:var(--v6-secondary)!important;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(225,246,255,0) 0%,
+        rgba(220,245,255,.24) 11%,
+        rgba(192,238,255,.48) 27%,
+        rgba(151,225,247,.72) 46%,
+        rgba(217,247,247,.78) 70%,
+        rgba(250,253,255,.62) 100%
+      )!important;
+    border:1px solid rgba(255,255,255,.45)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.68)!important;
+  }
+
+  .desktop-neighborhood-scene{
+    position:absolute!important;
+    inset:24px -10px 88px -10px!important;
+    display:block!important;
+    pointer-events:none!important;
+  }
+  .desktop-neighborhood-scene svg{
+    width:100%!important;
+    height:100%!important;
+    display:block!important;
+    overflow:visible!important;
+  }
+
+  /* Flat vector: sem brilho, sem sombra e sem efeitos 3D. */
+  .desktop-neighborhood-scene .scene-sky>path:first-child{fill:#DDF4FB!important}
+  .desktop-neighborhood-scene .hill-back{fill:#B9E5ED!important}
+  .desktop-neighborhood-scene .hill-front{fill:#8FD2DD!important}
+  .desktop-neighborhood-scene .scene-houses rect{fill:#F7F3EC!important}
+  .desktop-neighborhood-scene .scene-houses path{fill:#D5CBBF!important}
+  .desktop-neighborhood-scene .scene-window{fill:#8FC7DA!important}
+  .desktop-neighborhood-scene .scene-door{fill:#8B9AA8!important}
+  .desktop-neighborhood-scene .palm-trunk{fill:none!important;stroke:#4B8F80!important;stroke-width:4!important;stroke-linecap:round!important}
+  .desktop-neighborhood-scene .palm-leaf{fill:#2B8A83!important}
+  .desktop-neighborhood-scene .scene-vegetation{fill:#55B98E!important}
+  .desktop-neighborhood-scene .scene-road .road-main{fill:#B8DDF1!important}
+  .desktop-neighborhood-scene .scene-road .road-side,
+  .desktop-neighborhood-scene .scene-road .road-inner{
+    fill:none!important;stroke:#FFFFFF!important;stroke-width:5!important;stroke-linecap:round!important
+  }
+  .desktop-neighborhood-scene .scene-road .road-mark{
+    fill:none!important;stroke:#FFFFFF!important;stroke-width:3!important;stroke-linecap:round!important
+  }
+  .desktop-neighborhood-scene .scene-arches .arch{
+    fill:none!important;
+    stroke:#267B99!important;
+    stroke-width:10!important;
+    stroke-linecap:round!important;
+    stroke-linejoin:round!important;
+    vector-effect:non-scaling-stroke!important;
+  }
+  .desktop-neighborhood-scene .scene-arches .arch-center{
+    stroke:#2C93AC!important;
+    stroke-width:8!important;
+  }
+  .desktop-neighborhood-scene .scene-lamps path{
+    fill:none!important;stroke:#5E86A1!important;stroke-width:2.2!important;stroke-linecap:round!important
+  }
+  .desktop-neighborhood-scene .scene-sign rect{fill:#EAF8F5!important;stroke:#58B6A8!important;stroke-width:1!important}
+  .desktop-neighborhood-scene .scene-sign text{
+    fill:#1E7290!important;
+    font:700 9px/1 var(--v6-font)!important;
+  }
+
+  .desktop-community-note p{
+    position:relative!important;
+    z-index:2!important;
+    margin:0 0 8px!important;
+    color:#3D5C77!important;
+    font-size:10px!important;
+    line-height:1.45!important;
+  }
+  .desktop-community-note p strong{
+    color:#244E72!important;
+    font-weight:760!important;
+  }
+  .desktop-community-accent{
+    position:relative!important;
+    z-index:2!important;
+    display:block!important;
+    width:44px!important;
+    height:2px!important;
+    margin:0 auto 10px!important;
+    border-radius:99px!important;
+    background:#38C8C5!important;
+  }
+  .desktop-community-note small{
+    position:relative!important;
+    z-index:2!important;
+    display:block!important;
+    margin-top:0!important;
+    padding-left:4px!important;
+    color:#7891A8!important;
+    font-size:8.5px!important;
+    line-height:1.35!important;
+    text-align:left!important;
+  }
+}
+
+/* Dark mode mantém a mesma ilustração, apenas com um degradê próprio. */
+:root[data-theme="dark"] .desktop-community-note{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(14,35,54,0) 0%,
+      rgba(18,52,74,.30) 17%,
+      rgba(22,80,101,.54) 44%,
+      rgba(19,62,80,.78) 72%,
+      rgba(16,34,48,.88) 100%
+    )!important;
+  border-color:rgba(255,255,255,.05)!important;
+}
+:root[data-theme="dark"] .desktop-community-note p{color:#C5D7E6!important}
+:root[data-theme="dark"] .desktop-community-note p strong{color:#EDF7FF!important}
+:root[data-theme="dark"] .desktop-community-note small{color:#87A5BC!important}
+:root[data-theme="dark"] .desktop-neighborhood-scene{opacity:.78!important}
