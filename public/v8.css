@@ -2943,3 +2943,262 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     font-size:8.2px!important;
   }
 }
+
+
+/* v7.0.41 — desktop full map + avenue drag affordance */
+@media(min-width:1180px) and (pointer:fine){
+  /* Ao entrar no Mapa, somente a área de conteúdo vira mapa em tela inteira.
+     A sidebar consolidada permanece exatamente como está. */
+  body.map-open{
+    overflow:hidden!important;
+  }
+
+  body.map-open .topbar{
+    display:none!important;
+  }
+
+  body.map-open .app-shell{
+    height:100vh!important;
+    padding:0 0 0 var(--desktop-sidebar-w)!important;
+    overflow:hidden!important;
+  }
+
+  body.map-open main{
+    position:fixed!important;
+    z-index:1!important;
+    top:0!important;
+    right:0!important;
+    bottom:0!important;
+    left:var(--desktop-sidebar-w)!important;
+    width:auto!important;
+    height:100vh!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  body.map-open [data-page="map"].active{
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#EAF3EF!important;
+  }
+
+  body.map-open [data-page="map"] .map-workspace,
+  body.map-open [data-page="map"] .map-shell{
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    overflow:hidden!important;
+  }
+
+  body.map-open [data-page="map"] #fullMap{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:100%!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#EAF3EF!important;
+  }
+
+  /* Controles passam a flutuar sobre o mapa, sem roubar largura dele. */
+  body.map-open [data-page="map"] .map-fullscreen-title{
+    position:absolute!important;
+    z-index:1120!important;
+    top:16px!important;
+    left:16px!important;
+    right:16px!important;
+    width:auto!important;
+    min-height:52px!important;
+    margin:0!important;
+    padding:7px 9px!important;
+    border:1px solid rgba(255,255,255,.68)!important;
+    border-radius:18px!important;
+    background:rgba(248,252,255,.82)!important;
+    box-shadow:0 10px 30px rgba(15,23,42,.12)!important;
+    backdrop-filter:blur(24px) saturate(170%)!important;
+    -webkit-backdrop-filter:blur(24px) saturate(170%)!important;
+  }
+
+  body.map-open [data-page="map"] .map-fullscreen-title .kicker{
+    display:none!important;
+  }
+
+  body.map-open [data-page="map"] .map-fullscreen-title h1{
+    font-size:16px!important;
+    line-height:1!important;
+    letter-spacing:-.025em!important;
+  }
+
+  body.map-open [data-page="map"] .map-back-btn{
+    width:38px!important;
+    height:38px!important;
+    min-width:38px!important;
+    border-radius:12px!important;
+  }
+
+  body.map-open [data-page="map"] #mapFilters{
+    position:absolute!important;
+    z-index:1110!important;
+    top:78px!important;
+    left:16px!important;
+    width:max-content!important;
+    max-width:calc(100% - 32px)!important;
+    margin:0!important;
+    padding:5px!important;
+    gap:4px!important;
+    border:1px solid rgba(255,255,255,.68)!important;
+    border-radius:16px!important;
+    background:rgba(248,252,255,.82)!important;
+    box-shadow:0 8px 24px rgba(15,23,42,.10)!important;
+    backdrop-filter:blur(24px) saturate(170%)!important;
+    -webkit-backdrop-filter:blur(24px) saturate(170%)!important;
+  }
+
+  body.map-open [data-page="map"] #mapFilters button{
+    min-height:32px!important;
+    height:32px!important;
+    padding:0 11px!important;
+    border:0!important;
+    border-radius:11px!important;
+    font-size:10px!important;
+  }
+
+  body.map-open [data-page="map"] .map-floating-toolbar{
+    position:absolute!important;
+    z-index:1090!important;
+    top:126px!important;
+    right:16px!important;
+  }
+
+  body.map-open [data-page="map"] .map-side-panel{
+    position:absolute!important;
+    z-index:1080!important;
+    inset:0!important;
+    width:auto!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    pointer-events:none!important;
+  }
+
+  body.map-open [data-page="map"] .map-side-panel .locations-section,
+  body.map-open [data-page="map"] .map-side-panel .map-note{
+    display:none!important;
+  }
+
+  body.map-open [data-page="map"] #pickPointBtn,
+  body.map-open [data-page="map"] #mapPickHelp,
+  body.map-open [data-page="map"] .map-focus-card{
+    pointer-events:auto!important;
+  }
+
+  body.map-open [data-page="map"] #pickPointBtn{
+    position:absolute!important;
+    left:50%!important;
+    bottom:18px!important;
+    transform:translateX(-50%)!important;
+    width:auto!important;
+    min-width:170px!important;
+    margin:0!important;
+  }
+
+  body.map-open [data-page="map"] #mapPickHelp{
+    position:absolute!important;
+    left:50%!important;
+    bottom:68px!important;
+    transform:translateX(-50%)!important;
+    width:max-content!important;
+    max-width:calc(100% - 80px)!important;
+    margin:0!important;
+  }
+
+  body.map-open [data-page="map"] .map-focus-card{
+    position:absolute!important;
+    top:126px!important;
+    right:16px!important;
+    bottom:auto!important;
+    left:auto!important;
+    width:320px!important;
+    max-height:calc(100vh - 160px)!important;
+    margin:0!important;
+    border-radius:20px!important;
+  }
+
+  body.map-open [data-page="map"] .map-bottom-action{
+    position:absolute!important;
+    z-index:1140!important;
+    left:50%!important;
+    right:auto!important;
+    bottom:18px!important;
+    transform:translateX(-50%)!important;
+    width:min(620px,calc(100% - 80px))!important;
+    margin:0!important;
+  }
+
+  /* Avenida: feedback visual e instrução antes do gesto. */
+  #fullMap .avenue-hit-target{
+    cursor:crosshair!important;
+  }
+
+  .avenue-action-tooltip{
+    margin-top:-10px!important;
+    padding:7px 9px!important;
+    border:1px solid rgba(10,132,255,.16)!important;
+    border-radius:11px!important;
+    background:rgba(248,252,255,.95)!important;
+    color:#173A5B!important;
+    box-shadow:0 8px 24px rgba(15,23,42,.13)!important;
+    backdrop-filter:blur(18px)!important;
+    -webkit-backdrop-filter:blur(18px)!important;
+  }
+
+  .avenue-action-tooltip::before{
+    border-top-color:rgba(248,252,255,.95)!important;
+  }
+
+  .avenue-action-tooltip b{
+    display:block!important;
+    margin:0 0 2px!important;
+    font-size:10px!important;
+    line-height:1.15!important;
+    font-weight:750!important;
+  }
+
+  .avenue-action-tooltip span{
+    display:block!important;
+    color:#62758A!important;
+    font-size:8.5px!important;
+    line-height:1.15!important;
+    font-weight:550!important;
+  }
+
+  :root[data-theme="dark"] body.map-open [data-page="map"] .map-fullscreen-title,
+  :root[data-theme="dark"] body.map-open [data-page="map"] #mapFilters,
+  :root[data-theme="dark"] .avenue-action-tooltip{
+    background:rgba(28,32,38,.90)!important;
+    border-color:rgba(255,255,255,.10)!important;
+    color:#F5F5F7!important;
+  }
+
+  :root[data-theme="dark"] .avenue-action-tooltip span{
+    color:#B3BAC4!important;
+  }
+}
