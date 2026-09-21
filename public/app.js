@@ -366,6 +366,13 @@ function toast(msg){
   clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.hidden=true,3200);
 }
 function esc(v=""){ return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])); }
+/* v8: ícones SVG via sprite (#i-*) no index.html — substitui glifos Unicode que desalinhavam */
+function ic(name,cls=""){return `<svg class="ui-i${cls?" "+cls:""}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-${name}"/></svg>`;}
+/* v8: estado vazio = o que está acontecendo + o que fazer (opcional) */
+function emptyState({icon="shield-check",title="",text="",action="",cls="empty"}={}){
+  return `<div class="${cls} v8-empty"><span class="v8-empty-icon">${ic(icon)}</span><b>${esc(title)}</b>${text?`<span class="v8-empty-text">${esc(text)}</span>`:""}${action}</div>`;
+}
+const V8_REPORT_BTN='<button type="button" class="v8-empty-btn" data-desktop-report>'+'<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Registrar ocorrência</button>';
 function age(iso){
   const min=Math.max(0,Math.floor((Date.now()-new Date(iso).getTime())/60000));
   if(min<1)return"agora"; if(min<60)return`há ${min} min`;
@@ -393,7 +400,7 @@ function navigate(page){
     else b.removeAttribute("aria-current");
   });
   document.body.classList.toggle("map-open",page==="map");
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo({top:0,behavior:"auto"});
   if(page==="reports")renderReports();
   if(page==="admin")loadAdminData();
   if(page==="map"){
@@ -1601,7 +1608,7 @@ function statusForLocation(id){
   return highestSeverity([...occ,...al]);
 }
 function markerHtml(loc,status,hasOccurrence=false){
-  return `<div class="lake-marker ${status} ${hasOccurrence?"lake-marker-event":""}" title="${esc(loc.name)}"><span>≈</span></div>`;
+  return `<div class="lake-marker ${status} ${hasOccurrence?"lake-marker-event":""}" title="${esc(loc.name)}"><span>${ic("waves")}</span></div>`;
 }
 function markerIcon(loc,status,hasOccurrence=false){
   return L.divIcon({className:"",html:markerHtml(loc,status,hasOccurrence),iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]});
@@ -2135,7 +2142,7 @@ function riverColor(status){
 function riverMarkerIcon(status,hasOccurrence=false){
   return L.divIcon({
     className:"",
-    html:`<div class="river-marker ${status} ${hasOccurrence?"river-marker-event":""}"><span>≋</span></div>`,
+    html:`<div class="river-marker ${status} ${hasOccurrence?"river-marker-event":""}"><span>${ic("waves3")}</span></div>`,
     iconSize:[38,38],
     iconAnchor:[19,19],
     popupAnchor:[0,-22]
@@ -2320,7 +2327,7 @@ function renderDesktopRecent(){
   const host=$("#desktopRecentList");if(!host)return;
   host.innerHTML=state.recentResolved.length
     ?state.recentResolved.slice(0,3).map(recentOccurrenceRow).join("")
-    :'<div class="desktop-recent-empty">Nenhuma ocorrência resolvida recentemente.</div>';
+    :emptyState({icon:"check",title:"Nenhuma resolvida recentemente",text:"Ocorrências encerradas aparecem aqui.",cls:"desktop-recent-empty"});
 }
 function renderReports(){
   const groups=groupOccurrences(state.occurrences);
@@ -2342,7 +2349,7 @@ function renderReports(){
       <span>${occurrenceIconMarkup(type)}</span>
       <div><b>${esc(occurrenceLabels[type]||type)}</b><i><u style="width:${Math.max(8,Math.round(count/max*100))}%"></u></i></div>
       <strong>${count}</strong>
-    </div>`).join(""):'<div class="empty">Ainda não há registros suficientes para o relatório.</div>';
+    </div>`).join(""):emptyState({icon:"bars",title:"Ainda sem dados para o relatório",text:"Os números aparecem assim que a comunidade fizer os primeiros registros.",action:V8_REPORT_BTN});
 }
 
 function mobileRecentRow(item){
@@ -2393,7 +2400,7 @@ function renderMobileHomeDashboard(){
   const host=$("#v7RecentList");
   if(host)host.innerHTML=recent.length
     ?recent.map(mobileRecentRow).join("")
-    :'<div class="v7-recent-empty">Nenhuma ocorrência recente no momento.</div>';
+    :emptyState({icon:"shield-check",title:"Nenhuma ocorrência recente",text:"Quando alguém registrar algo no bairro, aparece aqui.",cls:"v7-recent-empty"});
 }
 
 function renderAll(){
@@ -2452,7 +2459,7 @@ function occurrenceGroupCard(group,allowEdit=false){
   const cond=o.reporter_condominium?` • ${esc(o.reporter_condominium)}`:"",person=o.reporter_first_name?`${esc(o.reporter_first_name)}${cond}`:"Morador";
   const severity=highestSeverity(items),names=[...new Set(items.map(locationName).filter(Boolean))];
   const hasSegment=items.some(x=>x._meta?.mode==="segment"),pointCount=items.filter(x=>x.exact_map_x!=null&&x.exact_map_y!=null).length;
-  const modeTag=items.length>1?`<span class="exact-location-tag">⌖ ${items.length} locais no mapa</span>`:(hasSegment?'<span class="exact-location-tag">↔ trecho delimitado no mapa</span>':(pointCount?'<span class="exact-location-tag">⌖ ponto exato no mapa</span>':''));
+  const modeTag=items.length>1?`<span class="exact-location-tag">${ic("crosshair")} ${items.length} locais no mapa</span>`:(hasSegment?'<span class="exact-location-tag">'+ic("arrows-h")+' trecho delimitado no mapa</span>':(pointCount?'<span class="exact-location-tag">'+ic("crosshair")+' ponto exato no mapa</span>':''));
   const locLine=names.length<=2?names.join(" + "):`${names.slice(0,2).join(" + ")} +${names.length-2}`;
   const photos=occurrencePhotoList(items).filter(ph=>ph?.url);
   const photoStrip=photos.length?`<div class="event-photo-strip">${photos.slice(0,3).map((ph,i)=>`<button type="button" class="event-photo-thumb" data-view-photo="${esc(ph.url)}" aria-label="Abrir foto ${i+1}"><img src="${esc(ph.url)}" alt="" loading="lazy"></button>`).join("")}</div>`:"";
@@ -2497,7 +2504,9 @@ function renderAlertsPage(){
   let items=[...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(state.alertFilter!=="all")items=items.filter(i=>i.severity===state.alertFilter);
   const totalActive=groupOccurrences(state.occurrences).length+state.alerts.length;
-  $("#alertsCount").textContent=totalActive;$("#alertsPageList").innerHTML=items.length?items.map(i=>i.html).join(""):'<div class="empty">Nenhum alerta ativo neste filtro.</div>';
+  $("#alertsCount").textContent=totalActive;$("#alertsPageList").innerHTML=items.length?items.map(i=>i.html).join(""):(state.alertFilter==="all"
+      ?emptyState({icon:"shield-check",title:"Nenhum alerta ativo",text:"Tudo tranquilo por aqui. Se notar algo diferente, avise a comunidade.",action:V8_REPORT_BTN})
+      :emptyState({icon:"info",title:"Nada neste grau agora",text:"Não há ocorrências nem alertas com esse grau no momento.",action:'<button type="button" class="v8-empty-btn ghost" data-v8-show-all>Ver todos</button>'}));
   $("#notifyDot").hidden=totalActive===0;if($("#navAlertBadge")){$("#navAlertBadge").hidden=totalActive===0;$("#navAlertBadge").textContent=totalActive>9?"9+":String(totalActive);}
 }
 function renderLocations(){
@@ -2506,6 +2515,26 @@ function renderLocations(){
     const color=st==="normal"?"#10B981":st==="attention"?"#F4B740":st==="alert"?"#F27A2C":"#E13B4B";
     return `<button type="button" class="location-row" data-focus-location="${esc(l.id)}"><i style="background:${color}"></i><div><b>${esc(l.name)}</b><span>${l.category==="lake"?"Lago":l.category==="river"?"Rio":"Avenida"} • ${severityLabels[st]||"Normal"}</span></div></button>`;
   }).join("");
+}
+/* v8: cartão de status da Início (mobile). Estado por cor + ícone + frase curta. */
+function renderV8Status(st,incomplete,reason){
+  const root=$("#v8Status");if(!root)return;
+  const unknown=incomplete&&st==="normal";
+  const titles={normal:"Tudo tranquilo",attention:"Atenção",alert:"Alerta ativo",critical:"Situação crítica"};
+  const icons={normal:"shield-check",attention:"info",alert:"triangle-alert",critical:"octagon-alert"};
+  root.dataset.state=unknown?"unknown":st;
+  root.querySelector("use")?.setAttribute("href","#i-"+(unknown?"info":(icons[st]||"shield-check")));
+  const t=$("#v8StatusTitle"),r=$("#v8StatusReason");
+  if(t)t.textContent=unknown?"Dados não confirmados":(titles[st]||"Tudo tranquilo");
+  if(r)r.textContent=reason;
+  const s=severitySummary();
+  const parts=[
+    ["attention",s.attention,`${s.attention} em atenção`],
+    ["alert",s.alert,`${s.alert} ${s.alert===1?"alerta":"alertas"}`],
+    ["critical",s.critical,`${s.critical} ${s.critical===1?"crítico":"críticos"}`]
+  ].filter(p=>p[1]>0);
+  const host=$("#v8StatusChips");
+  if(host){host.innerHTML=parts.map(p=>`<span class="v8-chip ${p[0]}"><i></i>${p[2]}</span>`).join("");host.hidden=!parts.length;}
 }
 function renderStatus(){
   state.occurrences=state.occurrences.filter(activeOccurrence);
@@ -2516,7 +2545,7 @@ function renderStatus(){
   const text=incomplete?(st==="normal"?"Dados não confirmados":`${severityLabels[st]} • último registro`):(severityLabels[st]||"Normal");
   $("#overallStatus").textContent=text;
   $("#overallStatus").style.color=st==="normal"?"#10B981":st==="attention"?"#B17D00":st==="alert"?"#D45E18":"#C52F42";
-  $("#overallPill").className=`status-pill ${st}`; $("#overallPill").textContent=`● ${text}`;
+  $("#overallPill").className=`status-pill ${st}`; $("#overallPill").innerHTML=`<i class="v8-dot"></i>${esc(text)}`;
   const reasons={normal:"Nenhuma ocorrência ou alerta ativo informado.",attention:"Há registros que pedem atenção.",alert:"Há situação de alerta ativa.",critical:"Há ocorrência crítica ativa."};
   $("#statusReason").textContent=incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st];
   if($("#desktopOverallStatus")){
@@ -2524,6 +2553,7 @@ function renderStatus(){
     $("#desktopOverallStatus").className=st;
   }
   if($("#desktopStatusReason"))$("#desktopStatusReason").textContent=incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st];
+  renderV8Status(st,incomplete,incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st]);
 }
 
 
@@ -2595,11 +2625,11 @@ function renderLocationChips(){
   if(weather){
     const condos=state.condominiums.filter(c=>c.active!==false);
     wrap.innerHTML=
-      `<button type="button" class="location-chip whole-neighborhood ${state.reportLocationIds.includes("whole")?"selected":""}" data-report-location="whole"><span>⌂</span>Bairro inteiro</button>`+
+      `<button type="button" class="location-chip whole-neighborhood ${state.reportLocationIds.includes("whole")?"selected":""}" data-report-location="whole"><span>${ic("home")}</span>Bairro inteiro</button>`+
       condos.map(c=>{
         const id=condominiumToken(c.id);
         const selected=state.reportLocationIds.includes(id);
-        return `<button type="button" class="location-chip condo-chip ${selected?"selected":""}" data-report-location="${esc(id)}"><span>⌂</span>${esc(c.name)}</button>`;
+        return `<button type="button" class="location-chip condo-chip ${selected?"selected":""}" data-report-location="${esc(id)}"><span>${ic("home")}</span>${esc(c.name)}</button>`;
       }).join("");
 
     $("#locationSelect").innerHTML='<option value=""></option>'+
@@ -2620,17 +2650,17 @@ function renderLocationChips(){
     if(helper)helper.textContent="Escolha um local, condomínio, bairro inteiro ou marque o ponto exato no mapa.";
 
     wrap.innerHTML=
-      `<button type="button" class="location-chip whole-neighborhood ${state.reportLocationIds.includes("whole")?"selected":""}" data-report-location="whole"><span>⌂</span>Bairro inteiro</button>`+
+      `<button type="button" class="location-chip whole-neighborhood ${state.reportLocationIds.includes("whole")?"selected":""}" data-report-location="whole"><span>${ic("home")}</span>Bairro inteiro</button>`+
       condos.map(c=>{
         const id=condominiumToken(c.id),selected=state.reportLocationIds.includes(id);
-        return `<button type="button" class="location-chip condo-chip ${selected?"selected":""}" data-report-location="${esc(id)}"><span>⌂</span>${esc(c.name)}</button>`;
+        return `<button type="button" class="location-chip condo-chip ${selected?"selected":""}" data-report-location="${esc(id)}"><span>${ic("home")}</span>${esc(c.name)}</button>`;
       }).join("")+
       locs.map(loc=>{
         const selected=state.reportLocationIds.some(id=>String(id)===String(loc.id));
-        const icon=loc.category==="avenue"?"⌁":loc.category==="lake"?"≈":"≋";
+        const icon=loc.category==="avenue"?ic("route"):loc.category==="lake"?ic("waves"):ic("waves3");
         return `<button type="button" class="location-chip ${selected?"selected":""}" data-report-location="${esc(loc.id)}"><span>${icon}</span>${esc(loc.name)}</button>`;
       }).join("")+
-      `<button type="button" class="location-chip ${state.reportLocationIds.includes("other")?"selected":""}" data-report-location="other"><span>＋</span>Outro local</button>`;
+      `<button type="button" class="location-chip ${state.reportLocationIds.includes("other")?"selected":""}" data-report-location="other"><span>${ic("plus")}</span>Outro local</button>`;
 
     $("#locationSelect").innerHTML='<option value=""></option>'+
       condos.map(c=>`<option value="${esc(condominiumToken(c.id))}">${esc(c.name)}</option>`).join("")+
@@ -2648,9 +2678,9 @@ function renderLocationChips(){
     const locs=allowedLocationsForType(type);
     wrap.innerHTML=locs.map(loc=>{
       const selected=state.reportLocationIds.some(id=>String(id)===String(loc.id));
-      const icon=loc.category==="avenue"?"⌁":loc.category==="lake"?"≈":"≋";
+      const icon=loc.category==="avenue"?ic("route"):loc.category==="lake"?ic("waves"):ic("waves3");
       return `<button type="button" class="location-chip ${selected?"selected":""}" data-report-location="${esc(loc.id)}"><span>${icon}</span>${esc(loc.name)}</button>`;
-    }).join("")+`<button type="button" class="location-chip ${state.reportLocationIds.includes("other")?"selected":""}" data-report-location="other"><span>＋</span>Outro local</button>`;
+    }).join("")+`<button type="button" class="location-chip ${state.reportLocationIds.includes("other")?"selected":""}" data-report-location="other"><span>${ic("plus")}</span>Outro local</button>`;
 
     const first=state.reportLocationIds.find(id=>id!=="other")||"";
     $("#locationSelect").innerHTML='<option value=""></option>'+locs.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join("")+'<option value="other">Outro</option>';
@@ -2847,7 +2877,7 @@ function applySmartParse(result){
   locBox.innerHTML=smartLocationCount?result.locationIds.map(id=>{
     const d=result.locationDetails?.[id];
     const detail=[d?.severity?severityLabels[d.severity]:"",d?.condition?conditionLabels[d.condition]:""].filter(Boolean).join(" • ");
-    return `<span>⌖ ${esc(reportLocationName(id)||"Local")}${detail?` <i>${esc(detail)}</i>`:""}</span>`;
+    return `<span>${ic("crosshair")} ${esc(reportLocationName(id)||"Local")}${detail?` <i>${esc(detail)}</i>`:""}</span>`;
   }).join(""):'<span class="smart-needs-location">Local não identificado — toque em Ajustar.</span>';
   $("#smartResult").hidden=false;
   $("#manualReportFields").hidden=mobileReportLayout()?false:true;
@@ -3276,8 +3306,8 @@ function startSmartVoice(){
   const btn=$("#smartMicBtn");if(btn){btn.disabled=true;btn.textContent="Ouvindo…";}
   rec.onresult=e=>{const spoken=e.results?.[0]?.[0]?.transcript||"";if(spoken){const field=$("#smartDescription");field.value=(field.value?field.value+" ":"")+spoken;analyzeSmartDescription();}};
   rec.onerror=()=>toast("Não consegui ouvir. Você pode digitar a ocorrência.");
-  rec.onend=()=>{if(btn){btn.disabled=false;btn.textContent="◉ Falar";}};
-  try{rec.start();}catch(_){if(btn){btn.disabled=false;btn.textContent="◉ Falar";}}
+  rec.onend=()=>{if(btn){btn.disabled=false;btn.innerHTML=ic("mic")+" Falar";}};
+  try{rec.start();}catch(_){if(btn){btn.disabled=false;btn.innerHTML=ic("mic")+" Falar";}}
 }
 
 document.addEventListener("click",e=>{
@@ -3286,6 +3316,7 @@ document.addEventListener("click",e=>{
   const removePhoto=e.target.closest("[data-remove-report-photo]");
   if(removePhoto){e.stopPropagation();removeReportPhotoAt(Number(removePhoto.dataset.removeReportPhoto));return;}
   const nav=e.target.closest("[data-nav]");if(nav){navigate(nav.dataset.nav);return;}
+  if(e.target.closest("[data-v8-show-all]")){document.querySelector('#alertFilters [data-alert-filter="all"]')?.click();return;}
   if(e.target.closest("#homeReport,#navReport,[data-desktop-report]")){openReport();return;}
   if(e.target.closest("#mapReport")){openReport("map");return;}
   if(e.target.closest("#reportHereBtn")){if(state.multiPointMode){state.multiPointMode=false;setPointPickMode(false,{multi:false});openReport("map");}else{prefillOccurrenceFromSelectedPoint();openReport("map");}return;}

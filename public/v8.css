@@ -1,0 +1,387 @@
+/* =========================================================
+   Monitora Deltaville — v8
+   Sistema de ícones, alinhamento e fluidez.
+   Carregar DEPOIS de v6.css.
+   ========================================================= */
+
+:root{
+  --v8-ease:cubic-bezier(.2,.8,.2,1);
+  --v8-press:cubic-bezier(.3,0,.2,1);
+}
+
+/* ---------------------------------------------------------
+   1. Ícones SVG (sprite #i-* no index.html)
+   Herdam a cor do texto (currentColor) e o traço é único.
+   --------------------------------------------------------- */
+.ui-i{
+  width:1.2em;height:1.2em;
+  flex:none;display:block;
+  fill:none;stroke:currentColor;
+  stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;
+  overflow:visible;pointer-events:none;
+}
+
+/* Caixas de ícone: centro geométrico garantido (grid + place-items)
+   e SVG em bloco (elimina a folga de baseline do <svg> inline). */
+.nav-icon,
+.desktop-nav-icon,
+.report-icon,
+.v7-summary-icon,
+.v7-section-icon,
+.v7-community-icon,
+.pick-icon,
+.desktop-kpi-shield,
+.desktop-kpi-icon,
+.desktop-card-icon,
+.theme-settings-icon,
+.smart-spark,
+.home-report-plus,
+.top-weather-icon,
+.desktop-severity-grid>div>span,
+.v7-card-chevron,
+.v7-community-cta>i,
+.icon-btn{
+  display:grid!important;
+  place-items:center!important;
+  line-height:1!important;
+  text-align:center!important;
+}
+.nav-icon svg,
+.desktop-nav-icon svg,
+.report-icon svg,
+.v7-summary-icon svg,
+.v7-section-icon svg,
+.v7-community-icon svg,
+.pick-icon svg{
+  display:block!important;
+  margin:0!important;
+}
+
+/* Tamanhos (caixa → ícone) */
+.desktop-kpi-shield,
+.desktop-kpi-icon{width:42px!important;height:42px!important;flex:none!important;padding:0!important}
+.desktop-kpi-shield .ui-i,
+.desktop-kpi-icon .ui-i{width:22px;height:22px}
+
+.desktop-card-icon{width:28px!important;height:28px!important;flex:none!important;padding:0!important}
+.desktop-card-icon .ui-i{width:18px;height:18px}
+
+.theme-settings-icon{width:38px!important;height:38px!important;flex:none!important;padding:0!important}
+.theme-settings-icon .ui-i{width:22px;height:22px}
+
+.smart-spark{width:36px!important;height:36px!important;flex:none!important;padding:0!important}
+.smart-spark .ui-i{width:20px;height:20px}
+
+.home-report-plus{width:34px!important;height:34px!important;flex:none!important;padding:0!important}
+.home-report-plus .ui-i{width:22px;height:22px;stroke-width:2.3}
+
+.top-weather-icon .ui-i{width:24px;height:24px}
+.top-weather-icon{font-size:22px!important}   /* emoji vindo do weather.js, caso ainda seja usado */
+
+.desktop-severity-grid>div>span{width:30px!important;height:30px!important;padding:0!important}
+.desktop-severity-grid>div>span .ui-i{width:18px;height:18px}
+
+.v7-section-icon .ui-i{width:20px;height:20px}
+.desktop-map-zoom-hint>span{display:inline-grid;place-items:center;vertical-align:middle}
+.desktop-map-zoom-hint .ui-i{width:14px;height:14px}
+
+/* Chevrons (antes era o caractere "›", que sobe/desce conforme a fonte) */
+.v7-card-chevron,
+.v7-community-cta>i{width:22px!important;height:22px!important;padding:0!important;font-style:normal;flex:none}
+.v7-card-chevron .ui-i,
+.v7-community-cta>i .ui-i{width:18px;height:18px;stroke-width:2.1}
+.v7-section-head button{display:inline-flex!important;align-items:center;gap:2px}
+.v7-section-head button span{display:inline-grid!important;place-items:center;font-size:0!important}
+.v7-section-head button span .ui-i{width:15px;height:15px;stroke-width:2.2}
+
+/* Botão fechar (×) */
+.icon-btn{width:44px!important;height:44px!important;padding:0!important}
+.icon-btn .ui-i{width:20px;height:20px;stroke-width:2.2}
+
+/* Botões com ícone + texto */
+#mapReport,
+#smartMicBtn,
+#takePhotoBtn,
+#choosePhotoBtn,
+#goPickPointBtn,
+#segmentPickBtn,
+#damageChips button,
+.desktop-text-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+#segmentPickBtn[hidden]{display:none!important}
+#mapReport .ui-i,
+#smartMicBtn .ui-i,
+#takePhotoBtn .ui-i,
+#choosePhotoBtn .ui-i,
+#goPickPointBtn .ui-i,
+#segmentPickBtn .ui-i,
+#damageChips button .ui-i{width:18px;height:18px}
+.desktop-text-link .ui-i{width:14px;height:14px}
+
+.manual-toggle i{display:inline-grid;place-items:center;font-style:normal}
+.manual-toggle .ui-i{width:18px;height:18px;transition:transform .25s var(--v8-ease)}
+.manual-toggle[aria-expanded="true"] .ui-i{transform:rotate(180deg)}
+
+/* Chips de local (⌂ ≈ ≋ ⌁ ＋) */
+.location-chip{display:inline-flex!important;align-items:center!important;gap:8px!important}
+.location-chip>span{
+  display:inline-grid!important;place-items:center!important;
+  width:20px;height:20px;flex:none;line-height:1!important;
+}
+.location-chip>span .ui-i{width:16px;height:16px}
+.exact-location-tag,
+.smart-locations>span{display:inline-flex;align-items:center;gap:6px}
+.exact-location-tag .ui-i,
+.smart-locations>span .ui-i{width:14px;height:14px}
+
+/* Marcadores do mapa (≈ e ≋) */
+.lake-marker,
+.river-marker{display:grid!important;place-items:center!important}
+.lake-marker>span,
+.river-marker>span{display:grid!important;place-items:center!important;line-height:1!important}
+.lake-marker .ui-i,
+.river-marker .ui-i{width:20px;height:20px;stroke-width:2.1}
+
+/* Bolinha de status ("● Normal") */
+.status-pill{display:inline-flex;align-items:center;gap:6px}
+.v8-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:currentColor;display:inline-block;flex:none;
+}
+
+/* Barra inferior: ícone sempre no mesmo eixo, rótulo logo abaixo */
+.bottom-nav .nav-item,
+.bottom-nav .report{
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;gap:3px!important;
+}
+.bottom-nav .nav-icon{width:28px!important;height:28px!important;position:relative}
+.bottom-nav .nav-icon svg{width:24px!important;height:24px!important}
+.bottom-nav .report .report-icon svg{width:26px!important;height:26px!important;stroke-width:2.2!important}
+.desktop-nav-icon{width:26px!important;height:26px!important;position:relative;flex:none}
+.desktop-nav-icon svg{width:22px!important;height:22px!important}
+
+/* ---------------------------------------------------------
+   2. Fluidez
+   --------------------------------------------------------- */
+html{-webkit-text-size-adjust:100%}
+button,[role="button"],a,.nav-item,.v7-summary-card{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+/* Feedback de toque imediato (só nos elementos que não usam transform para posicionar) */
+.nav-item,.desktop-nav-item,.primary,.secondary,.location-chip,
+#damageChips button,.v7-community-cta,.v7-summary-card,.settings-switch{
+  transition:
+    transform .16s var(--v8-press),
+    background-color .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    color .2s ease,
+    opacity .2s ease;
+}
+.nav-item:active,.desktop-nav-item:active,.primary:not(:disabled):active,
+.secondary:not(:disabled):active,.location-chip:active,
+#damageChips button:active,.v7-community-cta:active{transform:scale(.97)}
+
+/* Troca de aba: entrada curta (fora do mapa, que usa elementos fixos) */
+@keyframes v8PageIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+.page.active:not([data-page="map"]){
+  animation:v8PageIn .26s var(--v8-ease) backwards;
+}
+
+/* Ícone da aba ativa dá um pequeno "pop" quando muda */
+@keyframes v8Pop{0%{transform:scale(.86)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.bottom-nav .nav-item.active .nav-icon svg{animation:v8Pop .32s var(--v8-ease)}
+
+/* Blur mais leve = rolagem e mapa mais suaves em celulares intermediários */
+.bottom-nav{
+  backdrop-filter:blur(18px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;
+}
+
+/* Números estáveis: sem "pular" quando o valor atualiza */
+#v7WeatherTemp,#v7WeatherRain,#v7RiverLevel,#weatherTemp,#topWeatherRain,
+#v7Reports24h,#v7ActiveCount,#desktopOccurrenceCount,
+#topAttentionCount,#topAlertCount,#topCriticalCount,
+.nav-badge,.desktop-alert-badge{font-variant-numeric:tabular-nums}
+
+/* Listas longas: só renderiza o que está na tela */
+.v7-recent-list>*,
+.desktop-recent-list>*{content-visibility:auto;contain-intrinsic-size:auto 64px}
+
+/* ---------------------------------------------------------
+   3. Skeletons (no lugar de "—" e "Carregando…")
+   --------------------------------------------------------- */
+@keyframes v8Shimmer{
+  0%{background-position:160% 0}
+  100%{background-position:-60% 0}
+}
+.v8-skel{
+  display:inline-block;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent;
+  user-select:none;
+  min-width:3.4em;
+  border-radius:8px;
+  background:linear-gradient(90deg,
+    rgba(120,120,128,.12) 25%,
+    rgba(120,120,128,.24) 45%,
+    rgba(120,120,128,.12) 65%);
+  background-size:220% 100%;
+  animation:v8Shimmer 1.25s linear infinite;
+}
+/* dado indisponível (não carregando): mantém o traço, mais discreto */
+[data-v8-na]{opacity:.55}
+
+.v8-skel-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 4px;
+}
+.v8-skel-row>i{width:40px;height:40px;border-radius:13px;flex:none;display:block}
+.v8-skel-row>span{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.v8-skel-row>span>b{display:block;height:12px;border-radius:6px}
+.v8-skel-row>span>b:first-child{width:62%}
+.v8-skel-row>span>b:last-child{width:38%;height:10px}
+
+/* ---------------------------------------------------------
+   4. Acessibilidade
+   --------------------------------------------------------- */
+:where(button,a,[role="button"],[role="switch"]):focus-visible{
+  outline:2px solid var(--v6-blue,#0A84FF);
+  outline-offset:2px;
+}
+@media (prefers-reduced-motion:reduce){
+  .page.active,
+  .bottom-nav .nav-item.active .nav-icon svg,
+  .v8-skel{animation:none!important}
+  .nav-item,.desktop-nav-item,.primary,.secondary,.location-chip,
+  #damageChips button,.v7-community-cta,.v7-summary-card{transition:none!important}
+}
+
+/* ---------------------------------------------------------
+   5. Início (mobile): cartão de status + ação principal
+   Cor + ícone + frase: o estado se entende sem ler.
+   --------------------------------------------------------- */
+.v8-status{
+  --st:var(--v6-green,#30D158);
+  --st-ink:#159447;
+  position:relative;
+  display:flex;flex-direction:column;gap:14px;
+  padding:18px;
+  border-radius:24px;
+  border:1px solid color-mix(in srgb,var(--st) 30%,transparent);
+  background:
+    radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--st) 14%,transparent),transparent 62%),
+    var(--v6-surface,#fff);
+  box-shadow:0 10px 28px rgba(15,23,42,.06);
+  transition:border-color .35s ease,background .35s ease;
+}
+.v8-status[data-state="attention"]{--st:var(--v6-yellow,#FFD60A);--st-ink:#9A7600}
+.v8-status[data-state="alert"]{--st:var(--v6-orange,#FF9F0A);--st-ink:#B55E00}
+.v8-status[data-state="critical"]{--st:var(--v6-red,#FF453A);--st-ink:#C53029}
+.v8-status[data-state="unknown"]{--st:#8E8E93;--st-ink:#636366}
+:root[data-theme="dark"] .v8-status{--st-ink:var(--st)}
+
+.v8-status-main{display:flex;align-items:center;gap:14px;min-width:0}
+.v8-status-icon{
+  width:56px;height:56px;flex:none;border-radius:50%;
+  display:grid;place-items:center;
+  color:var(--st-ink);
+  background:color-mix(in srgb,var(--st) 20%,transparent);
+  transition:background .35s ease,color .35s ease;
+}
+.v8-status-icon .ui-i{width:28px;height:28px;stroke-width:1.9}
+.v8-status-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.v8-status-copy>small{font-size:12px;font-weight:600;color:var(--v6-secondary,#636366)}
+.v8-status-copy>strong{
+  display:block;font-size:28px;line-height:1.08;font-weight:760;
+  letter-spacing:-.025em;color:var(--v6-label,#111);
+}
+.v8-status-copy>span{display:block;font-size:13px;line-height:1.35;color:var(--v6-secondary,#636366)}
+#v8StatusTitle.v8-skel{width:6.5em;max-width:100%;height:1.05em;margin:2px 0}
+#v8StatusReason.v8-skel{width:13em;max-width:100%;height:1em}
+
+.v8-status-chips{display:flex;flex-wrap:wrap;gap:8px}
+.v8-status-chips[hidden]{display:none}
+.v8-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  min-height:30px;padding:0 12px;border-radius:999px;
+  font-size:13px;font-weight:650;
+  color:var(--v6-label,#111);
+  background:rgba(120,120,128,.12);
+}
+.v8-chip>i{width:8px;height:8px;border-radius:50%;flex:none;background:currentColor}
+.v8-chip.attention>i{background:var(--v6-yellow,#FFD60A)}
+.v8-chip.alert>i{background:var(--v6-orange,#FF9F0A)}
+.v8-chip.critical>i{background:var(--v6-red,#FF453A)}
+
+/* Ação principal: 56 px de altura, largura total, ao alcance do polegar */
+.v8-status-cta{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;min-height:56px;padding:0 20px;
+  border:0;border-radius:18px;
+  font:inherit;font-size:16px;font-weight:700;letter-spacing:-.01em;
+  color:#fff;
+  background:linear-gradient(180deg,#1792FF,#006EE6);
+  box-shadow:0 8px 22px rgba(10,132,255,.28);
+  cursor:pointer;
+  transition:transform .16s var(--v8-press),box-shadow .2s ease;
+}
+.v8-status-cta .ui-i{width:22px;height:22px;stroke-width:2.4}
+.v8-status-cta:active{transform:scale(.98);box-shadow:0 4px 12px rgba(10,132,255,.25)}
+
+/* ---------------------------------------------------------
+   6. Estados vazios: o que acontece + o que fazer
+   --------------------------------------------------------- */
+.v8-empty{
+  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:26px 20px!important;text-align:center;
+}
+.v8-empty-icon{
+  width:48px;height:48px;border-radius:50%;margin-bottom:6px;
+  display:grid;place-items:center;
+  color:var(--v6-blue,#0A84FF);
+  background:rgba(10,132,255,.10);
+}
+.v8-empty-icon .ui-i{width:24px;height:24px}
+.v8-empty>b{font-size:16px;font-weight:680;letter-spacing:-.015em;color:var(--v6-label,#111)}
+.v8-empty-text{max-width:30ch;font-size:13px;line-height:1.4;color:var(--v6-secondary,#636366)}
+.v8-empty-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;margin-top:10px;padding:0 20px;
+  border:0;border-radius:14px;
+  font:inherit;font-size:15px;font-weight:680;
+  color:#fff;background:var(--v6-blue,#0A84FF);
+  cursor:pointer;
+}
+.v8-empty-btn .ui-i{width:18px;height:18px;stroke-width:2.4}
+.v8-empty-btn.ghost{color:var(--v6-blue,#0A84FF);background:rgba(10,132,255,.10)}
+.v8-empty-btn:active{transform:scale(.97)}
+
+/* ---------------------------------------------------------
+   7. Alvos de toque (mínimo 44 px)
+   --------------------------------------------------------- */
+.chips button,
+.location-chip,
+#damageChips button,
+#mapReport,
+.desktop-text-link{min-height:44px!important}
+.v7-section-head button{min-height:44px;padding:0 6px 0 10px!important;margin:-8px -6px -8px 0}
+.v7-section-head button{font-size:13px!important}
+.v7-section-head button span .ui-i{width:16px;height:16px}
+
+@media (prefers-reduced-motion:reduce){
+  .v8-status,.v8-status-icon,.v8-status-cta{transition:none!important}
+}
+
+/* Pílula "Sistema online": o halo do ponto (4 px) invadia o texto */
+.v7-system-pill{gap:11px!important;padding:0 12px 0 13px!important;font-size:11px!important}

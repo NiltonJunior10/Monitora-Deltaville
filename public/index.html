@@ -21,10 +21,43 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=702">
+  <link rel="stylesheet" href="v8.css?v=704">
   <script src="theme-init.js?v=702"></script>
   <title>Monitora Deltaville</title>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.8 8.2 7 10 4.2-1.8 7-5.3 7-10V6Z"/><path d="m9 12 2 2 4-5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/></symbol>
+    <symbol id="i-bars" viewBox="0 0 24 24"><path d="M5 20v-8M12 20V4M19 20v-5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.7h.01"/></symbol>
+    <symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="M12 3.8 21.2 20H2.8Z"/><path d="M12 10v4.4M12 17.2h.01"/></symbol>
+    <symbol id="i-octagon-alert" viewBox="0 0 24 24"><path d="M8.4 3h7.2L21 8.4v7.2L15.6 21H8.4L3 15.6V8.4Z"/><path d="M12 8v5M12 16.2h.01"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.4-2.2h5.2L16 7h2.5A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5Z"/><circle cx="12" cy="13" r="3.4"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 3.5 3L15 13l5 4.5"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2Z"/></symbol>
+    <symbol id="i-tree" viewBox="0 0 24 24"><path d="M12 21v-5"/><path d="M8 16a4 4 0 0 1-1-7.8 5 5 0 0 1 10 0A4 4 0 0 1 16 16Z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7v9a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1Z"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2.8 5 13.5h6l-1 7.7 8-10.7h-6Z"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><path d="M4.5 16.5v-4l2-5a1.5 1.5 0 0 1 1.4-1h8.2a1.5 1.5 0 0 1 1.4 1l2 5v4Z"/><path d="M4.5 12.5h15M7.5 16.5V19M16.5 16.5V19M7.6 15h.01M16.4 15h.01"/></symbol>
+    <symbol id="i-waves" viewBox="0 0 24 24"><path d="M3 9.5c3 0 3-2.5 6-2.5s3 2.5 6 2.5 3-2.5 6-2.5"/><path d="M3 16c3 0 3-2.5 6-2.5s3 2.5 6 2.5 3-2.5 6-2.5"/></symbol>
+    <symbol id="i-waves3" viewBox="0 0 24 24"><path d="M3 6.5c3 0 3-2 6-2s3 2 6 2 3-2 6-2"/><path d="M3 12c3 0 3-2 6-2s3 2 6 2 3-2 6-2"/><path d="M3 17.5c3 0 3-2 6-2s3 2 6 2 3-2 6-2"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18h6.3a3 3 0 0 0 0-6h-5a3 3 0 0 1 0-6h6.3"/></symbol>
+    <symbol id="i-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></symbol>
+    <symbol id="i-arrows-h" viewBox="0 0 24 24"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  </defs>
+</svg>
   <div id="connectionNotice" role="status" aria-live="polite" hidden></div>
   <div class="app-shell" id="app">
     <aside class="desktop-sidebar" aria-label="Navegação desktop">
@@ -101,7 +134,7 @@
 
       <section class="top-weather" aria-label="Previsão local">
         <div class="top-weather-main">
-          <div class="top-weather-icon" id="topWeatherIcon" aria-hidden="true">☀️</div>
+          <div class="top-weather-icon" id="topWeatherIcon" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg></div>
           <div class="top-weather-now">
             <span id="weatherHeadline">Clima local</span>
             <strong id="weatherTemp">—</strong>
@@ -139,7 +172,7 @@
             <h1 id="helloTitle">Olá</h1>
             <p id="residentLine" class="muted">Carregando seu cadastro…</p>
           </div>
-          <span class="status-pill normal" id="overallPill">● Normal</span>
+          <span class="status-pill normal" id="overallPill"><i class="v8-dot"></i>Normal</span>
         </div>
 
         <section class="v7-mobile-dashboard" aria-label="Painel do Deltaville">
@@ -150,6 +183,22 @@
             </span>
             <span class="v7-system-pill online" id="v7SystemStatus"><i></i>Sistema online</span>
           </div>
+
+          <section class="v8-status" id="v8Status" data-state="normal" aria-label="Situação do Deltaville">
+            <div class="v8-status-main">
+              <span class="v8-status-icon" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" focusable="false"><use href="#i-shield-check"/></svg></span>
+              <div class="v8-status-copy" aria-live="polite">
+                <small>Situação do Deltaville</small>
+                <strong id="v8StatusTitle">Verificando dados</strong>
+                <span id="v8StatusReason">Consultando relatos da comunidade.</span>
+              </div>
+            </div>
+            <div class="v8-status-chips" id="v8StatusChips" hidden></div>
+            <button type="button" class="v8-status-cta" data-desktop-report>
+              <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>
+              Registrar ocorrência
+            </button>
+          </section>
 
           <div class="v7-summary-grid">
             <button type="button" class="v7-summary-card weather" data-v7-weather-details aria-expanded="false" aria-controls="v7WeatherDetails">
@@ -163,7 +212,7 @@
                 <span id="v7WeatherChance">Chance —</span>
                 <span class="v7-weather-risk" id="v7WeatherRisk" hidden></span>
               </span>
-              <span class="v7-card-chevron">›</span>
+              <span class="v7-card-chevron"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>
             </button>
 
             <button type="button" class="v7-summary-card river" data-v7-river-details aria-expanded="false">
@@ -175,7 +224,7 @@
                 <strong id="v7RiverLevel">—</strong>
                 <span class="v7-status-line"><i id="v7RiverDot"></i><span id="v7RiverStatus">Aguardando dados</span></span>
               </span>
-              <span class="v7-card-chevron">›</span>
+              <span class="v7-card-chevron"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>
             </button>
 
             <button type="button" class="v7-summary-card reports" data-nav="reports">
@@ -187,7 +236,7 @@
                 <strong id="v7Reports24h">0</strong>
                 <span id="v7ReportsCaption">Registros recentes</span>
               </span>
-              <span class="v7-card-chevron">›</span>
+              <span class="v7-card-chevron"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>
             </button>
 
             <button type="button" class="v7-summary-card active" data-nav="alerts">
@@ -199,7 +248,7 @@
                 <strong id="v7ActiveCount">0</strong>
                 <span id="v7ActiveStatus">Tudo sob controle</span>
               </span>
-              <span class="v7-card-chevron">›</span>
+              <span class="v7-card-chevron"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>
             </button>
           </div>
 
@@ -253,10 +302,10 @@
                 </span>
                 <b>Ocorrências recentes</b>
               </div>
-              <button type="button" data-nav="alerts">Ver todas <span>›</span></button>
+              <button type="button" data-nav="alerts">Ver todas <span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span></button>
             </div>
             <div class="v7-recent-list" id="v7RecentList">
-              <div class="v7-recent-empty">Carregando ocorrências…</div>
+              <div class="v8-skel-row"><i class="v8-skel"></i><span><b class="v8-skel"></b><b class="v8-skel"></b></span></div><div class="v8-skel-row"><i class="v8-skel"></i><span><b class="v8-skel"></b><b class="v8-skel"></b></span></div><div class="v8-skel-row"><i class="v8-skel"></i><span><b class="v8-skel"></b><b class="v8-skel"></b></span></div>
             </div>
           </section>
 
@@ -265,7 +314,7 @@
               <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c.7-4.3 2.5-6.4 5.5-6.4s4.8 2.1 5.5 6.4M14 14.2c3.7-.6 6 1.3 7 5.8"/></svg>
             </span>
             <span><b>A sua voz faz a diferença</b><small>Relate situações na sua região e ajude a manter a comunidade segura.</small></span>
-            <i>›</i>
+            <i><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></i>
           </button>
         </section>
 
@@ -405,7 +454,7 @@
 
         <section class="desktop-kpi-row" aria-label="Resumo da comunidade">
           <article class="desktop-kpi desktop-kpi-status">
-            <span class="desktop-kpi-shield" aria-hidden="true">✓</span>
+            <span class="desktop-kpi-shield" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-shield-check"/></svg></span>
             <div>
               <small>Situação da comunidade</small>
               <strong id="desktopOverallStatus">Verificando dados</strong>
@@ -413,25 +462,25 @@
             </div>
           </article>
           <article class="desktop-kpi metric-active">
-            <span class="desktop-kpi-icon blue" aria-hidden="true">▤</span>
+            <span class="desktop-kpi-icon blue" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-list"/></svg></span>
             <div><strong id="desktopOccurrenceCount">0</strong><small>Ocorrências ativas</small></div>
           </article>
           <article class="desktop-kpi metric-attention">
-            <span class="desktop-kpi-icon attention" aria-hidden="true">△</span>
+            <span class="desktop-kpi-icon attention" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span>
             <div><strong id="topAttentionCount">0</strong><small>Atenção</small></div>
           </article>
           <article class="desktop-kpi metric-alert">
-            <span class="desktop-kpi-icon alert" aria-hidden="true">!</span>
+            <span class="desktop-kpi-icon alert" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span>
             <div><strong id="topAlertCount">0</strong><small>Alerta</small></div>
           </article>
           <article class="desktop-kpi metric-critical">
-            <span class="desktop-kpi-icon critical" aria-hidden="true">!</span>
+            <span class="desktop-kpi-icon critical" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-octagon-alert"/></svg></span>
             <div><strong id="topCriticalCount">0</strong><small>Crítico</small></div>
           </article>
         </section>
 
         <button class="primary wide" id="homeReport">
-          <span class="home-report-plus" aria-hidden="true">＋</span>
+          <span class="home-report-plus" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></span>
           <span class="home-report-copy">
             <b>Registrar ocorrência</b>
             <small>Ajude a manter o Deltaville seguro</small>
@@ -468,26 +517,26 @@
         <section class="desktop-bottom-grid">
           <article class="desktop-summary-card desktop-severity-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon bars">▥</span><b>Alertas por grau</b></div>
+              <div><span class="desktop-card-icon bars"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-bars"/></svg></span><b>Alertas por grau</b></div>
             </div>
             <div class="desktop-severity-grid">
-              <div class="attention"><span>△</span><b id="desktopAttentionCount">0</b><small>Atenção</small></div>
-              <div class="alert"><span>!</span><b id="desktopAlertSeverityCount">0</b><small>Alerta</small></div>
-              <div class="critical"><span>!</span><b id="desktopCriticalSeverityCount">0</b><small>Crítico</small></div>
+              <div class="attention"><span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span><b id="desktopAttentionCount">0</b><small>Atenção</small></div>
+              <div class="alert"><span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span><b id="desktopAlertSeverityCount">0</b><small>Alerta</small></div>
+              <div class="critical"><span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-octagon-alert"/></svg></span><b id="desktopCriticalSeverityCount">0</b><small>Crítico</small></div>
             </div>
           </article>
 
           <article class="desktop-summary-card desktop-recent-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon">▤</span><b>Ocorrências recentes</b></div>
-              <button type="button" class="desktop-text-link" data-nav="reports">Ver todas →</button>
+              <div><span class="desktop-card-icon"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-list"/></svg></span><b>Ocorrências recentes</b></div>
+              <button type="button" class="desktop-text-link" data-nav="reports">Ver todas <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></button>
             </div>
             <div id="desktopRecentList" class="desktop-recent-list"></div>
           </article>
 
           <article class="desktop-summary-card desktop-monitor-card">
             <div class="desktop-card-head">
-              <div><span class="desktop-card-icon pulse">⌁</span><b>Monitoramento</b></div>
+              <div><span class="desktop-card-icon pulse"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg></span><b>Monitoramento</b></div>
             </div>
             <div class="desktop-monitor-sections">
               <section class="desktop-monitor-section desktop-monitor-community">
@@ -530,7 +579,7 @@
             </button>
             <div><p class="kicker">MONITORAMENTO</p><h1>Mapa do Deltaville</h1></div>
           </div>
-          <button class="small-btn map-report-top" id="mapReport">＋ Ocorrência</button>
+          <button class="small-btn map-report-top" id="mapReport"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Ocorrência</button>
         </div>
         <div class="chips" id="mapFilters">
           <button class="selected" data-filter="all">Todos</button>
@@ -565,7 +614,7 @@
 
           <div id="fullMap" class="map map-full"></div>
           <div class="desktop-map-zoom-hint" aria-hidden="true">
-            <span>⌁</span> Role para ampliar ou reduzir
+            <span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg></span> Role para ampliar ou reduzir
           </div>
 
           <div class="selected-point-action selected-point-overlay map-bottom-action" id="selectedPointAction" hidden>
@@ -661,7 +710,7 @@
         <section class="v7-sources-panel" id="v7SourcesPanel" hidden>
           <div class="v7-sources-card">
             <div class="v7-section-head">
-              <div><span class="v7-section-icon">⌁</span><b>Fontes de monitoramento</b></div>
+              <div><span class="v7-section-icon"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg></span><b>Fontes de monitoramento</b></div>
             </div>
             <div id="mobileMonitoringSources"></div>
           </div>
@@ -676,7 +725,7 @@
 
         <section class="theme-settings-card" id="themeSettingsCard">
           <div class="theme-settings-copy">
-            <span class="theme-settings-icon" aria-hidden="true">◐</span>
+            <span class="theme-settings-icon" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-contrast"/></svg></span>
             <div><b>Aparência</b><small id="themeStatusText">Tema claro</small></div>
           </div>
           <button type="button" class="settings-switch" id="themeToggleMobile" role="switch" aria-checked="false" aria-label="Ativar tema escuro"><span></span></button>
@@ -836,9 +885,9 @@
       <button data-nav="profile" class="nav-item">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="8" r="3.3"/>
-            <path d="M5.4 19.5c.8-3.8 3-5.7 6.6-5.7s5.8 1.9 6.6 5.7"/>
-            <circle cx="12" cy="12" r="9.5"/>
+            <circle cx="12" cy="12" r="9.2"/>
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M6.4 18.4c1.2-2.3 3.2-3.4 5.6-3.4s4.4 1.1 5.6 3.4"/>
           </svg>
         </span>
         <b>Perfil</b>
@@ -968,13 +1017,13 @@
           <h2 id="reportTitle">Registrar ocorrência</h2>
           <small class="report-subtitle">Descreva. O app organiza o restante para você.</small>
         </div>
-        <button class="icon-btn" data-close="report">×</button>
+        <button class="icon-btn" data-close="report" aria-label="Fechar"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
       </div>
 
       <form id="reportForm" class="form report-v4">
         <section class="smart-composer" id="smartComposer">
           <div class="smart-composer-head">
-            <div class="smart-spark">✦</div>
+            <div class="smart-spark"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-sparkle"/></svg></div>
             <div>
               <b>Assistente inteligente</b>
               <small>Ex.: “Wilson e Beira Rio estão alagadas. Na Beira Rio não passa carro.”</small>
@@ -982,7 +1031,7 @@
           </div>
           <textarea id="smartDescription" maxlength="500" rows="3" placeholder="Descreva o que está acontecendo…"></textarea>
           <div class="smart-actions">
-            <button type="button" class="secondary smart-mic" id="smartMicBtn">◉ Falar</button>
+            <button type="button" class="secondary smart-mic" id="smartMicBtn"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg>Falar</button>
             <button type="button" class="primary smart-analyze" id="smartAnalyzeBtn">Entender ocorrência</button>
           </div>
         </section>
@@ -997,8 +1046,8 @@
           </div>
           <div class="report-photo-grid" id="reportPhotoGrid"></div>
           <div class="report-photo-actions" id="reportPhotoActions">
-            <button type="button" class="secondary" id="takePhotoBtn">▣ Tirar foto</button>
-            <button type="button" class="secondary" id="choosePhotoBtn">▧ Biblioteca</button>
+            <button type="button" class="secondary" id="takePhotoBtn"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-camera"/></svg>Tirar foto</button>
+            <button type="button" class="secondary" id="choosePhotoBtn"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>Biblioteca</button>
           </div>
           <input id="photoCameraInput" type="file" accept="image/*" capture="environment" hidden>
           <input id="photoLibraryInput" type="file" accept="image/*" multiple hidden>
@@ -1017,7 +1066,7 @@
         </section>
 
         <button type="button" class="manual-toggle" id="manualReportToggle">
-          <span>Prefiro escolher manualmente</span><i>⌄</i>
+          <span>Prefiro escolher manualmente</span><i><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></i>
         </button>
 
         <section class="manual-report" id="manualReportFields" hidden>
@@ -1089,11 +1138,11 @@
               <small>Selecione o que aconteceu.</small>
             </div>
             <div class="damage-chip-list" id="damageChips">
-              <button type="button" data-damage-type="tree">🌳 Árvore/galhos</button>
-              <button type="button" data-damage-type="roof">⌂ Telhado/estrutura</button>
-              <button type="button" data-damage-type="power">⚡ Energia/postes</button>
-              <button type="button" data-damage-type="vehicle">🚗 Veículos</button>
-              <button type="button" data-damage-type="other">＋ Outros danos</button>
+              <button type="button" data-damage-type="tree"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-tree"/></svg>Árvore/galhos</button>
+              <button type="button" data-damage-type="roof"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg>Telhado/estrutura</button>
+              <button type="button" data-damage-type="power"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-zap"/></svg>Energia/postes</button>
+              <button type="button" data-damage-type="vehicle"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-car"/></svg>Veículos</button>
+              <button type="button" data-damage-type="other"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Outros danos</button>
             </div>
           </div>
 
@@ -1124,8 +1173,8 @@
               <small id="multiPointSummary">Nenhum ponto exato marcado.</small>
             </div>
             <div class="map-tool-actions">
-              <button type="button" class="secondary" id="goPickPointBtn">＋ Marcar pontos</button>
-              <button type="button" class="secondary" id="segmentPickBtn" hidden>↔ Delimitar trecho</button>
+              <button type="button" class="secondary" id="goPickPointBtn"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg>Marcar pontos</button>
+              <button type="button" class="secondary" id="segmentPickBtn" hidden><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrows-h"/></svg>Delimitar trecho</button>
             </div>
             <button type="button" class="text-action" id="clearReportPointBtn" hidden>Limpar pontos</button>
             <button type="button" class="text-action" id="clearSegmentBtn" hidden>Limpar trecho</button>
@@ -1149,7 +1198,7 @@
     <button class="backdrop" data-close="profile" aria-label="Fechar"></button>
     <div class="sheet">
       <div class="handle"></div>
-      <div class="sheet-head"><div><p class="kicker">PERFIL</p><h2>Editar cadastro</h2></div><button class="icon-btn" data-close="profile">×</button></div>
+      <div class="sheet-head"><div><p class="kicker">PERFIL</p><h2>Editar cadastro</h2></div><button class="icon-btn" data-close="profile" aria-label="Fechar"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button></div>
       <form id="editProfileForm" class="form">
         <div class="grid2"><label>Nome<input id="editFirstName" required maxlength="60"></label><label>Sobrenome<input id="editLastName" required maxlength="80"></label></div>
         <label>Condomínio<select id="editCondominium" required></select></label>
@@ -1179,7 +1228,8 @@
   <script src="river.js?v=702"></script>
   <script src="weather.js?v=702"></script>
   <script src="push.js?v=702"></script>
-  <script src="app.js?v=702"></script>
+  <script src="app.js?v=704"></script>
   <script src="v6-ui.js?v=702"></script>
+  <script src="v8-ux.js?v=704"></script>
 </body>
 </html>
