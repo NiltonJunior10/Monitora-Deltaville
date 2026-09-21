@@ -1231,3 +1231,34 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     font-size:7.5px!important;
   }
 }
+
+
+/* v7.0.15 — river chart fit desktop */
+@media(min-width:1180px){
+  .river-level-card{
+    padding:14px 16px 12px!important;
+  }
+  .river-level-body{
+    grid-template-columns:210px minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+  .river-level-primary{
+    padding:12px 12px 10px!important;
+  }
+  .river-chart-wrap{
+    padding:8px 10px!important;
+  }
+  .river-chart{
+    min-height:165px!important;
+  }
+  .river-chart svg{
+    height:165px!important;
+  }
+  .river-chart-inspector{
+    left:18px!important;
+    right:12px!important;
+  }
+  .river-level-foot{
+    margin-top:8px!important;
+  }
+}
