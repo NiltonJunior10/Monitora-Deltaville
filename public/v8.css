@@ -906,3 +906,180 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 :root[data-theme="dark"] .desktop-river-icon{
   background:rgba(10,132,255,.16)!important;
 }
+
+
+/* v7.0.11 — desktop top-row redistribution */
+@media(min-width:1180px){
+  /* Três blocos reais na primeira linha: status, ocorrências e rio. */
+  .page[data-page="home"].active{
+    grid-template-columns:minmax(260px,1.05fr) minmax(165px,.52fr) minmax(390px,1.45fr)!important;
+    grid-template-areas:
+      "status occurrences riverquick"
+      "map map events"
+      "river river river"
+      "bottom bottom bottom"!important;
+    gap:12px!important;
+    align-items:start!important;
+  }
+
+  .desktop-kpi-row{
+    display:contents!important;
+  }
+  .desktop-kpi-status{
+    grid-area:status!important;
+    min-width:0!important;
+    width:100%!important;
+    height:104px!important;
+    min-height:104px!important;
+    grid-template-columns:42px minmax(0,1fr)!important;
+    padding:12px 14px!important;
+  }
+  .desktop-kpi-occurrences{
+    grid-area:occurrences!important;
+    min-width:0!important;
+    width:100%!important;
+    height:104px!important;
+    min-height:104px!important;
+    padding:12px 14px!important;
+    justify-content:flex-start!important;
+  }
+
+  /* Os cards inteiros já são clicáveis; removemos botões internos que criavam áreas vazias. */
+  .desktop-kpi-action,
+  .desktop-occurrence-action{
+    display:none!important;
+  }
+
+  .desktop-kpi-status>div{
+    min-width:0!important;
+  }
+  .desktop-kpi-status p{
+    display:-webkit-box!important;
+    -webkit-line-clamp:2!important;
+    -webkit-box-orient:vertical!important;
+    overflow:hidden!important;
+  }
+  .desktop-occurrence-copy strong{
+    font-size:34px!important;
+  }
+
+  /* Rio recebe a maior largura e a leitura visual da referência. */
+  .desktop-river-summary{
+    grid-area:riverquick!important;
+    height:104px!important;
+    min-height:104px!important;
+    grid-template-columns:44px minmax(0,1fr) 18px!important;
+    gap:12px!important;
+    padding:10px 13px!important;
+    border-radius:20px!important;
+  }
+  .desktop-river-icon{
+    width:44px!important;
+    height:44px!important;
+    border-radius:14px!important;
+  }
+  .desktop-river-summary-copy{
+    gap:2px!important;
+  }
+  .desktop-river-titleline{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:10px!important;
+    min-width:0!important;
+  }
+  .desktop-river-titleline>small{
+    color:var(--v6-blue)!important;
+    font-size:10px!important;
+    font-weight:760!important;
+    white-space:nowrap!important;
+  }
+  .desktop-river-status{
+    min-height:24px!important;
+    padding:0 8px!important;
+    border-radius:999px!important;
+    background:rgba(142,142,147,.10)!important;
+    font-size:9px!important;
+    white-space:nowrap!important;
+  }
+  .desktop-river-status.normal{background:rgba(48,209,88,.12)!important}
+  .desktop-river-status.attention{background:rgba(255,214,10,.13)!important}
+  .desktop-river-status.alert{background:rgba(255,159,10,.13)!important}
+  .desktop-river-status.critical{background:rgba(255,69,58,.12)!important}
+
+  .desktop-river-mainline{
+    gap:10px!important;
+    margin-top:1px!important;
+  }
+  .desktop-river-mainline>strong{
+    font-size:26px!important;
+  }
+  .desktop-river-delta{
+    font-size:9px!important;
+  }
+
+  .desktop-river-scale{
+    position:relative!important;
+    display:block!important;
+    width:100%!important;
+    height:6px!important;
+    margin-top:4px!important;
+    border-radius:999px!important;
+    background:linear-gradient(90deg,#2F87FF 0 25%,#22B8CF 25% 50%,#20A85B 50% 62%,#F3C94B 62% 75%,#FF9F43 75% 87%,#F04455 87% 100%)!important;
+    overflow:visible!important;
+  }
+  .desktop-river-scale-fill{display:none!important}
+  .desktop-river-scale>b{
+    --river-pct:0%;
+    position:absolute!important;
+    top:50%!important;
+    left:var(--river-pct)!important;
+    width:10px!important;
+    height:10px!important;
+    border-radius:50%!important;
+    transform:translate(-50%,-50%)!important;
+    background:#fff!important;
+    border:2px solid var(--v6-label)!important;
+    box-shadow:0 1px 4px rgba(0,0,0,.18)!important;
+  }
+  .desktop-river-scale-labels{
+    display:flex!important;
+    justify-content:space-between!important;
+    margin-top:0!important;
+    color:var(--v6-tertiary)!important;
+    font-size:7px!important;
+    line-height:1!important;
+  }
+  .desktop-river-scale-labels i{
+    font-style:normal!important;
+  }
+  .desktop-river-footline{
+    justify-content:flex-end!important;
+    margin-top:1px!important;
+    font-size:8px!important;
+  }
+
+  /* Mapa ocupa as duas primeiras colunas; ocorrências seguem estreitas à direita. */
+  .home-map-section{
+    grid-area:map!important;
+  }
+  .home-events-section{
+    grid-area:events!important;
+  }
+  .river-level-card{
+    grid-area:river!important;
+  }
+  .desktop-bottom-grid{
+    grid-area:bottom!important;
+  }
+}
+
+@media(min-width:1500px){
+  .page[data-page="home"].active{
+    grid-template-columns:minmax(300px,1.08fr) minmax(180px,.50fr) minmax(460px,1.55fr)!important;
+  }
+}
+
+:root[data-theme="dark"] .desktop-river-status{
+  background:rgba(255,255,255,.06)!important;
+}
