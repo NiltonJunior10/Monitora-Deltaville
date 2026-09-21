@@ -2294,3 +2294,147 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     color:var(--v6-secondary)!important;
   }
 }
+
+
+/* v7.0.35 — clickable desktop weather */
+.desktop-weather-panel{display:none}
+
+@media(min-width:1180px){
+  .top-weather{
+    appearance:none!important;
+    -webkit-appearance:none!important;
+    width:100%!important;
+    color:inherit!important;
+    font:inherit!important;
+    text-align:left!important;
+    cursor:pointer!important;
+    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease!important;
+  }
+
+  .top-weather:hover{
+    transform:translateY(-1px)!important;
+    border-color:rgba(10,132,255,.26)!important;
+    box-shadow:0 10px 26px rgba(20,67,108,.10)!important;
+  }
+
+  .top-weather:focus-visible{
+    outline:2px solid var(--v6-blue)!important;
+    outline-offset:2px!important;
+  }
+
+  .top-weather[aria-expanded="true"]{
+    border-color:rgba(10,132,255,.34)!important;
+    box-shadow:0 12px 30px rgba(20,67,108,.12)!important;
+  }
+
+  .desktop-weather-panel{
+    position:fixed!important;
+    z-index:2450!important;
+    top:var(--desktop-weather-top,108px)!important;
+    left:var(--desktop-weather-left,50%)!important;
+    width:var(--desktop-weather-width,600px)!important;
+    display:block!important;
+    padding:16px!important;
+    border:1px solid rgba(10,132,255,.16)!important;
+    border-radius:24px!important;
+    background:rgba(250,253,255,.94)!important;
+    box-shadow:0 24px 70px rgba(25,55,86,.20),inset 0 1px 0 rgba(255,255,255,.92)!important;
+    backdrop-filter:blur(30px) saturate(175%)!important;
+    -webkit-backdrop-filter:blur(30px) saturate(175%)!important;
+  }
+
+  .desktop-weather-panel[hidden]{
+    display:none!important;
+  }
+
+  .desktop-weather-panel-head{
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    margin-bottom:13px!important;
+  }
+
+  .desktop-weather-panel-head>div{
+    display:grid!important;
+    gap:3px!important;
+    min-width:0!important;
+  }
+
+  .desktop-weather-panel-head small{
+    color:var(--v6-blue)!important;
+    font-size:9px!important;
+    font-weight:780!important;
+    letter-spacing:.08em!important;
+  }
+
+  .desktop-weather-panel-head strong{
+    color:var(--v6-label)!important;
+    font-size:15px!important;
+    line-height:1.25!important;
+  }
+
+  .desktop-weather-close{
+    width:32px!important;
+    height:32px!important;
+    flex:none!important;
+    display:grid!important;
+    place-items:center!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:50%!important;
+    background:var(--v6-fill)!important;
+    color:var(--v6-secondary)!important;
+    font-size:20px!important;
+    line-height:1!important;
+    cursor:pointer!important;
+  }
+
+  .desktop-weather-panel-grid{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+
+  .desktop-weather-panel-grid article{
+    min-width:0!important;
+    min-height:88px!important;
+    padding:11px 12px!important;
+    border:1px solid var(--v6-separator)!important;
+    border-radius:17px!important;
+    background:rgba(255,255,255,.72)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+  }
+
+  .desktop-weather-panel-grid small{
+    color:var(--v6-secondary)!important;
+    font-size:9px!important;
+    font-weight:650!important;
+  }
+
+  .desktop-weather-panel-grid strong{
+    margin:3px 0 2px!important;
+    color:var(--v6-label)!important;
+    font-size:20px!important;
+    line-height:1!important;
+    font-weight:700!important;
+  }
+
+  .desktop-weather-panel-grid span{
+    color:var(--v6-secondary)!important;
+    font-size:9px!important;
+    line-height:1.25!important;
+  }
+
+  :root[data-theme="dark"] .desktop-weather-panel{
+    background:rgba(25,30,38,.94)!important;
+    border-color:rgba(90,170,255,.17)!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  }
+
+  :root[data-theme="dark"] .desktop-weather-panel-grid article{
+    background:rgba(255,255,255,.045)!important;
+  }
+}
