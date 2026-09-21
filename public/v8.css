@@ -2215,3 +2215,62 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     min-height:108px!important;
   }
 }
+
+
+/* v7.0.33 — restore river card position; keep only scale labels inside */
+@media(min-width:1180px){
+  /* Volta à altura e distribuição visual anteriores. */
+  .desktop-kpi-status,
+  .desktop-kpi-occurrences,
+  .desktop-river-summary{
+    height:96px!important;
+    min-height:96px!important;
+  }
+
+  .desktop-river-summary{
+    padding-top:9px!important;
+    padding-bottom:10px!important;
+    overflow:hidden!important;
+  }
+
+  .desktop-river-summary-copy{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    gap:4px!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+
+  .desktop-river-titleline{
+    min-height:0!important;
+    height:auto!important;
+  }
+
+  .desktop-river-mainline{
+    min-height:0!important;
+    height:auto!important;
+    align-items:baseline!important;
+    margin-top:1px!important;
+  }
+
+  .desktop-river-scale{
+    height:6px!important;
+    margin-top:3px!important;
+    align-self:auto!important;
+  }
+
+  /* Mantém a régua no mesmo lugar; sobe somente os números para dentro do box. */
+  .desktop-river-scale-labels{
+    height:10px!important;
+    min-height:10px!important;
+    margin-top:-2px!important;
+    align-self:auto!important;
+    overflow:hidden!important;
+    transform:translateY(-1px)!important;
+  }
+
+  .desktop-river-scale-labels i{
+    top:1px!important;
+  }
+}
