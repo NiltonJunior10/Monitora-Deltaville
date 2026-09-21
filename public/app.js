@@ -136,9 +136,9 @@ const condominiumAnchors={
 const neighborhoodAnchor=[800,500];
 const WEATHER_SCOPE_TYPES=new Set(["heavy_rain_flood_risk","hail","wind_damage","wind_no_damage"]);
 const COMMUNITY_PROBLEM_TYPES=new Set([
-  "public_lighting","drainage_clogged","tree_hazard","road_damage","power_outage",
+  "public_lighting","drainage_clogged","tree_hazard","road_damage","power_outage","power_failure",
   "sewer_issue","waste_accumulation","signage_issue","sidewalk_obstruction",
-  "water_supply","infrastructure_damage","other_neighborhood_issue"
+  "water_supply","water_outage","infrastructure_damage","other_neighborhood_issue"
 ]);
 const DAMAGE_LABELS={
   tree:"Árvore/galhos",
@@ -180,10 +180,10 @@ const occurrenceLabels = {
   river_level:"Nível do Rio Biguaçu", river_overflow:"Transbordamento de rio",
   public_lighting:"Iluminação pública", drainage_clogged:"Bueiro / drenagem",
   tree_hazard:"Árvore / galhos", road_damage:"Buraco / pavimento",
-  power_outage:"Energia / poste", sewer_issue:"Esgoto / vazamento",
+  power_outage:"Energia / poste", power_failure:"Falta de energia", sewer_issue:"Esgoto / vazamento",
   waste_accumulation:"Lixo / entulho", signage_issue:"Sinalização",
   sidewalk_obstruction:"Calçada / obstrução", water_supply:"Abastecimento de água",
-  infrastructure_damage:"Estrutura danificada", other_neighborhood_issue:"Outro problema"
+  water_outage:"Falta de água", infrastructure_damage:"Estrutura danificada", other_neighborhood_issue:"Outro problema"
 };
 const conditionLabels = {
   water_accumulating:"Água acumulando", flooding:"Alagamento",
@@ -258,6 +258,11 @@ const occurrenceIconShapes = {
     <path d="M8 21V7l4-3 4 3v14M6 10h12M7 15h10"/>
     <path d="m13 8-2 4h2l-2 4"/>
   `,
+  power_failure:`
+    <circle cx="12" cy="12" r="8"/>
+    <path d="m13.2 5.5-4 7h3l-1.2 6 4.2-7h-3z"/>
+    <path d="M5.8 18.2 18.2 5.8"/>
+  `,
   sewer_issue:`
     <path d="M4 8h8v4h5v3"/>
     <path d="M3 17c1.4-.9 2.8-.9 4.2 0s2.8.9 4.2 0 2.8-.9 4.2 0 2.8.9 4.2 0"/>
@@ -280,6 +285,10 @@ const occurrenceIconShapes = {
     <path d="M18 13v2.2"/>
     <path d="M14.5 18c1.1-.7 2.2-.7 3.3 0s2.2.7 3.3 0"/>
     <path d="M14.5 20.5c1.1-.7 2.2-.7 3.3 0s2.2.7 3.3 0"/>
+  `,
+  water_outage:`
+    <path d="M12 4.2s-4.7 5.3-4.7 9.1a4.7 4.7 0 0 0 9.4 0C16.7 9.5 12 4.2 12 4.2Z"/>
+    <path d="M5.5 18.5 18.5 5.5"/>
   `,
   infrastructure_damage:`
     <path d="M5 21V6l7-3 7 3v15M5 10h14M9 10v11M15 10v11"/>
@@ -2290,7 +2299,7 @@ function renderDesktopMonitoring(){
     ["Iluminação pública",statusForTypes(["public_lighting"])],
     ["Vias e acesso",statusForTypes(["road_damage","signage_issue","sidewalk_obstruction"])],
     ["Áreas verdes",statusForTypes(["tree_hazard"])],
-    ["Infraestrutura e serviços",statusForTypes(["power_outage","water_supply","sewer_issue","waste_accumulation","infrastructure_damage"])]
+    ["Infraestrutura e serviços",statusForTypes(["power_outage","power_failure","water_supply","water_outage","sewer_issue","waste_accumulation","infrastructure_damage"])]
   ];
   host.innerHTML=rows.map(([label,status])=>{
     const st=status||"normal";
@@ -2827,10 +2836,12 @@ function smartParseDescription(text){
   else if(/buraco|asfalto|pavimento|pista quebrada/.test(n))type="road_damage";
   else if(/placa|sinalizacao|sinalização|faixa apagada/.test(n))type="signage_issue";
   else if(/calcada|calçada|passeio|obstrucao na calcada|obstrução na calçada/.test(n))type="sidewalk_obstruction";
-  else if(/falta de energia|sem energia|poste caido|poste caiu|fiacao|fiação|fio caido|fio caiu/.test(n))type="power_outage";
+  else if(/falta de energia|sem energia|apagao|apagão|queda de energia/.test(n))type="power_failure";
+  else if(/poste caido|poste caiu|fiacao|fiação|fio caido|fio caiu/.test(n))type="power_outage";
   else if(/esgoto|mau cheiro|vazamento de esgoto/.test(n))type="sewer_issue";
   else if(/lixo|entulho|descarte irregular|sujeira acumulada/.test(n))type="waste_accumulation";
-  else if(/falta de agua|falta d agua|sem agua|vazamento de agua|cano rompido/.test(n))type="water_supply";
+  else if(/falta de agua|falta d agua|sem agua/.test(n))type="water_outage";
+  else if(/vazamento de agua|cano rompido/.test(n))type="water_supply";
   else if(/muro quebrado|estrutura danificada|guarda corpo|equipamento quebrado|estrutura quebrada/.test(n))type="infrastructure_damage";
   else if(/arvore caiu|arvore caida|queda de arvore|galho caido|galho quebrado|arvore inclinada/.test(n)&&!/vendaval|vento forte|rajada/.test(n))type="tree_hazard";
   else if(/vendaval|vento forte|rajada/.test(n))type=/dano|estrago|danific|destelh|arvore caiu|queda de arvore|poste caiu|sem energia/.test(n)?"wind_damage":"wind_no_damage";
