@@ -3330,6 +3330,15 @@ function startSmartVoice(){
 }
 
 document.addEventListener("click",e=>{
+  const desktopRiver=e.target.closest("#desktopRiverSummary");
+  if(desktopRiver&&window.matchMedia("(min-width:1180px)").matches){
+    e.preventDefault();
+    document.body.classList.add("desktop-river-expanded");
+    desktopRiver.setAttribute("aria-expanded","true");
+    if(typeof renderRiverChart==="function")renderRiverChart(state.riverStatus?.series||[]);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$("#riverLevelCard")?.scrollIntoView({behavior:"smooth",block:"start"})));
+    return;
+  }
   const viewPhoto=e.target.closest("[data-view-photo]");
   if(viewPhoto){e.stopPropagation();openPhotoViewer(viewPhoto.dataset.viewPhoto);return;}
   const removePhoto=e.target.closest("[data-remove-report-photo]");
