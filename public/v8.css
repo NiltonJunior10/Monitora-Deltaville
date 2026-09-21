@@ -3480,3 +3480,86 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     display:none!important;
   }
 }
+
+
+/* v7.0.48 — point popup anchored to clicked location */
+@media(min-width:1180px) and (pointer:fine){
+  body.map-open [data-page="map"] #selectedPointAction.map-bottom-action{
+    position:absolute!important;
+    z-index:1165!important;
+    right:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+    width:min(300px,calc(100% - 24px))!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:11px!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    border:1px solid rgba(19,76,126,.13)!important;
+    border-radius:18px!important;
+    background:rgba(252,254,255,.97)!important;
+    box-shadow:0 16px 40px rgba(21,55,88,.18)!important;
+    backdrop-filter:blur(22px) saturate(170%)!important;
+    -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+    overflow:visible!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction[hidden]{
+    display:none!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction::after{
+    content:""!important;
+    position:absolute!important;
+    top:50%!important;
+    width:12px!important;
+    height:12px!important;
+    margin-top:-6px!important;
+    background:rgba(252,254,255,.97)!important;
+    border:1px solid rgba(19,76,126,.13)!important;
+    transform:rotate(45deg)!important;
+    pointer-events:none!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction[data-anchor-side="right"]::after{
+    left:-7px!important;
+    right:auto!important;
+    border-top:0!important;
+    border-right:0!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction[data-anchor-side="left"]::after{
+    right:-7px!important;
+    left:auto!important;
+    border-bottom:0!important;
+    border-left:0!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction .selected-point-buttons{
+    display:grid!important;
+    grid-template-columns:.8fr 1.2fr!important;
+    gap:7px!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction .selected-point-buttons button{
+    width:100%!important;
+    min-height:38px!important;
+    height:38px!important;
+    border-radius:12px!important;
+    font-size:10px!important;
+    font-weight:720!important;
+  }
+
+  body.map-open [data-page="map"] #selectedPointAction #reportHereBtn{
+    background:linear-gradient(180deg,#188DFF,#0879EA)!important;
+    color:#fff!important;
+    border:0!important;
+  }
+
+  :root[data-theme="dark"] body.map-open [data-page="map"] #selectedPointAction{
+    background:rgba(28,32,38,.95)!important;
+    border-color:rgba(255,255,255,.11)!important;
+  }
+}
