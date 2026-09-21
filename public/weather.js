@@ -100,13 +100,13 @@ function renderOfficialWeatherAlerts(data){
     if(notice&&!data?.error){
       const labels=(notice.events||[]).map(weatherEventLabel);
       let shortLabel="";
-      if(labels.length>=3)shortLabel=labels.slice(0,2).join(" + ")+" +";
-      else if(labels.length)shortLabel=labels.join(" + ");
+      if(labels.length>=2)shortLabel=labels.slice(0,2).join(" • ");
+      else if(labels.length)shortLabel=labels[0];
       else shortLabel="Alerta meteorológico";
 
-      topBadge.textContent=notice.status==="active"
-        ?`⚠ ${shortLabel}`
-        :`⚠ Previsto: ${shortLabel}`;
+      topBadge.innerHTML=notice.status==="active"
+        ?`<b>⚠ ALERTA</b><span>${weatherEscapeHtml(shortLabel)}</span>`
+        :`<b>⚠ PREVISTO</b><span>${weatherEscapeHtml(shortLabel)}</span>`;
       topBadge.className=`top-weather-official-badge ${weatherOfficialSeverity(notice)}`;
       topBadge.hidden=false;
       topBadge.title=notice.title||"Aviso oficial Epagri/Ciram";
