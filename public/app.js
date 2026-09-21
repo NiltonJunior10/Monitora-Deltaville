@@ -1161,7 +1161,10 @@ function setSelectedPoint(latlng,options={}){
   if(!state.multiPointMode)setPointPickMode(false);
   updateSelectedPointUI();renderLocationChips?.();updateReportReadyState?.();
   try{navigator.vibrate?.(25);}catch(_){}
-  try{state.maps.full.panInside(latlng,{paddingTopLeft:[35,35],paddingBottomRight:[35,155],animate:true});}catch(_){}
+  try{
+    const desktopFine=window.matchMedia?.("(min-width:1180px) and (pointer:fine)")?.matches;
+    if(!desktopFine)state.maps.full.panInside(latlng,{paddingTopLeft:[35,35],paddingBottomRight:[35,155],animate:true});
+  }catch(_){}
 }
 function clearSelectedPoint(options={}){
   state.selectedPoint=null;state.selectedPoints=[];
@@ -1169,17 +1172,55 @@ function clearSelectedPoint(options={}){
   setPointPickMode(false,{multi:false});updateSelectedPointUI();updateReportReadyState?.();
   if(!options.silent)toast("Pontos marcados apagados.");
 }
+function positionSelectedPointAction(){
+  const action=$("#selectedPointAction");
+  const map=state.maps.full;
+  const pointData=state.selectedPoints.at(-1);
+  if(!action||!map||!pointData||action.hidden)return;
+
+  const point=map.latLngToContainerPoint(L.latLng(pointData.lat,pointData.lng));
+  requestAnimationFrame(()=>{
+    if(action.hidden||!state.selectedPoints.length)return;
+
+    const mapEl=map.getContainer();
+    const width=action.offsetWidth||300;
+    const height=action.offsetHeight||84;
+    const margin=12;
+    const gap=12;
+
+    let left=point.x+gap;
+    let side="right";
+    if(left+width>mapEl.clientWidth-margin){
+      left=point.x-width-gap;
+      side="left";
+    }
+    left=Math.max(margin,Math.min(left,mapEl.clientWidth-width-margin));
+
+    let top=point.y-(height/2);
+    top=Math.max(margin,Math.min(top,mapEl.clientHeight-height-margin));
+
+    action.style.setProperty("left",Math.round(left)+"px","important");
+    action.style.setProperty("top",Math.round(top)+"px","important");
+    action.style.setProperty("right","auto","important");
+    action.style.setProperty("bottom","auto","important");
+    action.style.setProperty("transform","none","important");
+    action.dataset.anchorSide=side;
+    action.dataset.anchorVertical="center";
+  });
+}
+
 function updateSelectedPointUI(){
   const count=state.selectedPoints.length,has=count>0;
   if($("#clearReportPointBtn"))$("#clearReportPointBtn").hidden=!has;
   if($("#multiPointSummary"))$("#multiPointSummary").textContent=has?`${count} ${count===1?"ponto marcado":"pontos marcados"}`:"Nenhum ponto exato marcado.";
   if(has){
-    if($("#selectedPointActionTitle"))$("#selectedPointActionTitle").textContent=count===1?"1 ponto marcado":`${count} pontos marcados`;
-    if($("#selectedPointActionText"))$("#selectedPointActionText").textContent=state.multiPointMode?"Marque outros ou conclua":"Pronto para registrar";
+    if($("#selectedPointActionTitle"))$("#selectedPointActionTitle").textContent=count===1?(state.selectedPoints[0]?.loc?.name||"Ponto selecionado"):`${count} pontos marcados`;
+    if($("#selectedPointActionText"))$("#selectedPointActionText").textContent=state.multiPointMode?"Marque outros ou conclua":"Registrar ocorrência neste ponto";
     if($("#reportHereBtn"))$("#reportHereBtn").textContent=state.multiPointMode?"Concluir":"Registrar";
     if($("#clearMapPointBtn"))$("#clearMapPointBtn").textContent="Cancelar";
   }
   syncMapBottomUI();
+  if(has)requestAnimationFrame(positionSelectedPointAction);
 }
 function describeSelectedSegment(){
   if(!state.selectedSegment)return "Nenhum trecho delimitado.";
@@ -1283,8 +1324,11 @@ function positionSelectedSegmentAction(){
     let top=point.y-(height/2);
     top=Math.max(margin,Math.min(top,mapRect.height-height-margin));
 
-    action.style.left=`${Math.round(left)}px`;
-    action.style.top=`${Math.round(top)}px`;
+    action.style.setProperty("left",Math.round(left)+"px","important");
+    action.style.setProperty("top",Math.round(top)+"px","important");
+    action.style.setProperty("right","auto","important");
+    action.style.setProperty("bottom","auto","important");
+    action.style.setProperty("transform","none","important");
     action.dataset.anchorSide=side;
     action.dataset.anchorVertical="center";
   });
@@ -1535,9 +1579,14 @@ function bindMapPointSelection(){
 
   map.on("click",e=>{
     if(Date.now()<suppressClickUntil)return;
+    if(e.originalEvent?.__monitoraPointHandled)return;
     if(state.segmentPickMode?.active){setSelectedSegmentPoint(e.latlng);return;}
-    if(!state.pointPickMode)return;
-    setSelectedPoint(e.latlng);
+
+    // Clique simples = ponto exato + popup "Registrar".
+    // Clique e arraste sobre avenida continua delimitando trecho.
+    clearSegmentSelection({silent:true});
+    state.multiPointMode=false;
+    setSelectedPoint(e.latlng,{append:false});
   });
 
   map.on("contextmenu",e=>{
@@ -2095,7 +2144,10 @@ function bindMapUX(){
     $("#mapLegendBtn")?.classList.remove("active");
   });
   $("#mapFocusCloseBtn")?.addEventListener("click",hideMapFocusCard);
-  state.maps.full?.on("move zoom resize",()=>positionSelectedSegmentAction());
+  state.maps.full?.on("move zoom resize",()=>{
+    positionSelectedSegmentAction();
+    positionSelectedPointAction();
+  });
   $("#mapFocusReportBtn")?.addEventListener("click",()=>{
     const item=state.activeMapItem;
     openReport("map");
@@ -2286,15 +2338,19 @@ function renderAvenues(which){
       description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Segure sobre a via e arraste para selecionar o trecho."
     };
 
-    hit.on("click",()=>{
+    hit.on("click",e=>{
       if(which==="home"){
         openMapFromPreview();
         return;
       }
-      // No mapa cheio, clique simples apenas identifica a via pelo hover.
-      // O popup de ação só aparece após criar uma marcação por arraste.
       closeMapAvenueTooltips();
       hideMapFocusCard();
+      if(e?.latlng){
+        if(e.originalEvent)e.originalEvent.__monitoraPointHandled=true;
+        clearSegmentSelection({silent:true});
+        state.multiPointMode=false;
+        setSelectedPoint(e.latlng,{append:false});
+      }
     });
 
     if(which==="full"){
