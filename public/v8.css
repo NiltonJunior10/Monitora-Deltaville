@@ -1262,3 +1262,33 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     margin-top:8px!important;
   }
 }
+
+
+/* v7.0.16 — reduce left dead space in river monitor */
+@media(min-width:1180px){
+  /* Aproxima o gráfico do resumo do rio e elimina a faixa vazia à esquerda. */
+  .river-level-body{
+    grid-template-columns:168px minmax(0,1fr)!important;
+    gap:6px!important;
+  }
+  .river-level-primary{
+    padding:10px 10px 8px!important;
+  }
+  .river-level-primary>strong{
+    font-size:31px!important;
+  }
+  .river-level-primary p{
+    margin-top:7px!important;
+    line-height:1.22!important;
+  }
+  .river-level-primary small{
+    line-height:1.2!important;
+  }
+  .river-chart-wrap{
+    padding:6px 7px!important;
+  }
+  .river-chart-inspector{
+    left:10px!important;
+    right:8px!important;
+  }
+}
