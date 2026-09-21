@@ -2076,3 +2076,81 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     font-size:11px!important;
   }
 }
+
+
+/* v7.0.31 — river scale 0–5m + labels inside card */
+@media(min-width:1180px){
+  /* Dá espaço vertical suficiente para os números da régua ficarem dentro do card. */
+  .desktop-kpi-status,
+  .desktop-kpi-occurrences,
+  .desktop-river-summary{
+    height:96px!important;
+    min-height:96px!important;
+  }
+
+  .desktop-river-summary{
+    padding-top:9px!important;
+    padding-bottom:10px!important;
+  }
+
+  /* Escala: 0–5 m.
+     Normal informado: 0,70–1,00 m.
+     4 m continua destacado como referência crítica visual. */
+  .desktop-river-scale{
+    height:6px!important;
+    margin-top:3px!important;
+    background:
+      linear-gradient(90deg,
+        #2F87FF 0%,
+        #39A7E8 14%,
+        #2EB76A 14%,
+        #2EB76A 20%,
+        #E9C94C 20%,
+        #F2C34A 60%,
+        #FF9F43 60%,
+        #FF8A3D 80%,
+        #F04455 80%,
+        #F04455 100%)!important;
+  }
+
+  .desktop-river-scale-labels{
+    position:relative!important;
+    display:block!important;
+    width:100%!important;
+    height:12px!important;
+    margin-top:2px!important;
+    overflow:hidden!important;
+    line-height:1!important;
+  }
+
+  .desktop-river-scale-labels i{
+    position:absolute!important;
+    top:0!important;
+    left:var(--x)!important;
+    transform:translateX(-50%)!important;
+    white-space:nowrap!important;
+    font-style:normal!important;
+  }
+
+  .desktop-river-scale-labels .scale-start{
+    transform:none!important;
+  }
+
+  .desktop-river-scale-labels .scale-end{
+    transform:translateX(-100%)!important;
+    color:#D63742!important;
+    font-weight:720!important;
+  }
+
+  .desktop-river-scale-labels .critical-mark{
+    transform:translateX(-50%)!important;
+    color:#D63742!important;
+    font-weight:720!important;
+  }
+
+  .desktop-river-scale-labels .normal-start,
+  .desktop-river-scale-labels .normal-end{
+    color:#159447!important;
+    font-weight:720!important;
+  }
+}
