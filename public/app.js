@@ -1018,8 +1018,16 @@ function makeMap(id, preview=false){
   map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false});
   overlay.on("load",()=>ensureMapLayout(map,true));
   map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),80));
-  if(preview)map.on("click",()=>navigate("map"));
+  if(preview)map.on("click",()=>openMapFromPreview());
   return map;
+}
+function openMapFromPreview(){
+  // Entrar no mapa pela Home nunca deve ser interpretado como seleção.
+  state.activeMapItem=null;
+  hideMapFocusCard?.();
+  closeMapAvenueTooltips?.();
+  if($("#selectedSegmentAction"))$("#selectedSegmentAction").hidden=true;
+  navigate("map");
 }
 function initMaps(){
   if(state.maps.home)return;
@@ -1258,13 +1266,12 @@ function positionSelectedSegmentAction(){
     if(action.hidden||!state.selectedSegment)return;
 
     const mapRect=mapEl.getBoundingClientRect();
-    const width=action.offsetWidth||360;
+    const width=action.offsetWidth||340;
     const height=action.offsetHeight||92;
-    const margin=16;
-    const gap=8;
-    const safeTop=126;
-    const safeBottom=18;
+    const margin=12;
+    const gap=10;
 
+    // Prioridade: popup lateral e alinhado verticalmente ao centro do trecho.
     let left=point.x+gap;
     let side="right";
     if(left+width>mapRect.width-margin){
@@ -1273,22 +1280,13 @@ function positionSelectedSegmentAction(){
     }
     left=Math.max(margin,Math.min(left,mapRect.width-width-margin));
 
-    let top=point.y-height-gap;
-    let vertical="above";
-    if(top<safeTop){
-      top=point.y+gap;
-      vertical="below";
-    }
-    if(top+height>mapRect.height-safeBottom){
-      top=Math.max(safeTop,point.y-height-gap);
-      vertical="above";
-    }
-    top=Math.max(safeTop,Math.min(top,mapRect.height-height-safeBottom));
+    let top=point.y-(height/2);
+    top=Math.max(margin,Math.min(top,mapRect.height-height-margin));
 
     action.style.left=`${Math.round(left)}px`;
     action.style.top=`${Math.round(top)}px`;
     action.dataset.anchorSide=side;
-    action.dataset.anchorVertical=vertical;
+    action.dataset.anchorVertical="center";
   });
 }
 
@@ -1716,7 +1714,7 @@ function renderOccurrencePointMarkers(){
         const latlng=coord(loc);
         const popup=`<div class="popup"><h4>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h4><p><b>${esc(locationName(o))}</b></p><p class="statusline">${severityLabels[o.severity]||o.severity}</p>${note?`<p>${esc(note)}</p>`:""}<p>${age(o.created_at)}</p></div>`;
         const m=L.marker(latlng,{icon:occurrencePointIcon(o.severity),zIndexOffset:880}).addTo(map).bindPopup(popup);
-        m.on("click",()=>{const payload={title:occurrenceLabels[o.occurrence_type]||"Ocorrência",description:note||`${locationName(o)} • ${severityLabels[o.severity]||o.severity}`,status:o.severity||"alert",category:"occurrence",locationId:o.location_id,typeLabel:"Local informado",timeLabel:age(o.created_at),photos:o._photos||[]};if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}else showMapFocusCard(payload);});
+        m.on("click",()=>{const payload={title:occurrenceLabels[o.occurrence_type]||"Ocorrência",description:note||`${locationName(o)} • ${severityLabels[o.severity]||o.severity}`,status:o.severity||"alert",category:"occurrence",locationId:o.location_id,typeLabel:"Local informado",timeLabel:age(o.created_at),photos:o._photos||[]};if(which==="home"){openMapFromPreview();}else showMapFocusCard(payload);});
         state.occurrencePointMarkers[which].push(m);return;
       }
       const latlng=normalizedToLatLng(o.exact_map_x,o.exact_map_y);
@@ -2215,7 +2213,7 @@ function renderLakeZones(which){
       }
 
       baseLayer.on("click",()=>{
-        if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
+        if(which==="home"){openMapFromPreview();}
         else showMapFocusCard(payload);
       });
     });
@@ -2289,8 +2287,14 @@ function renderAvenues(which){
     };
 
     hit.on("click",()=>{
-      if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
-      else showMapFocusCard(payload);
+      if(which==="home"){
+        openMapFromPreview();
+        return;
+      }
+      // No mapa cheio, clique simples apenas identifica a via pelo hover.
+      // O popup de ação só aparece após criar uma marcação por arraste.
+      closeMapAvenueTooltips();
+      hideMapFocusCard();
     });
 
     if(which==="full"){
@@ -2396,7 +2400,7 @@ function renderRiverZone(which){
   };
 
   hit.on("click",()=>{
-    if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
+    if(which==="home"){openMapFromPreview();}
     else showMapFocusCard(payload);
   });
 
@@ -2406,7 +2410,7 @@ function renderRiverZone(which){
   }).addTo(map);
 
   marker.on("click",()=>{
-    if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
+    if(which==="home"){openMapFromPreview();}
     else showMapFocusCard(payload);
   });
 
@@ -2443,7 +2447,7 @@ function renderMapMarkers(){
         description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Área hídrica em monitoramento."
       };
       marker.on("click",()=>{
-        if(which==="home"){navigate("map");setTimeout(()=>showMapFocusCard(payload),120);}
+        if(which==="home"){openMapFromPreview();}
         else showMapFocusCard(payload);
       });
       if(which==="full"){
