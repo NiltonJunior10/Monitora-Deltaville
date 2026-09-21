@@ -2772,3 +2772,77 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
   font-weight:700!important;
   text-decoration:none!important;
 }
+
+
+/* v7.0.39 — compact official weather alert in top card */
+@media(min-width:1180px){
+  .top-weather-headline-row{
+    display:flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  .top-weather-headline-row #weatherHeadline{
+    flex:0 0 auto!important;
+    min-width:0!important;
+  }
+
+  .top-weather-official-badge{
+    display:inline-flex!important;
+    align-items:center!important;
+    min-width:0!important;
+    max-width:145px!important;
+    height:18px!important;
+    padding:0 7px!important;
+    border-radius:999px!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    text-overflow:ellipsis!important;
+    font-size:8px!important;
+    line-height:18px!important;
+    font-weight:760!important;
+    letter-spacing:-.01em!important;
+    box-sizing:border-box!important;
+  }
+
+  .top-weather-official-badge[hidden]{
+    display:none!important;
+  }
+
+  .top-weather-official-badge.attention{
+    color:#856500!important;
+    background:rgba(255,204,0,.16)!important;
+    border:1px solid rgba(195,148,0,.16)!important;
+  }
+
+  .top-weather-official-badge.alert{
+    color:#A95000!important;
+    background:rgba(255,149,0,.14)!important;
+    border:1px solid rgba(217,105,0,.17)!important;
+  }
+
+  .top-weather-official-badge.critical{
+    color:#B8332C!important;
+    background:rgba(255,69,58,.13)!important;
+    border:1px solid rgba(210,50,43,.18)!important;
+  }
+
+  :root[data-theme="dark"] .top-weather-official-badge.attention{
+    color:#FFD65A!important;
+  }
+  :root[data-theme="dark"] .top-weather-official-badge.alert{
+    color:#FFB55A!important;
+  }
+  :root[data-theme="dark"] .top-weather-official-badge.critical{
+    color:#FF8178!important;
+  }
+}
+
+@media(min-width:1500px){
+  .top-weather-official-badge{
+    max-width:175px!important;
+    font-size:8.5px!important;
+  }
+}
