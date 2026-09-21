@@ -2274,3 +2274,23 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     top:1px!important;
   }
 }
+
+
+/* v7.0.34 — river trend labels */
+@media(min-width:1180px){
+  .desktop-river-delta.rising{
+    color:#C66B16!important;
+    font-weight:650!important;
+  }
+  .desktop-river-delta.falling{
+    color:#1879B8!important;
+    font-weight:650!important;
+  }
+  .desktop-river-delta.stable{
+    color:#238A55!important;
+    font-weight:650!important;
+  }
+  .desktop-river-delta.unknown{
+    color:var(--v6-secondary)!important;
+  }
+}
