@@ -551,11 +551,38 @@ async function loadProfile(){
   if(error)throw error; state.profile=data||null;
 }
 
+function syncAdminVisibility(){
+  const allowed=state.isAdmin===true;
+  const desktopNav=$("#desktopAdminNav");
+  const profileEntry=$("#adminEntryBtn");
+
+  for(const el of [desktopNav,profileEntry]){
+    if(!el)continue;
+    el.hidden=!allowed;
+    el.setAttribute("aria-hidden",allowed?"false":"true");
+    if(allowed){
+      el.style.removeProperty("display");
+    }else{
+      el.style.setProperty("display","none","important");
+    }
+  }
+}
+
 async function loadAdminAccess(){
-  if(!state.user||state.user.is_anonymous===true){state.isAdmin=false;return false;}
+  if(!state.user||state.user.is_anonymous===true){
+    state.isAdmin=false;
+    syncAdminVisibility();
+    return false;
+  }
   const {data,error}=await db.from("app_admins").select("user_id").eq("user_id",state.user.id).maybeSingle();
-  if(error){console.warn("Admin check indisponível:",error);state.isAdmin=false;return false;}
+  if(error){
+    console.warn("Admin check indisponível:",error);
+    state.isAdmin=false;
+    syncAdminVisibility();
+    return false;
+  }
   state.isAdmin=!!data;
+  syncAdminVisibility();
   return state.isAdmin;
 }
 
@@ -2440,8 +2467,7 @@ function renderProfile(){
   const legacy=state.user?.is_anonymous===true;
   $("#profileView").innerHTML=`<div class="initials">${esc(initials)}</div><h2>${esc(p.first_name)} ${esc(p.last_name)}</h2><p>${esc(p.condominiums?.name||"")}</p><small>Casa/lote ${esc(p.house_or_lot)}</small><span class="profile-access-state">${legacy?"Acesso antigo • sem PIN":"Acesso com PIN"}</span>`;
   $("#upgradeLegacyBtn").hidden=!legacy;
-  if($("#adminEntryBtn"))$("#adminEntryBtn").hidden=!state.isAdmin;
-  if($("#desktopAdminNav"))$("#desktopAdminNav").hidden=!state.isAdmin;
+  syncAdminVisibility();
 }
 function locationById(id){return state.locations.find(l=>String(l.id)===String(id))||null;}
 function focusOccurrenceOnMap(id){
