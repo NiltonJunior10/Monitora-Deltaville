@@ -457,16 +457,15 @@ function renderDesktopRiverSummary(d,status,latest){
   }
 
   value.textContent=`${Number(latest.level_m).toFixed(2).replace(".",",")} m`;
-  const pts24=filterRiverSeries(d?.series||[],24);
-  const delta24=pts24.length>1?pts24[pts24.length-1].v-pts24[0].v:null;
-  if(delta24===null){
+  const delta1h=MonitoraCore.riverDelta(d?.series||[]);
+  if(delta1h===null){
     deltaEl.className="desktop-river-delta unknown";
-    deltaEl.textContent="Tendência indisponível";
+    deltaEl.textContent="Tendência 1h indisponível";
   }else{
-    const trendValue=Math.abs(delta24)<=0.02?"stable":delta24>0?"rising":"falling";
+    const trendValue=Math.abs(delta1h.value)<=0.02?"stable":delta1h.value>0?"rising":"falling";
     const trendLabel=trendValue==="rising"?"↑ Subindo":trendValue==="falling"?"↓ Baixando":"→ Estável";
     deltaEl.className=`desktop-river-delta ${trendValue}`;
-    deltaEl.textContent=`${trendLabel} • ${formatRiverDelta(delta24)} (24h)`;
+    deltaEl.textContent=`${trendLabel} • ${formatRiverDelta(delta1h.value)} (1h)`;
   }
   updated.textContent=`Última medição: ${formatRiverTime(latest.measured_at)}`;
   if(scaleMarker){
