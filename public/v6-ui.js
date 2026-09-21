@@ -204,7 +204,7 @@
   }
 
   const PRIMARY_TYPES=new Set([
-    "avenue_flooding","river_level","wind_no_damage","hail","tree_hazard","other_neighborhood_issue"
+    "avenue_flooding","river_level","wind_no_damage","hail","tree_hazard"
   ]);
 
   function setupTypeGrid(){
@@ -214,11 +214,14 @@
 
     const buttons=qa("[data-occ-type]",grid);
     const primary=buttons.filter(btn=>PRIMARY_TYPES.has(btn.dataset.occType));
-    const secondary=buttons.filter(btn=>!PRIMARY_TYPES.has(btn.dataset.occType));
+    const other=buttons.find(btn=>btn.dataset.occType==="other_neighborhood_issue");
+    const secondary=buttons.filter(btn=>
+      !PRIMARY_TYPES.has(btn.dataset.occType) &&
+      btn.dataset.occType!=="other_neighborhood_issue"
+    );
 
-    // Mantém as sugestões iniciais exatamente na frente.
-    // Ao abrir "todos", apenas acrescenta os demais depois delas.
-    [...primary,...secondary].forEach(btn=>{
+    // Mantém as sugestões iniciais na frente e "Outro problema" sempre por último.
+    [...primary,...secondary,...(other?[other]:[])].forEach(btn=>{
       btn.classList.toggle("v6-secondary-type",!PRIMARY_TYPES.has(btn.dataset.occType));
       grid.appendChild(btn);
     });
