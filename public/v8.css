@@ -1432,3 +1432,423 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 :root[data-theme="dark"] .desktop-community-note p strong{color:#EDF7FF!important}
 :root[data-theme="dark"] .desktop-community-note small{color:#87A5BC!important}
 :root[data-theme="dark"] .desktop-neighborhood-scene{opacity:.78!important}
+
+
+/* v7.0.18 — approved river monitor desktop redesign */
+@media(min-width:1180px){
+  .river-level-card{
+    padding:18px 20px 14px!important;
+    border:1px solid rgba(114,169,213,.18)!important;
+    border-radius:28px!important;
+    background:
+      linear-gradient(180deg,rgba(243,250,255,.94),rgba(247,252,255,.90))!important;
+    box-shadow:
+      0 18px 48px rgba(44,83,118,.065),
+      inset 0 1px 0 rgba(255,255,255,.92)!important;
+  }
+
+  .river-level-head{
+    min-height:46px!important;
+    margin:0 0 12px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:14px!important;
+  }
+  .river-level-title{
+    display:flex!important;
+    align-items:center!important;
+    gap:12px!important;
+  }
+  .river-title-icon{
+    width:42px!important;
+    height:42px!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:none!important;
+    border-radius:14px!important;
+    color:#0A84FF!important;
+    background:rgba(10,132,255,.09)!important;
+  }
+  .river-title-icon .ui-i{
+    width:24px!important;
+    height:24px!important;
+    stroke-width:2.15!important;
+  }
+  .river-level-head .kicker{display:none!important}
+  .river-level-head h2{
+    margin:0!important;
+    color:#112945!important;
+    font-size:20px!important;
+    line-height:1!important;
+    letter-spacing:-.035em!important;
+  }
+  .river-status-badge{
+    min-height:30px!important;
+    padding:0 13px!important;
+    border-radius:999px!important;
+    font-size:10px!important;
+    font-weight:720!important;
+  }
+
+  .river-level-body{
+    grid-template-columns:220px minmax(0,1fr)!important;
+    gap:16px!important;
+    margin-top:0!important;
+    align-items:stretch!important;
+  }
+
+  .river-level-primary{
+    min-height:330px!important;
+    padding:22px 20px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    border:1px solid rgba(255,255,255,.76)!important;
+    border-radius:24px!important;
+    background:
+      radial-gradient(circle at 18% 10%,rgba(48,209,88,.10),transparent 42%),
+      rgba(255,255,255,.72)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+  }
+  .river-primary-reading{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:end!important;
+    gap:8px!important;
+  }
+  .river-level-primary>strong{display:none!important}
+  .river-primary-reading>strong{
+    color:#10243C!important;
+    font-family:var(--v6-display)!important;
+    font-size:42px!important;
+    line-height:.98!important;
+    letter-spacing:-.055em!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  .river-trend{
+    align-self:end!important;
+    margin:0 0 4px!important;
+    padding:0!important;
+    background:transparent!important;
+    font-size:14px!important;
+    font-weight:760!important;
+  }
+  .river-trend::before{
+    content:"→";
+    margin-right:7px;
+    font-size:19px;
+    font-weight:500;
+  }
+  .river-trend.rising::before{content:"↑"}
+  .river-trend.falling::before{content:"↓"}
+
+  .river-primary-variation{
+    margin-top:28px!important;
+    padding-bottom:22px!important;
+    border-bottom:1px solid rgba(83,124,160,.12)!important;
+  }
+  .river-primary-variation>span,
+  .river-primary-updated>span{
+    display:block!important;
+    color:#243F5C!important;
+    font-size:12px!important;
+    font-weight:720!important;
+  }
+  #riverVariation{
+    display:block!important;
+    margin-top:5px!important;
+    color:#10243C!important;
+    font-size:22px!important;
+    line-height:1.08!important;
+    font-weight:760!important;
+    letter-spacing:-.03em!important;
+  }
+  .river-primary-updated{
+    margin-top:20px!important;
+  }
+  #riverUpdated{
+    display:block!important;
+    margin-top:6px!important;
+    color:#667E95!important;
+    font-size:11px!important;
+    line-height:1.45!important;
+  }
+
+  .river-chart-wrap{
+    min-width:0!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  .river-chart-head{
+    min-height:36px!important;
+    margin:0 0 8px!important;
+    padding:0 2px!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:space-between!important;
+  }
+  .river-chart-heading{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:2px!important;
+  }
+  .river-chart-heading b{
+    color:#1D3854!important;
+    font-size:13px!important;
+    font-weight:740!important;
+  }
+  .river-chart-heading small{
+    color:#6D8298!important;
+    font-size:10px!important;
+  }
+
+  .river-chart-summarybar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:12px!important;
+    align-items:stretch!important;
+    margin-bottom:10px!important;
+  }
+
+  .river-chart-metrics{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:10px!important;
+    margin:0!important;
+  }
+  .river-metric-card{
+    min-width:0!important;
+    min-height:80px!important;
+    padding:12px 14px!important;
+    display:grid!important;
+    grid-template-columns:36px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:10px!important;
+    border:1px solid rgba(96,145,188,.12)!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.72)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+  }
+  .river-metric-card>div{
+    min-width:0!important;
+  }
+  .river-metric-icon{
+    width:36px!important;
+    height:36px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:50%!important;
+    color:#0875D8!important;
+    background:rgba(10,132,255,.10)!important;
+    font-size:22px!important;
+    line-height:1!important;
+  }
+  .river-metric-icon.max{
+    color:#DF4251!important;
+    background:rgba(255,69,58,.10)!important;
+  }
+  .river-metric-icon.min{
+    color:#0875D8!important;
+    background:rgba(10,132,255,.10)!important;
+  }
+  #riverMetricDeltaCard[data-direction="rising"] .river-metric-icon{
+    color:#DF4251!important;background:rgba(255,69,58,.10)!important
+  }
+  #riverMetricDeltaCard[data-direction="falling"] .river-metric-icon{
+    color:#0875D8!important;background:rgba(10,132,255,.10)!important
+  }
+  #riverMetricDeltaCard[data-direction="stable"] .river-metric-icon{
+    color:#159447!important;background:rgba(48,209,88,.10)!important
+  }
+  .river-metric-card span:not(.river-metric-icon){
+    display:block!important;
+    color:#6A7F94!important;
+    font-size:10px!important;
+    font-weight:650!important;
+    white-space:nowrap!important;
+  }
+  .river-metric-card strong{
+    display:block!important;
+    margin-top:3px!important;
+    color:#10243C!important;
+    font-size:20px!important;
+    line-height:1!important;
+    font-weight:760!important;
+    white-space:nowrap!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  .river-metric-card small{
+    display:block!important;
+    margin-top:5px!important;
+    color:#778CA0!important;
+    font-size:9px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .river-chart-actions{
+    min-width:310px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:10px!important;
+    padding:8px 10px!important;
+    border:1px solid rgba(96,145,188,.10)!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.66)!important;
+  }
+  .river-window-chips{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:4px!important;
+    margin:0!important;
+  }
+  .river-window-chips button{
+    min-width:36px!important;
+    min-height:36px!important;
+    padding:0 9px!important;
+    border:1px solid rgba(88,128,165,.12)!important;
+    border-radius:999px!important;
+    background:rgba(245,249,252,.86)!important;
+    color:#2E4B67!important;
+    font-size:10px!important;
+    font-weight:720!important;
+  }
+  .river-window-chips button.active{
+    border-color:#0A84FF!important;
+    background:#0A84FF!important;
+    color:#fff!important;
+    box-shadow:0 6px 14px rgba(10,132,255,.22)!important;
+  }
+  .river-details-btn{
+    min-height:42px!important;
+    padding:0 14px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    border:1px solid rgba(10,132,255,.10)!important;
+    border-radius:14px!important;
+    color:#0869C5!important;
+    background:rgba(10,132,255,.08)!important;
+    text-decoration:none!important;
+    font-size:10px!important;
+    font-weight:740!important;
+    white-space:nowrap!important;
+  }
+  .river-details-btn .ui-i{
+    width:16px!important;
+    height:16px!important;
+  }
+
+  .river-chart{
+    min-height:250px!important;
+    height:250px!important;
+    overflow:hidden!important;
+    border:1px solid rgba(91,140,183,.14)!important;
+    border-radius:22px!important;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.82),rgba(247,251,255,.78))!important;
+  }
+  .river-chart svg{
+    width:100%!important;
+    height:250px!important;
+  }
+  .river-chart-inspector{
+    top:10px!important;
+    left:auto!important;
+    right:14px!important;
+    justify-content:flex-end!important;
+  }
+  .river-current-label{
+    border-color:rgba(10,132,255,.18)!important;
+    background:rgba(255,255,255,.96)!important;
+    color:#0876D9!important;
+  }
+  .river-chart-help{
+    right:14px!important;
+    bottom:7px!important;
+    color:#7C8FA3!important;
+    font-size:8px!important;
+  }
+  .river-grid-line{
+    stroke:rgba(107,139,166,.20)!important;
+    stroke-dasharray:4 7!important;
+  }
+  .river-chart-line{
+    stroke:#1681EF!important;
+    stroke-width:3.2!important;
+  }
+
+  .river-threshold-line{
+    stroke-width:1.4!important;
+    stroke-dasharray:6 7!important;
+    opacity:.75!important;
+  }
+  .river-threshold-line.attention{stroke:#E9A617!important}
+  .river-threshold-line.alert{stroke:#FF8A1F!important}
+  .river-threshold-line.critical{stroke:#F04455!important}
+  .river-threshold-label rect{
+    fill:rgba(255,255,255,.94)!important;
+    stroke-width:1!important;
+  }
+  .river-threshold-label text{
+    font:700 10px/1 var(--v6-font)!important;
+  }
+  .river-threshold-label.attention rect{stroke:#E9A617!important}
+  .river-threshold-label.attention text{fill:#BE7D00!important}
+  .river-threshold-label.alert rect{stroke:#FF8A1F!important}
+  .river-threshold-label.alert text{fill:#D96811!important}
+  .river-threshold-label.critical rect{stroke:#F04455!important}
+  .river-threshold-label.critical text{fill:#D63742!important}
+
+  .river-level-foot{
+    min-height:32px!important;
+    margin-top:10px!important;
+    padding:0 4px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    color:#6D8298!important;
+    font-size:9px!important;
+  }
+  .river-freshness-wrap{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:6px!important;
+  }
+  .river-freshness-wrap>i{
+    color:#6A89A5!important;
+    font-size:15px!important;
+    font-style:normal!important;
+  }
+  .river-level-foot a{
+    color:#0871DF!important;
+    font-weight:760!important;
+  }
+}
+
+/* Preserve o módulo mobile como já estava. */
+@media(max-width:1179px){
+  .river-title-icon,
+  .river-details-btn,
+  .river-metric-icon,
+  .river-chart-summarybar{
+    /* O summarybar precisa continuar existindo; apenas volta a layout simples. */
+  }
+  .river-level-title{display:block!important}
+  .river-title-icon{display:none!important}
+  .river-chart-summarybar{display:contents!important}
+  .river-chart-actions{display:contents!important}
+  .river-details-btn{display:none!important}
+  .river-metric-icon{display:none!important}
+  .river-metric-card{display:block!important}
+  .river-primary-reading,
+  .river-primary-variation,
+  .river-primary-updated{display:contents!important}
+  .river-primary-variation>span,
+  .river-primary-updated>span{display:none!important}
+}
