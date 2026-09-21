@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=735">
+  <link rel="stylesheet" href="v8.css?v=736">
   <link rel="stylesheet" href="river-desktop.css?v=720">
   <link rel="stylesheet" href="sidebar-desktop.css?v=725">
   <script src="theme-init.js?v=702"></script>
@@ -116,7 +116,7 @@
         </div>
         <p>Juntos por um<br><strong>Deltaville mais seguro</strong><br>e bem cuidado.</p>
         <span class="desktop-community-accent" aria-hidden="true"></span>
-        <small>Monitora Deltaville<br>v7.0.35</small>
+        <small>Monitora Deltaville<br>v7.0.36</small>
       </div>
     </aside>
     <header class="topbar">
@@ -173,33 +173,43 @@
         <button type="button" class="desktop-weather-close" id="desktopWeatherClose" aria-label="Fechar previsão">×</button>
       </div>
 
+      <div class="desktop-weather-alerts" id="desktopWeatherAlerts" aria-live="polite">
+        <div class="desktop-weather-alerts-title">
+          <span>Alertas da previsão</span>
+          <small>Próximas 6 horas</small>
+        </div>
+        <div class="desktop-weather-alert-list" id="desktopWeatherAlertList">
+          <span class="desktop-weather-alert-clear">Sem alertas meteorológicos no momento.</span>
+        </div>
+      </div>
+
       <div class="desktop-weather-panel-grid">
-        <article>
+        <article class="weather-metric-card tone-temp" id="desktopWeatherTempCard">
           <small>Temperatura agora</small>
           <strong id="desktopWeatherTemp">—</strong>
           <span id="desktopWeatherFeels">Sensação —</span>
         </article>
-        <article>
+        <article class="weather-metric-card tone-rain" id="desktopWeatherRainCard">
           <small>Chuva • próximas 6h</small>
           <strong id="desktopWeatherRain">—</strong>
           <span id="desktopWeatherChance">Chance —</span>
         </article>
-        <article>
+        <article class="weather-metric-card tone-hail" id="desktopWeatherHailCard">
           <small>Granizo • próximas 6h</small>
           <strong id="desktopWeatherHail">—</strong>
           <span id="desktopWeatherHailDetail">Aguardando previsão</span>
         </article>
-        <article>
+        <article class="weather-metric-card tone-wind" id="desktopWeatherWindCard">
           <small>Rajadas • próximas 6h</small>
           <strong id="desktopWeatherWind6h">—</strong>
           <span id="desktopWeatherWindStatus">Aguardando previsão</span>
         </article>
-        <article>
+        <article class="weather-metric-card tone-rain-now" id="desktopWeatherRainNowCard">
           <small>Chuva agora</small>
           <strong id="desktopWeatherNowRain">—</strong>
           <span id="desktopWeatherHumidity">Umidade —</span>
         </article>
-        <article>
+        <article class="weather-metric-card tone-today" id="desktopWeatherTodayCard">
           <small>Hoje</small>
           <strong id="desktopWeatherMinMax">—</strong>
           <span id="desktopWeatherWind">Vento agora —</span>
@@ -1262,7 +1272,7 @@
   <script src="stability-core.js?v=702"></script>
   <script src="auth.js?v=702"></script>
   <script src="river.js?v=734"></script>
-  <script src="weather.js?v=735"></script>
+  <script src="weather.js?v=736"></script>
   <script src="push.js?v=702"></script>
   <script src="app.js?v=713"></script>
   <script src="v6-ui.js?v=707"></script>
