@@ -3563,3 +3563,52 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     border-color:rgba(255,255,255,.11)!important;
   }
 }
+
+
+/* v7.0.51 — report select option contrast */
+#reportModal #avenueCondition{
+  color:#16324F!important;
+  background:#FFFFFF!important;
+  -webkit-text-fill-color:#16324F!important;
+  color-scheme:light!important;
+}
+
+#reportModal #avenueCondition option,
+#reportModal #avenueCondition optgroup{
+  color:#16324F!important;
+  background:#FFFFFF!important;
+  -webkit-text-fill-color:#16324F!important;
+  opacity:1!important;
+}
+
+#reportModal #avenueCondition option:checked{
+  color:#0B63CE!important;
+  background:#EAF3FF!important;
+  -webkit-text-fill-color:#0B63CE!important;
+}
+
+#reportModal #avenueCondition option:hover,
+#reportModal #avenueCondition option:focus{
+  color:#16324F!important;
+  background:#EAF3FF!important;
+  -webkit-text-fill-color:#16324F!important;
+}
+
+#reportModal #avenueCondition option[value=""]{
+  color:#65778A!important;
+  -webkit-text-fill-color:#65778A!important;
+}
+
+:root[data-theme="dark"] #reportModal #avenueCondition{
+  color:#EEF5FC!important;
+  background:#102032!important;
+  -webkit-text-fill-color:#EEF5FC!important;
+  color-scheme:dark!important;
+}
+
+:root[data-theme="dark"] #reportModal #avenueCondition option,
+:root[data-theme="dark"] #reportModal #avenueCondition optgroup{
+  color:#EEF5FC!important;
+  background:#102032!important;
+  -webkit-text-fill-color:#EEF5FC!important;
+}
