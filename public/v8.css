@@ -604,3 +604,129 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     gap:12px!important;
   }
 }
+
+
+/* v7.0.9 — desktop home final polish */
+@media(min-width:1180px){
+  /* O banner promocional não faz parte da home final. */
+  .desktop-home-hero{display:none!important}
+
+  /* Mais espaço para mapa e uma coluna de ocorrências deliberadamente estreita. */
+  .page[data-page="home"].active{
+    grid-template-columns:minmax(0,1fr) 320px!important;
+    grid-template-areas:
+      "kpis action"
+      "river river"
+      "map events"
+      "bottom bottom"!important;
+    gap:12px!important;
+  }
+
+  /* Cabeçalho com altura suficiente para clima, chuva, alertas e perfil sem recorte. */
+  .topbar{
+    height:100px!important;
+    min-height:100px!important;
+    padding:12px 14px!important;
+    grid-template-columns:minmax(230px,1fr) minmax(320px,440px) minmax(190px,auto)!important;
+    gap:14px!important;
+    align-items:center!important;
+    overflow:visible!important;
+  }
+  .topbar>*{min-width:0!important}
+  .top-weather{
+    min-height:68px!important;
+    overflow:visible!important;
+  }
+  .top-weather-main{min-width:0!important}
+  .top-weather-summary{
+    display:block!important;
+    max-width:100%!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:normal!important;
+    line-height:1.2!important;
+  }
+  .desktop-account{min-width:190px!important}
+  .desktop-account-copy{min-width:0!important}
+  .desktop-account-copy b,
+  .desktop-account-copy small{
+    display:block!important;
+    max-width:126px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  main{height:calc(100vh - 132px)!important}
+
+  /* Situação da comunidade: mesma linguagem semântica de cor do mobile. */
+  .desktop-kpi-status{
+    --desktop-status:#30D158;
+    border-color:color-mix(in srgb,var(--desktop-status) 28%,rgba(255,255,255,.72))!important;
+    background:
+      radial-gradient(circle at 0 0,color-mix(in srgb,var(--desktop-status) 15%,transparent),transparent 62%),
+      rgba(250,253,255,.70)!important;
+    transition:background .25s ease,border-color .25s ease,color .25s ease!important;
+  }
+  .desktop-kpi-status[data-state="normal"]{--desktop-status:#30D158}
+  .desktop-kpi-status[data-state="attention"]{--desktop-status:#D2A000}
+  .desktop-kpi-status[data-state="alert"]{--desktop-status:#FF8A1F}
+  .desktop-kpi-status[data-state="critical"]{--desktop-status:#FF453A}
+  .desktop-kpi-status[data-state="unknown"]{--desktop-status:#8E8E93}
+
+  .desktop-kpi-status .desktop-kpi-shield{
+    color:var(--desktop-status)!important;
+    background:color-mix(in srgb,var(--desktop-status) 14%,transparent)!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  .desktop-kpi-status .desktop-kpi-shield .ui-i{
+    stroke:currentColor!important;
+    fill:none!important;
+  }
+  .desktop-kpi-status #desktopOverallStatus{
+    color:var(--desktop-status)!important;
+  }
+
+  /* Ocorrências: card compacto, sem pictograma redundante. */
+  .desktop-kpi-occurrences{
+    min-width:0!important;
+    padding:10px 13px!important;
+  }
+  .desktop-occurrence-action{padding:0 9px!important}
+
+  /* Coluna lateral de ocorrências mais estreita e harmoniosa. */
+  .home-events-section{
+    width:100%!important;
+    min-height:410px!important;
+    max-height:410px!important;
+    padding:12px!important;
+    border-radius:22px!important;
+  }
+  .home-events-section .section-head{margin-bottom:8px!important}
+  .home-events-section .event-card{
+    padding:11px 12px!important;
+    border-radius:16px!important;
+  }
+
+  /* Rio Biguaçu permanece acima do mapa e ocupa a largura útil. */
+  .river-level-card{
+    margin:0!important;
+    padding:14px 16px!important;
+  }
+}
+
+@media(min-width:1500px){
+  .page[data-page="home"].active{
+    grid-template-columns:minmax(0,1fr) 340px!important;
+  }
+}
+
+:root[data-theme="dark"] .desktop-kpi-status{
+  background:
+    radial-gradient(circle at 0 0,color-mix(in srgb,var(--desktop-status) 16%,transparent),transparent 62%),
+    rgba(22,28,36,.72)!important;
+  border-color:color-mix(in srgb,var(--desktop-status) 28%,rgba(255,255,255,.08))!important;
+}
+:root[data-theme="dark"] .desktop-kpi-status .desktop-kpi-shield{
+  background:color-mix(in srgb,var(--desktop-status) 17%,transparent)!important;
+}
