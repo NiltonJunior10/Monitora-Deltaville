@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=711">
+  <link rel="stylesheet" href="v8.css?v=712">
   <script src="theme-init.js?v=702"></script>
   <title>Monitora Deltaville</title>
 </head>
@@ -113,10 +113,14 @@
       <div class="desktop-sidebar-spacer"></div>
       <div class="desktop-community-note">
         <div class="desktop-arches" aria-hidden="true">
-          <i></i><i></i><i></i>
+          <svg viewBox="0 0 150 72" focusable="false">
+            <path class="arch arch-left" d="M10 61 C15 25 41 17 62 61"/>
+            <path class="arch arch-center" d="M50 61 C54 10 76 6 83 61"/>
+            <path class="arch arch-right" d="M69 61 C80 19 119 18 141 61"/>
+          </svg>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v7.0.11</small>
+        <small>Monitora Deltaville<br>v7.0.12</small>
       </div>
     </aside>
     <header class="topbar">
@@ -430,7 +434,13 @@
               <i class="desktop-river-scale-fill"></i>
               <b id="desktopRiverScaleMarker"></b>
             </span>
-            <span class="desktop-river-scale-labels" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4 m</i></span>
+            <span class="desktop-river-scale-labels" aria-hidden="true">
+              <i style="--x:0%">0</i>
+              <i class="normal-start" style="--x:17.5%">0,7</i>
+              <i class="normal-end" style="--x:25%">1,0</i>
+              <i style="--x:50%">2</i>
+              <i class="critical-mark" style="--x:100%">4 m</i>
+            </span>
             <span class="desktop-river-footline">
               <span id="desktopRiverUpdated">Última medição: —</span>
             </span>
