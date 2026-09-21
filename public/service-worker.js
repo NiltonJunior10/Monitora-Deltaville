@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v722-ios27";
+const CACHE="monitora-deltaville-v723-ios27";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -11,7 +11,7 @@ const APP_SHELL=[
   "./v6.css?v=704",
   "./v8.css?v=722",
   "./river-desktop.css?v=720",
-  "./sidebar-desktop.css?v=722",
+  "./sidebar-desktop.css?v=723",
   "./auth.js?v=702",
   "./river.js?v=720",
   "./weather.js?v=702",
@@ -28,7 +28,7 @@ const APP_SHELL=[
   "./assets/icon-512.png",
   "./assets/mapa-deltaville-clean.webp",
   "./assets/mapa-entorno-fade.webp",
-  "./assets/sidebar-deltaville-v722.svg",
+  "./assets/sidebar-deltaville-v723.svg",
 ];
 
 self.addEventListener("install",event=>{
