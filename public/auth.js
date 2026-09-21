@@ -86,6 +86,7 @@ async function applyReturnedSession(session){
   state.user=data.user;
   await loadLookups();
   await loadProfile();
+  await loadAdminAccess();
   await startSignedInApp();
 }
 async function handleLogin(e){
