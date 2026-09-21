@@ -1241,12 +1241,68 @@ function renderSelectedSegmentLayers(){
   syncHandle('end',endHandle);
   state.segmentSelectionLayers.push(halo,band,wave,startHandle,endHandle);
 }
+function positionSelectedSegmentAction(){
+  const action=$("#selectedSegmentAction");
+  const map=state.maps.full;
+  const seg=state.selectedSegment;
+  if(!action||!map||!seg||action.hidden)return;
+
+  const pts=avenuePointsByLocationId(seg.avenueId);
+  if(!pts)return;
+  const mid=selectedSegmentMidpoint(pts,seg);
+  const point=map.latLngToContainerPoint(L.latLng(mid[0],mid[1]));
+  const mapEl=map.getContainer();
+
+  requestAnimationFrame(()=>{
+    if(action.hidden||!state.selectedSegment)return;
+
+    const mapRect=mapEl.getBoundingClientRect();
+    const width=action.offsetWidth||360;
+    const height=action.offsetHeight||92;
+    const margin=16;
+    const gap=18;
+    const safeTop=126;
+    const safeBottom=18;
+
+    let left=point.x+gap;
+    let side="right";
+    if(left+width>mapRect.width-margin){
+      left=point.x-width-gap;
+      side="left";
+    }
+    left=Math.max(margin,Math.min(left,mapRect.width-width-margin));
+
+    let top=point.y-height-gap;
+    let vertical="above";
+    if(top<safeTop){
+      top=point.y+gap;
+      vertical="below";
+    }
+    if(top+height>mapRect.height-safeBottom){
+      top=Math.max(safeTop,point.y-height-gap);
+      vertical="above";
+    }
+    top=Math.max(safeTop,Math.min(top,mapRect.height-height-safeBottom));
+
+    action.style.left=`${Math.round(left)}px`;
+    action.style.top=`${Math.round(top)}px`;
+    action.dataset.anchorSide=side;
+    action.dataset.anchorVertical=vertical;
+  });
+}
+
 function updateSegmentUI(){
   const has=!!state.selectedSegment;
   if($('#clearSegmentBtn')) $('#clearSegmentBtn').hidden=!has;
-  if($('#selectedSegmentActionTitle')) $('#selectedSegmentActionTitle').textContent=has?'Trecho marcado':'Trecho marcado';
-  if($('#selectedSegmentActionText')) $('#selectedSegmentActionText').textContent=state.segmentPickMode?.active?'Toque no início e no fim':'Pronto para registrar';
+
+  const loc=has?avenueLocationById(state.selectedSegment.avenueId):null;
+  if($('#selectedSegmentActionTitle')) $('#selectedSegmentActionTitle').textContent=loc?.name||'Trecho selecionado';
+  if($('#selectedSegmentActionText')) $('#selectedSegmentActionText').textContent=state.segmentPickMode?.active
+    ?'Selecione o início e o fim do trecho'
+    :'Trecho selecionado • arraste as alças para ajustar';
+
   syncMapBottomUI();
+  if(has&&!state.segmentPickMode?.active)requestAnimationFrame(positionSelectedSegmentAction);
 }
 function startSegmentPickFromReport(){
   const ids=state.reportLocationIds.filter(id=>id!=="other");
@@ -1412,7 +1468,7 @@ function bindMapPointSelection(){
         wrap:false
       };
       if(!state.reportLocationIds.includes(avenue.loc.id))state.reportLocationIds.push(avenue.loc.id);
-      if($("#selectedSegmentAction"))$("#selectedSegmentAction").hidden=false;
+      if($("#selectedSegmentAction"))$("#selectedSegmentAction").hidden=true;
       if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=avenue.loc.name;
       if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Arraste pela via";
       try{navigator.vibrate?.(18);}catch(_){}
@@ -1438,7 +1494,8 @@ function bindMapPointSelection(){
         renderSelectedSegmentLayers();
         updateSegmentUI();
         if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=gesture.avenue.loc.name;
-        if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Trecho delimitado • ajuste pelas alças";
+        if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Trecho selecionado • arraste as alças para ajustar";
+        requestAnimationFrame(positionSelectedSegmentAction);
         toast(`Trecho marcado em ${gesture.avenue.loc.name}.`);
         try{navigator.vibrate?.([12,24,12]);}catch(_){}
       }else{
@@ -2026,6 +2083,7 @@ function bindMapUX(){
     $("#mapLegendBtn")?.classList.remove("active");
   });
   $("#mapFocusCloseBtn")?.addEventListener("click",hideMapFocusCard);
+  state.maps.full?.on("move zoom resize",()=>positionSelectedSegmentAction());
   $("#mapFocusReportBtn")?.addEventListener("click",()=>{
     const item=state.activeMapItem;
     openReport("map");
@@ -3604,6 +3662,14 @@ $("#goPickPointBtn")?.addEventListener("click",()=>{closeModal("reportModal");na
 $("#segmentPickBtn")?.addEventListener("click",startSegmentPickFromReport);
 $("#clearSegmentBtn")?.addEventListener("click",()=>{clearSegmentSelection();updateReportReadyState();});
 $("#clearMapSegmentBtn")?.addEventListener("click",()=>clearSegmentSelection());
+$("#adjustMapSegmentBtn")?.addEventListener("click",()=>{
+  if(!state.selectedSegment)return;
+  const action=$("#selectedSegmentAction");
+  action?.classList.add("adjusting");
+  if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Arraste as alças azuis nas pontas do trecho";
+  requestAnimationFrame(positionSelectedSegmentAction);
+  setTimeout(()=>action?.classList.remove("adjusting"),900);
+});
 $("#clearMapPointBtn").addEventListener("click",()=>clearSelectedPoint());
 $("#clearReportPointBtn")?.addEventListener("click",()=>clearSelectedPoint());
 $("#deleteOccurrenceBtn").addEventListener("click",deleteEditingOccurrence);
