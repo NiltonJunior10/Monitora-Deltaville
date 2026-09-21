@@ -3356,3 +3356,29 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     color:#B3BAC4!important;
   }
 }
+
+
+/* v7.0.43 — single contextual segment popup */
+@media(min-width:1180px) and (pointer:fine){
+  /* A ação de trecho deixa definitivamente de se comportar como bottom bar. */
+  body.map-open [data-page="map"] #selectedSegmentAction.map-bottom-action{
+    right:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+  }
+
+  /* Durante a seleção, nenhuma caixa antiga/tooltip concorre com o popup final. */
+  #fullMap.road-drag-selecting ~ #selectedSegmentAction,
+  body.map-open [data-page="map"] #selectedSegmentAction[hidden]{
+    display:none!important;
+  }
+
+  /* Quando já existe um trecho, o tooltip instrutivo da avenida não deve ficar aberto. */
+  body.map-open [data-page="map"] #fullMap:has(+ .desktop-map-zoom-hint) .avenue-action-tooltip{
+    pointer-events:none!important;
+  }
+
+  body.map-open [data-page="map"] #selectedSegmentAction{
+    max-width:340px!important;
+  }
+}
