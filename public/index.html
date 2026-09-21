@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=704">
+  <link rel="stylesheet" href="v8.css?v=708">
   <script src="theme-init.js?v=702"></script>
   <title>Monitora Deltaville</title>
 </head>
@@ -112,11 +112,11 @@
 
       <div class="desktop-sidebar-spacer"></div>
       <div class="desktop-community-note">
-        <div class="desktop-hills" aria-hidden="true">
+        <div class="desktop-arches" aria-hidden="true">
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v7.0.7</small>
+        <small>Monitora Deltaville<br>v7.0.8</small>
       </div>
     </aside>
     <header class="topbar">
@@ -453,30 +453,22 @@
         </section>
 
         <section class="desktop-kpi-row" aria-label="Resumo da comunidade">
-          <article class="desktop-kpi desktop-kpi-status">
+          <button type="button" class="desktop-kpi desktop-kpi-status" data-nav="alerts" aria-label="Abrir avisos da situação da comunidade">
             <span class="desktop-kpi-shield" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-shield-check"/></svg></span>
             <div>
               <small>Situação da comunidade</small>
               <strong id="desktopOverallStatus">Verificando dados</strong>
               <p id="desktopStatusReason">Consultando relatos da comunidade.</p>
             </div>
-          </article>
-          <article class="desktop-kpi metric-active">
-            <span class="desktop-kpi-icon blue" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-list"/></svg></span>
-            <div><strong id="desktopOccurrenceCount">0</strong><small>Ocorrências ativas</small></div>
-          </article>
-          <article class="desktop-kpi metric-attention">
-            <span class="desktop-kpi-icon attention" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span>
-            <div><strong id="topAttentionCount">0</strong><small>Atenção</small></div>
-          </article>
-          <article class="desktop-kpi metric-alert">
-            <span class="desktop-kpi-icon alert" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span>
-            <div><strong id="topAlertCount">0</strong><small>Alerta</small></div>
-          </article>
-          <article class="desktop-kpi metric-critical">
-            <span class="desktop-kpi-icon critical" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-octagon-alert"/></svg></span>
-            <div><strong id="topCriticalCount">0</strong><small>Crítico</small></div>
-          </article>
+            <span class="desktop-kpi-action">Ver avisos <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg></span>
+          </button>
+          <button type="button" class="desktop-kpi desktop-kpi-occurrences" data-nav="alerts" aria-label="Abrir ocorrências ativas">
+            <div class="desktop-occurrence-copy">
+              <small>Ocorrências ativas</small>
+              <strong id="desktopOccurrenceCount">0</strong>
+            </div>
+            <span class="desktop-occurrence-action">Ver ocorrências <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></span>
+          </button>
         </section>
 
         <button class="primary wide" id="homeReport">
@@ -515,17 +507,6 @@
         </section>
 
         <section class="desktop-bottom-grid">
-          <article class="desktop-summary-card desktop-severity-card">
-            <div class="desktop-card-head">
-              <div><span class="desktop-card-icon bars"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-bars"/></svg></span><b>Alertas por grau</b></div>
-            </div>
-            <div class="desktop-severity-grid">
-              <div class="attention"><span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-info"/></svg></span><b id="desktopAttentionCount">0</b><small>Atenção</small></div>
-              <div class="alert"><span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg></span><b id="desktopAlertSeverityCount">0</b><small>Alerta</small></div>
-              <div class="critical"><span><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-octagon-alert"/></svg></span><b id="desktopCriticalSeverityCount">0</b><small>Crítico</small></div>
-            </div>
-          </article>
-
           <article class="desktop-summary-card desktop-recent-card">
             <div class="desktop-card-head">
               <div><span class="desktop-card-icon"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-list"/></svg></span><b>Ocorrências recentes</b></div>
