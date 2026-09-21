@@ -551,20 +551,54 @@ async function loadProfile(){
   if(error)throw error; state.profile=data||null;
 }
 
+function createDesktopAdminNav(){
+  const nav=document.querySelector(".desktop-nav");
+  if(!nav)return null;
+
+  let btn=$("#desktopAdminNav");
+  if(btn)return btn;
+
+  btn=document.createElement("button");
+  btn.type="button";
+  btn.id="desktopAdminNav";
+  btn.className="desktop-nav-item";
+  btn.dataset.nav="admin";
+  btn.setAttribute("aria-label","Abrir Administração");
+  btn.innerHTML=`
+    <span class="desktop-nav-icon">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3 5 6v5c0 4.7 2.8 8.2 7 10 4.2-1.8 7-5.3 7-10V6Z"></path>
+        <path d="M9 12h6M12 9v6"></path>
+      </svg>
+    </span>
+    <b>Administração</b>
+  `;
+
+  const theme=$("#themeToggleDesktop");
+  nav.insertBefore(btn,theme||null);
+  return btn;
+}
+
 function syncAdminVisibility(){
   const allowed=state.isAdmin===true;
-  const desktopNav=$("#desktopAdminNav");
   const profileEntry=$("#adminEntryBtn");
 
-  for(const el of [desktopNav,profileEntry]){
-    if(!el)continue;
-    el.hidden=!allowed;
-    el.setAttribute("aria-hidden",allowed?"false":"true");
-    if(allowed){
-      el.style.removeProperty("display");
-    }else{
-      el.style.setProperty("display","none","important");
+  if(allowed){
+    const desktopNav=createDesktopAdminNav();
+    if(desktopNav){
+      desktopNav.hidden=false;
+      desktopNav.setAttribute("aria-hidden","false");
+      desktopNav.style.removeProperty("display");
     }
+  }else{
+    $("#desktopAdminNav")?.remove();
+  }
+
+  if(profileEntry){
+    profileEntry.hidden=!allowed;
+    profileEntry.setAttribute("aria-hidden",allowed?"false":"true");
+    if(allowed)profileEntry.style.removeProperty("display");
+    else profileEntry.style.setProperty("display","none","important");
   }
 }
 
