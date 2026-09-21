@@ -3382,3 +3382,27 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     max-width:340px!important;
   }
 }
+
+
+/* v7.0.45 — single-click neutral + popup beside selection */
+@media(min-width:1180px) and (pointer:fine){
+  body.map-open [data-page="map"] #selectedSegmentAction[data-anchor-vertical="center"]::after{
+    top:50%!important;
+    bottom:auto!important;
+    margin-top:-7px!important;
+  }
+
+  body.map-open [data-page="map"] #selectedSegmentAction[data-anchor-side="right"][data-anchor-vertical="center"]::after{
+    left:-8px!important;
+    right:auto!important;
+    border-top:0!important;
+    border-right:0!important;
+  }
+
+  body.map-open [data-page="map"] #selectedSegmentAction[data-anchor-side="left"][data-anchor-vertical="center"]::after{
+    right:-8px!important;
+    left:auto!important;
+    border-bottom:0!important;
+    border-left:0!important;
+  }
+}
