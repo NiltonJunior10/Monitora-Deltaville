@@ -399,6 +399,10 @@
     if(q("#reportModal")?.hidden===false){
       showReportStep(1);
       setupTypeGrid();
+      const grid=q("#typeChips");
+      if(grid)grid.classList.remove("v6-show-all");
+      const more=q(".v6-more-types");
+      if(more)more.textContent="Ver todos os tipos";
       setTimeout(refreshReportWizard,0);
     }
   }
