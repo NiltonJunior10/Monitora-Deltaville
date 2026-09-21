@@ -1,0 +1,387 @@
+/* Monitora Deltaville — River desktop override v7.0.19
+   Carregado por ultimo para garantir o layout aprovado do monitor do Rio Biguacu.
+   Nao altera o mobile.
+*/
+@media (min-width:900px) and (pointer:fine){
+  .page[data-page="home"] #riverLevelCard{
+    box-sizing:border-box!important;
+    width:100%!important;
+    padding:18px 20px 14px!important;
+    border:1px solid rgba(114,169,213,.18)!important;
+    border-radius:28px!important;
+    background:linear-gradient(180deg,rgba(243,250,255,.96),rgba(247,252,255,.92))!important;
+    box-shadow:0 18px 48px rgba(44,83,118,.07),inset 0 1px 0 rgba(255,255,255,.94)!important;
+    overflow:hidden!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-level-head{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    min-height:48px!important;
+    margin:0 0 14px!important;
+    padding:0!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-level-title{
+    display:flex!important;
+    align-items:center!important;
+    gap:12px!important;
+    min-width:0!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-level-title .kicker{display:none!important}
+  .page[data-page="home"] #riverLevelCard .river-title-icon{
+    display:grid!important;
+    place-items:center!important;
+    width:42px!important;
+    height:42px!important;
+    flex:0 0 42px!important;
+    border-radius:14px!important;
+    color:#0A84FF!important;
+    background:rgba(10,132,255,.10)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-title-icon .ui-i{
+    width:24px!important;
+    height:24px!important;
+    stroke-width:2.2!important;
+  }
+  .page[data-page="home"] #riverLevelCard #riverLevelTitle{
+    margin:0!important;
+    color:#0F2742!important;
+    font-size:21px!important;
+    line-height:1!important;
+    font-weight:760!important;
+    letter-spacing:-.035em!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-status-badge{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:30px!important;
+    padding:0 13px!important;
+    border-radius:999px!important;
+    font-size:10px!important;
+    font-weight:720!important;
+    white-space:nowrap!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-level-body{
+    display:grid!important;
+    grid-template-columns:220px minmax(0,1fr)!important;
+    gap:16px!important;
+    align-items:stretch!important;
+    margin:0!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-level-primary{
+    box-sizing:border-box!important;
+    min-width:0!important;
+    min-height:334px!important;
+    padding:22px 20px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    border:1px solid rgba(255,255,255,.80)!important;
+    border-radius:24px!important;
+    background:
+      radial-gradient(circle at 20% 8%,rgba(48,209,88,.10),transparent 44%),
+      rgba(255,255,255,.76)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-primary-reading{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:8px!important;
+    align-items:end!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-primary-reading #riverLevelValue{
+    display:block!important;
+    margin:0!important;
+    color:#0E2239!important;
+    font-size:42px!important;
+    line-height:.98!important;
+    font-weight:780!important;
+    letter-spacing:-.055em!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-primary-reading #riverTrend{
+    align-self:end!important;
+    margin:0 0 4px!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    font-size:14px!important;
+    line-height:1!important;
+    font-weight:760!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-primary-variation{
+    margin-top:28px!important;
+    padding-bottom:22px!important;
+    border-bottom:1px solid rgba(65,105,142,.12)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-primary-variation>span,
+  .page[data-page="home"] #riverLevelCard .river-primary-updated>span{
+    display:block!important;
+    margin:0!important;
+    color:#29445F!important;
+    font-size:12px!important;
+    line-height:1.15!important;
+    font-weight:720!important;
+  }
+  .page[data-page="home"] #riverLevelCard #riverVariation{
+    display:block!important;
+    margin:6px 0 0!important;
+    color:#0E2239!important;
+    font-size:22px!important;
+    line-height:1.08!important;
+    font-weight:780!important;
+    letter-spacing:-.03em!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-primary-updated{
+    margin-top:20px!important;
+  }
+  .page[data-page="home"] #riverLevelCard #riverUpdated{
+    display:block!important;
+    margin:6px 0 0!important;
+    color:#6F8499!important;
+    font-size:11px!important;
+    line-height:1.45!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-chart-wrap{
+    min-width:0!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-head{
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:space-between!important;
+    min-height:36px!important;
+    margin:0 0 8px!important;
+    padding:0 2px!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-heading{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:2px!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-heading b{
+    color:#1D3854!important;
+    font-size:13px!important;
+    font-weight:740!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-heading small{
+    color:#6D8298!important;
+    font-size:10px!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-chart-summarybar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:12px!important;
+    align-items:stretch!important;
+    margin:0 0 10px!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-metrics{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:10px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-metric-card{
+    box-sizing:border-box!important;
+    min-width:0!important;
+    min-height:82px!important;
+    padding:12px 14px!important;
+    display:grid!important;
+    grid-template-columns:36px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:10px!important;
+    border:1px solid rgba(96,145,188,.12)!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.76)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-metric-card>div{min-width:0!important}
+  .page[data-page="home"] #riverLevelCard .river-metric-icon{
+    display:grid!important;
+    place-items:center!important;
+    width:36px!important;
+    height:36px!important;
+    border-radius:50%!important;
+    color:#0875D8!important;
+    background:rgba(10,132,255,.10)!important;
+    font-size:22px!important;
+    line-height:1!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-metric-icon.max{
+    color:#DF4251!important;
+    background:rgba(255,69,58,.10)!important;
+  }
+  .page[data-page="home"] #riverLevelCard #riverMetricDeltaCard[data-direction="stable"] .river-metric-icon{
+    color:#159447!important;
+    background:rgba(48,209,88,.10)!important;
+  }
+  .page[data-page="home"] #riverLevelCard #riverMetricDeltaCard[data-direction="rising"] .river-metric-icon{
+    color:#DF4251!important;
+    background:rgba(255,69,58,.10)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-metric-card span:not(.river-metric-icon){
+    display:block!important;
+    color:#6A7F94!important;
+    font-size:10px!important;
+    line-height:1.1!important;
+    font-weight:650!important;
+    white-space:nowrap!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-metric-card strong{
+    display:block!important;
+    margin:4px 0 0!important;
+    color:#10243C!important;
+    font-size:20px!important;
+    line-height:1!important;
+    font-weight:780!important;
+    white-space:nowrap!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-metric-card small{
+    display:block!important;
+    margin:5px 0 0!important;
+    color:#778CA0!important;
+    font-size:9px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-chart-actions{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:10px!important;
+    min-width:314px!important;
+    padding:8px 10px!important;
+    border:1px solid rgba(96,145,188,.10)!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.70)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-window-chips{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:4px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-window-chips button{
+    box-sizing:border-box!important;
+    min-width:36px!important;
+    min-height:36px!important;
+    padding:0 9px!important;
+    border:1px solid rgba(88,128,165,.14)!important;
+    border-radius:999px!important;
+    background:rgba(245,249,252,.90)!important;
+    color:#2E4B67!important;
+    font-size:10px!important;
+    line-height:1!important;
+    font-weight:720!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-window-chips button.active{
+    border-color:#0A84FF!important;
+    background:#0A84FF!important;
+    color:#fff!important;
+    box-shadow:0 6px 14px rgba(10,132,255,.22)!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-details-btn{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    min-height:42px!important;
+    padding:0 14px!important;
+    border:1px solid rgba(10,132,255,.10)!important;
+    border-radius:14px!important;
+    color:#0869C5!important;
+    background:rgba(10,132,255,.08)!important;
+    text-decoration:none!important;
+    font-size:10px!important;
+    font-weight:740!important;
+    white-space:nowrap!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-details-btn .ui-i{
+    width:16px!important;
+    height:16px!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-chart{
+    position:relative!important;
+    box-sizing:border-box!important;
+    min-height:250px!important;
+    height:250px!important;
+    overflow:hidden!important;
+    border:1px solid rgba(91,140,183,.14)!important;
+    border-radius:22px!important;
+    background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(247,251,255,.82))!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart svg{
+    display:block!important;
+    width:100%!important;
+    height:250px!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-inspector{
+    top:10px!important;
+    left:auto!important;
+    right:14px!important;
+    justify-content:flex-end!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-chart-help{
+    right:14px!important;
+    bottom:7px!important;
+    font-size:8px!important;
+  }
+
+  .page[data-page="home"] #riverLevelCard .river-level-foot{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    min-height:32px!important;
+    margin:10px 0 0!important;
+    padding:0 4px!important;
+    color:#6D8298!important;
+    font-size:9px!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-freshness-wrap{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:6px!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-freshness-wrap>i{
+    color:#6A89A5!important;
+    font-size:15px!important;
+    font-style:normal!important;
+  }
+  .page[data-page="home"] #riverLevelCard .river-level-foot a{
+    color:#0871DF!important;
+    font-weight:760!important;
+  }
+
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard{
+    background:linear-gradient(180deg,rgba(21,32,45,.94),rgba(16,26,38,.94))!important;
+    border-color:rgba(255,255,255,.06)!important;
+  }
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard .river-level-primary,
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard .river-metric-card,
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard .river-chart-actions,
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard .river-chart{
+    background:rgba(255,255,255,.035)!important;
+    border-color:rgba(255,255,255,.06)!important;
+  }
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard #riverLevelTitle,
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard .river-primary-reading #riverLevelValue,
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard #riverVariation,
+  :root[data-theme="dark"] .page[data-page="home"] #riverLevelCard .river-metric-card strong{
+    color:#F3F7FB!important;
+  }
+}
