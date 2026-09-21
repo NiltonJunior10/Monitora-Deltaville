@@ -204,7 +204,7 @@
   }
 
   const PRIMARY_TYPES=new Set([
-    "avenue_flooding","river_level","wind_no_damage","hail","tree_hazard"
+    "avenue_flooding","river_level","wind_no_damage","hail","power_failure","water_outage"
   ]);
 
   function setupTypeGrid(){
