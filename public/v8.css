@@ -1083,3 +1083,151 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 :root[data-theme="dark"] .desktop-river-status{
   background:rgba(255,255,255,.06)!important;
 }
+
+
+/* v7.0.12 — compact top cards + reference arches + river scale */
+
+/* Arcos da referência enviada: três curvas sobrepostas, sem ondas. */
+.desktop-arches{
+  width:152px!important;
+  height:72px!important;
+  margin:0 auto 9px!important;
+  color:#5C91B9!important;
+}
+.desktop-arches svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:visible!important;
+}
+.desktop-arches .arch{
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:5!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+  vector-effect:non-scaling-stroke!important;
+}
+.desktop-arches .arch-center{stroke-width:5.4!important}
+:root[data-theme="dark"] .desktop-arches{
+  color:#8DBBE0!important;
+}
+
+@media(min-width:1180px){
+  /* Os três cards superiores ficam mais estreitos verticalmente. */
+  .desktop-kpi-status,
+  .desktop-kpi-occurrences,
+  .desktop-river-summary{
+    height:88px!important;
+    min-height:88px!important;
+  }
+
+  .desktop-kpi-status{
+    grid-template-columns:38px minmax(0,1fr)!important;
+    gap:10px!important;
+    padding:9px 12px!important;
+  }
+  .desktop-kpi-status .desktop-kpi-shield{
+    width:38px!important;
+    height:38px!important;
+    flex-basis:38px!important;
+  }
+  .desktop-kpi-status small{font-size:9px!important;margin-bottom:2px!important}
+  .desktop-kpi-status strong{font-size:21px!important}
+  .desktop-kpi-status p{
+    margin-top:2px!important;
+    font-size:9px!important;
+    line-height:1.18!important;
+    -webkit-line-clamp:1!important;
+  }
+
+  .desktop-kpi-occurrences{
+    padding:9px 12px!important;
+  }
+  .desktop-occurrence-copy small{
+    margin-bottom:2px!important;
+    font-size:9px!important;
+  }
+  .desktop-occurrence-copy strong{
+    font-size:31px!important;
+  }
+
+  .desktop-river-summary{
+    grid-template-columns:40px minmax(0,1fr) 16px!important;
+    gap:10px!important;
+    padding:8px 11px!important;
+  }
+  .desktop-river-icon{
+    width:40px!important;
+    height:40px!important;
+    border-radius:13px!important;
+  }
+  .desktop-river-icon .ui-i{
+    width:22px!important;
+    height:22px!important;
+  }
+  .desktop-river-titleline>small{
+    font-size:9.5px!important;
+  }
+  .desktop-river-status{
+    min-height:22px!important;
+    padding:0 7px!important;
+    font-size:8.5px!important;
+  }
+  .desktop-river-mainline>strong{
+    font-size:24px!important;
+  }
+  .desktop-river-delta{
+    font-size:8.5px!important;
+  }
+
+  /* Escala visual: faixa normal destacada entre 0,70 m e 1,00 m; 4 m = crítico. */
+  .desktop-river-scale{
+    height:6px!important;
+    margin-top:3px!important;
+    background:
+      linear-gradient(90deg,
+        #2F87FF 0%,
+        #39A7E8 17.5%,
+        #2EB76A 17.5%,
+        #2EB76A 25%,
+        #E9C94C 25%,
+        #FF9F43 67%,
+        #F04455 90%,
+        #F04455 100%)!important;
+  }
+  .desktop-river-scale-labels{
+    position:relative!important;
+    display:block!important;
+    height:10px!important;
+    margin-top:1px!important;
+    font-size:7px!important;
+    line-height:1!important;
+    overflow:visible!important;
+  }
+  .desktop-river-scale-labels i{
+    position:absolute!important;
+    left:var(--x)!important;
+    top:0!important;
+    transform:translateX(-50%)!important;
+    white-space:nowrap!important;
+    font-style:normal!important;
+  }
+  .desktop-river-scale-labels i:first-child{
+    transform:none!important;
+  }
+  .desktop-river-scale-labels .critical-mark{
+    transform:translateX(-100%)!important;
+    color:#D63742!important;
+    font-weight:720!important;
+  }
+  .desktop-river-scale-labels .normal-start,
+  .desktop-river-scale-labels .normal-end{
+    color:#159447!important;
+    font-weight:720!important;
+  }
+  .desktop-river-footline{
+    margin-top:0!important;
+    font-size:7.5px!important;
+  }
+}
