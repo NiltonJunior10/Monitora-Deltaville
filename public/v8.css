@@ -2846,3 +2846,100 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     font-size:8.5px!important;
   }
 }
+
+
+/* v7.0.40 — weather alert in dedicated middle slot */
+@media(min-width:1180px){
+  #desktopWeatherTrigger .top-weather-main{
+    display:grid!important;
+    grid-template-columns:42px minmax(78px,auto) minmax(76px,1fr) 1px minmax(82px,auto)!important;
+    align-items:center!important;
+    column-gap:9px!important;
+    width:100%!important;
+  }
+
+  #desktopWeatherTrigger .top-weather-now{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+
+  #desktopWeatherTrigger .top-weather-now>span{
+    display:block!important;
+    margin:0 0 3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .top-weather-alert-slot{
+    min-width:0!important;
+    height:48px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0 2px!important;
+    overflow:hidden!important;
+  }
+
+  .top-weather-official-badge{
+    width:100%!important;
+    max-width:104px!important;
+    min-height:34px!important;
+    height:auto!important;
+    padding:5px 7px!important;
+    border-radius:11px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    gap:2px!important;
+    overflow:hidden!important;
+    white-space:normal!important;
+    line-height:1.05!important;
+    box-sizing:border-box!important;
+  }
+
+  .top-weather-official-badge b{
+    display:block!important;
+    max-width:100%!important;
+    font-size:7.5px!important;
+    line-height:1!important;
+    font-weight:820!important;
+    letter-spacing:.03em!important;
+    white-space:nowrap!important;
+  }
+
+  .top-weather-official-badge span{
+    display:-webkit-box!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    -webkit-box-orient:vertical!important;
+    -webkit-line-clamp:2!important;
+    font-size:7.8px!important;
+    line-height:1.12!important;
+    font-weight:680!important;
+  }
+
+  .top-weather-official-badge[hidden]{
+    display:none!important;
+  }
+
+  #desktopWeatherTrigger .top-weather-divider{
+    height:48px!important;
+    align-self:center!important;
+  }
+}
+
+@media(min-width:1500px){
+  #desktopWeatherTrigger .top-weather-main{
+    grid-template-columns:42px minmax(82px,auto) minmax(92px,1fr) 1px minmax(88px,auto)!important;
+  }
+
+  .top-weather-official-badge{
+    max-width:120px!important;
+  }
+
+  .top-weather-official-badge span{
+    font-size:8.2px!important;
+  }
+}
