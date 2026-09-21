@@ -215,12 +215,23 @@ function bindRiverChartInteraction(){
   const host=$("#riverChart"),view=riverChartView;
   if(!host||!view)return;
 
+  const svg=$("svg",host);
+  if(!svg)return;
+
   const tooltip=$("#riverTooltip");
   const cross=$("#riverCrosshair");
   const dot=$("#riverHoverDot");
   const currentLabel=$(".river-current-label",host);
   let touching=false;
   let resetTimer=null;
+
+  // Garante que handlers antigos presos ao container não continuem reagindo
+  // quando o mouse estiver em áreas vazias do card.
+  host.onpointermove=null;
+  host.onpointerdown=null;
+  host.onpointerup=null;
+  host.onpointerleave=null;
+  host.onpointercancel=null;
 
   function paintPoint(index,active=true){
     index=Math.max(0,Math.min(view.pts.length-1,index));
@@ -250,12 +261,13 @@ function bindRiverChartInteraction(){
 
     if(tooltip){
       if(active){
-        const rect=host.getBoundingClientRect();
-        const x=(nearest.x/view.width)*rect.width;
-        const y=(nearest.y/view.height)*rect.height;
+        const hostRect=host.getBoundingClientRect();
+        const svgRect=svg.getBoundingClientRect();
+        const x=(svgRect.left-hostRect.left)+(nearest.x/view.width)*svgRect.width;
+        const y=(svgRect.top-hostRect.top)+(nearest.y/view.height)*svgRect.height;
         const half=58;
-        tooltip.style.left=`${Math.max(half+6,Math.min(rect.width-half-6,x))}px`;
-        tooltip.style.top=`${Math.max(62,Math.min(rect.height-22,y-4))}px`;
+        tooltip.style.left=`${Math.max(half+6,Math.min(hostRect.width-half-6,x))}px`;
+        tooltip.style.top=`${Math.max(62,Math.min(hostRect.height-22,y-4))}px`;
         tooltip.hidden=false;
       }else{
         tooltip.hidden=true;
@@ -264,10 +276,22 @@ function bindRiverChartInteraction(){
     if(currentLabel)currentLabel.style.opacity=active?"0":"1";
   }
 
-  function nearestIndex(clientX){
-    const rect=host.getBoundingClientRect();
-    if(rect.width<=0)return view.pts.length-1;
-    const svgX=Math.max(view.pad.l,Math.min(view.width-view.pad.r,(clientX-rect.left)/rect.width*view.width));
+  function pointerInPlot(event){
+    const rect=svg.getBoundingClientRect();
+    if(rect.width<=0||rect.height<=0)return null;
+
+    const svgX=(event.clientX-rect.left)/rect.width*view.width;
+    const svgY=(event.clientY-rect.top)/rect.height*view.height;
+    const inside=
+      svgX>=view.pad.l &&
+      svgX<=view.width-view.pad.r &&
+      svgY>=view.pad.t &&
+      svgY<=view.height-view.pad.b;
+
+    return inside?{x:svgX,y:svgY}:null;
+  }
+
+  function nearestIndex(svgX){
     let idx=0,dist=Infinity;
     view.pts.forEach((p,i)=>{
       const d=Math.abs(p.x-svgX);
@@ -276,32 +300,51 @@ function bindRiverChartInteraction(){
     return idx;
   }
 
-  function showAt(clientX){
+  function resetNow(){
     clearTimeout(resetTimer);
-    paintPoint(nearestIndex(clientX),true);
+    paintPoint(view.pts.length-1,false);
   }
 
-  function resetSoon(delay=900){
+  function showAt(event){
+    const point=pointerInPlot(event);
+    if(!point){
+      if(!touching)resetNow();
+      return false;
+    }
+    clearTimeout(resetTimer);
+    paintPoint(nearestIndex(point.x),true);
+    return true;
+  }
+
+  function resetSoon(delay=250){
     clearTimeout(resetTimer);
     resetTimer=setTimeout(()=>paintPoint(view.pts.length-1,false),delay);
   }
 
-  host.onpointermove=e=>{
+  svg.onpointermove=e=>{
     if(e.pointerType==="touch"&&!touching)return;
-    showAt(e.clientX);
+    showAt(e);
   };
-  host.onpointerdown=e=>{
+  svg.onpointerdown=e=>{
+    const point=pointerInPlot(e);
+    if(!point)return;
     touching=e.pointerType==="touch";
-    try{host.setPointerCapture?.(e.pointerId);}catch(_){}
-    showAt(e.clientX);
+    try{svg.setPointerCapture?.(e.pointerId);}catch(_){}
+    showAt(e);
   };
-  host.onpointerup=e=>{
+  svg.onpointerup=e=>{
     touching=false;
-    try{host.releasePointerCapture?.(e.pointerId);}catch(_){}
-    resetSoon(e.pointerType==="touch"?2400:1100);
+    try{svg.releasePointerCapture?.(e.pointerId);}catch(_){}
+    resetSoon(e.pointerType==="touch"?2400:650);
   };
-  host.onpointerleave=()=>{if(!touching)resetSoon(250);};
-  host.onpointercancel=()=>{touching=false;resetSoon(250);};
+  svg.onpointerleave=()=>{
+    if(!touching)resetNow();
+  };
+  svg.onpointercancel=()=>{
+    touching=false;
+    resetNow();
+  };
+
   host.onfocus=()=>paintPoint(view.selectedIndex??view.pts.length-1,true);
   host.onblur=()=>paintPoint(view.pts.length-1,false);
   host.onkeydown=e=>{
