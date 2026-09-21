@@ -93,6 +93,30 @@ function weatherOfficialTime(iso){
 
 function renderOfficialWeatherAlerts(data){
   const list=document.getElementById("desktopWeatherAlertList");
+  const topBadge=document.getElementById("topWeatherOfficialAlert");
+
+  if(topBadge){
+    const notice=(data?.active||[])[0]||(data?.upcoming||[])[0]||null;
+    if(notice&&!data?.error){
+      const labels=(notice.events||[]).map(weatherEventLabel);
+      let shortLabel="";
+      if(labels.length>=3)shortLabel=labels.slice(0,2).join(" + ")+" +";
+      else if(labels.length)shortLabel=labels.join(" + ");
+      else shortLabel="Alerta meteorológico";
+
+      topBadge.textContent=notice.status==="active"
+        ?`⚠ ${shortLabel}`
+        :`⚠ Previsto: ${shortLabel}`;
+      topBadge.className=`top-weather-official-badge ${weatherOfficialSeverity(notice)}`;
+      topBadge.hidden=false;
+      topBadge.title=notice.title||"Aviso oficial Epagri/Ciram";
+    }else{
+      topBadge.hidden=true;
+      topBadge.textContent="";
+      topBadge.className="top-weather-official-badge";
+      topBadge.removeAttribute("title");
+    }
+  }
   const sourceTitle=document.querySelector(".desktop-weather-alerts-title>span");
   const sourceSub=document.querySelector(".desktop-weather-alerts-title>small");
   if(sourceTitle)sourceTitle.textContent="Avisos oficiais Epagri/Ciram";
