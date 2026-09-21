@@ -262,9 +262,18 @@ function bindRiverChartInteraction(){
     if(tooltip){
       if(active){
         const hostRect=host.getBoundingClientRect();
-        const svgRect=svg.getBoundingClientRect();
-        const x=(svgRect.left-hostRect.left)+(nearest.x/view.width)*svgRect.width;
-        const y=(svgRect.top-hostRect.top)+(nearest.y/view.height)*svgRect.height;
+        const ctm=svg.getScreenCTM?.();
+        let x=hostRect.width/2,y=hostRect.height/2;
+        if(ctm){
+          try{
+            const p=svg.createSVGPoint();
+            p.x=nearest.x;
+            p.y=nearest.y;
+            const screen=p.matrixTransform(ctm);
+            x=screen.x-hostRect.left;
+            y=screen.y-hostRect.top;
+          }catch(_){}
+        }
         const half=58;
         tooltip.style.left=`${Math.max(half+6,Math.min(hostRect.width-half-6,x))}px`;
         tooltip.style.top=`${Math.max(62,Math.min(hostRect.height-22,y-4))}px`;
@@ -276,19 +285,33 @@ function bindRiverChartInteraction(){
     if(currentLabel)currentLabel.style.opacity=active?"0":"1";
   }
 
+  function screenToSvg(clientX,clientY){
+    // Usa a matriz real do SVG. Isso considera preserveAspectRatio e as
+    // "faixas vazias" laterais criadas quando o SVG é mais largo que o viewBox.
+    const ctm=svg.getScreenCTM?.();
+    if(!ctm)return null;
+    try{
+      const point=svg.createSVGPoint();
+      point.x=clientX;
+      point.y=clientY;
+      const mapped=point.matrixTransform(ctm.inverse());
+      return {x:mapped.x,y:mapped.y};
+    }catch(_){
+      return null;
+    }
+  }
+
   function pointerInPlot(event){
-    const rect=svg.getBoundingClientRect();
-    if(rect.width<=0||rect.height<=0)return null;
+    const p=screenToSvg(event.clientX,event.clientY);
+    if(!p)return null;
 
-    const svgX=(event.clientX-rect.left)/rect.width*view.width;
-    const svgY=(event.clientY-rect.top)/rect.height*view.height;
     const inside=
-      svgX>=view.pad.l &&
-      svgX<=view.width-view.pad.r &&
-      svgY>=view.pad.t &&
-      svgY<=view.height-view.pad.b;
+      p.x>=view.pad.l &&
+      p.x<=view.width-view.pad.r &&
+      p.y>=view.pad.t &&
+      p.y<=view.height-view.pad.b;
 
-    return inside?{x:svgX,y:svgY}:null;
+    return inside?p:null;
   }
 
   function nearestIndex(svgX){
