@@ -67,8 +67,17 @@ function renderSources(){
   const sourceText=river?.connection_state==='ok'?"Medição disponível":river?.connection_state==='stale'?"Medição desatualizada":river?.connection_state==='degraded'?"Fonte com falha recente":"Consulta indisponível ou pendente";
   let weatherText="Consulta pendente";
   try{const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");if(cached?.saved_at){const mins=Math.max(0,Math.floor((Date.now()-cached.saved_at)/60000));weatherText=(state.weatherUnavailable||mins>60?"Desatualizado":"Online")+" • atualização há "+mins+" min";}}catch(_){}
+  const official=state.epagriWeatherAlerts;
+  let officialText="Consulta pendente";
+  if(official?.error)officialText="Temporariamente indisponível";
+  else if(official){
+    const active=official.active?.length||0,upcoming=official.upcoming?.length||0;
+    officialText=active?`${active} aviso${active>1?"s":""} ativo${active>1?"s":""} para Biguaçu`
+      :upcoming?`${upcoming} aviso${upcoming>1?"s":""} previsto${upcoming>1?"s":""}`
+      :"Nenhum aviso ativo ou previsto para Biguaçu";
+  }
   const pushText=state.pushEnabled?"Ativas neste aparelho":"Desativadas ou não confirmadas neste aparelho";
-  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>Previsão · Open-Meteo</b> — ${weatherText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
+  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>Epagri/Ciram · Avisos meteorológicos</b> — ${officialText}</p><p><b>Previsão numérica · Open-Meteo</b> — ${weatherText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
 }
 async function loadPushConfig(){
   const {data,error}=await db.functions.invoke("app-config",{method:"GET"});
@@ -95,7 +104,7 @@ function isMapGestureTarget(target){
 }
 
 const state = {
-  user:null, profile:null, isAdmin:false, adminUsers:[], adminOccurrences:[], adminAlerts:[], condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null,
+  user:null, profile:null, isAdmin:false, adminUsers:[], adminOccurrences:[], adminAlerts:[], condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null, epagriWeatherAlerts:null,
   maps:{}, markers:{home:[],full:[]}, filter:"all", alertFilter:"all",
   installPrompt:null, initialized:false, realtimeChannel:null,
   avenueLayers:{home:[],full:[]}, lakeLayers:{home:[],full:[]}, riverLayers:{home:[],full:[]},
@@ -2540,12 +2549,47 @@ function alertCard(a){
   <h3>${esc(a.title)}</h3><p><b>${esc(a.monitored_locations?.name||"Deltaville")}</b></p>
   <p>${esc(a.message)}</p><small>${esc(a.source_type)} • ${age(a.created_at)}</small></div></article>`;
 }
+function epagriNoticeSeverity(n){
+  if(n?.risk==="very_high")return "critical";
+  if(n?.risk==="high")return "alert";
+  if(n?.risk==="moderate")return "attention";
+  return n?.status==="active"?"alert":"attention";
+}
+function epagriNoticeEvents(n){
+  const labels={storm:"Tempestade",hail:"Granizo",heavy_rain:"Chuva intensa",wind:"Vendaval / rajadas",lightning:"Raios",tornado:"Tornado / tromba d’água"};
+  return (n?.events||[]).map(e=>labels[e]||e).join(" • ");
+}
+function epagriNoticeTime(iso){
+  if(!iso)return "—";
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime()))return "—";
+  return d.toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+}
+function epagriNoticeCard(n){
+  const severity=epagriNoticeSeverity(n);
+  const active=n.status==="active";
+  const timing=active?`Ativo até ${epagriNoticeTime(n.ends_at)}`:`Previsto a partir de ${epagriNoticeTime(n.starts_at)}`;
+  const events=epagriNoticeEvents(n);
+  const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso oficial";
+  return `<article class="event-card epagri-official-card ${severity}">
+    <div class="event-icon ${severity}">!</div>
+    <div>
+      <h3>${esc(n.title||"Aviso meteorológico")}</h3>
+      <p><b>Epagri/Ciram • ${active?"Aviso ativo":"Aviso previsto"}</b></p>
+      ${events?`<p>${esc(events)}</p>`:""}
+      <small>${esc(risk)} • ${esc(timing)}</small>
+      ${n.url?`<a class="epagri-official-link" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Abrir aviso oficial</a>`:""}
+    </div>
+  </article>`;
+}
 function renderOccurrences(){
   const groups=groupOccurrences(state.occurrences);
-  const totalActive=groups.length+state.alerts.length;
+  const officialActive=state.epagriWeatherAlerts?.active||[];
+  const totalActive=groups.length+state.alerts.length+officialActive.length;
   const criticalActive=
     groups.filter(g=>highestSeverity(g.items)==="critical").length+
-    state.alerts.filter(a=>a.severity==="critical").length;
+    state.alerts.filter(a=>a.severity==="critical").length+
+    officialActive.filter(n=>epagriNoticeSeverity(n)==="critical").length;
 
   $("#homeCount").textContent=totalActive;
   $("#occurrenceCount").textContent=groups.length;
@@ -2570,13 +2614,28 @@ function renderOccurrences(){
   renderMobileHomeDashboard();
 }
 function renderAlertsPage(){
-  let items=[...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const officialNotices=state.epagriWeatherAlerts?.notices||[];
+  let items=[
+    ...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),
+    ...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)})),
+    ...officialNotices.map(n=>({kind:"epagri",severity:epagriNoticeSeverity(n),date:n.starts_at,html:epagriNoticeCard(n)}))
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
   if(state.alertFilter!=="all")items=items.filter(i=>i.severity===state.alertFilter);
-  const totalActive=groupOccurrences(state.occurrences).length+state.alerts.length;
-  $("#alertsCount").textContent=totalActive;$("#alertsPageList").innerHTML=items.length?items.map(i=>i.html).join(""):(state.alertFilter==="all"
-      ?emptyState({icon:"shield-check",title:"Nenhum alerta ativo",text:"Tudo tranquilo por aqui. Se notar algo diferente, avise a comunidade.",action:V8_REPORT_BTN})
+
+  const officialActive=state.epagriWeatherAlerts?.active||[];
+  const totalActive=groupOccurrences(state.occurrences).length+state.alerts.length+officialActive.length;
+
+  $("#alertsCount").textContent=totalActive;
+  $("#alertsPageList").innerHTML=items.length?items.map(i=>i.html).join(""):(state.alertFilter==="all"
+      ?emptyState({icon:"shield-check",title:"Nenhum alerta ativo",text:"Nenhum aviso oficial ativo nem ocorrência comunitária neste momento.",action:V8_REPORT_BTN})
       :emptyState({icon:"info",title:"Nada neste grau agora",text:"Não há ocorrências nem alertas com esse grau no momento.",action:'<button type="button" class="v8-empty-btn ghost" data-v8-show-all>Ver todos</button>'}));
-  $("#notifyDot").hidden=totalActive===0;if($("#navAlertBadge")){$("#navAlertBadge").hidden=totalActive===0;$("#navAlertBadge").textContent=totalActive>9?"9+":String(totalActive);}
+
+  $("#notifyDot").hidden=totalActive===0;
+  if($("#navAlertBadge")){
+    $("#navAlertBadge").hidden=totalActive===0;
+    $("#navAlertBadge").textContent=totalActive>9?"9+":String(totalActive);
+  }
 }
 function renderLocations(){
   $("#locationsList").innerHTML=state.locations.map(l=>{
