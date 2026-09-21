@@ -467,7 +467,7 @@ function renderDesktopRiverSummary(d,status,latest){
   }
   updated.textContent=`Última medição: ${formatRiverTime(latest.measured_at)}`;
   if(scaleMarker){
-    const pct=Math.max(0,Math.min(100,(Number(latest.level_m)/4)*100));
+    const pct=Math.max(0,Math.min(100,(Number(latest.level_m)/5)*100));
     scaleMarker.style.setProperty("--river-pct",`${pct.toFixed(1)}%`);
   }
 }
