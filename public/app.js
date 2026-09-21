@@ -1532,31 +1532,49 @@ function bindMapPointSelection(){
     const gesture=touchGesture;touchGesture=null;cancelGesture(gesture);
   },{passive:false});
 
-  // Mouse/pen: same hold-and-drag behavior.
+  // Desktop: sobre uma avenida, clicar e arrastar já delimita o trecho.
+  // Um clique simples continua abrindo o detalhe da via.
   if(!("ontouchstart" in window)){
     container.addEventListener("pointerdown",ev=>{
       if(ev.button!==0||ev.target.closest(".leaflet-control"))return;
+      const startLatLng=clientToLatLng(ev.clientX,ev.clientY);
+      const avenueCandidate=nearestAvenueProjection(startLatLng,52);
       mouseGesture={
         startX:ev.clientX,startY:ev.clientY,lastX:ev.clientX,lastY:ev.clientY,
-        active:false,cancelled:false,dragged:false,liveLayers:[],pointerId:ev.pointerId
+        active:false,cancelled:false,dragged:false,liveLayers:[],pointerId:ev.pointerId,
+        avenueCandidate
       };
-      mouseGesture.timer=setTimeout(()=>activateLongPress(mouseGesture),430);
+      // Fora das avenidas mantemos o gesto longo para marcação de ponto.
+      if(!avenueCandidate)mouseGesture.timer=setTimeout(()=>activateLongPress(mouseGesture),430);
     },{passive:true});
 
     container.addEventListener("pointermove",ev=>{
       if(!mouseGesture)return;
       mouseGesture.lastX=ev.clientX;mouseGesture.lastY=ev.clientY;
       const moved=Math.hypot(ev.clientX-mouseGesture.startX,ev.clientY-mouseGesture.startY);
+
       if(!mouseGesture.active){
-        if(moved>13){clearTimeout(mouseGesture.timer);mouseGesture=null;}
+        if(mouseGesture.avenueCandidate&&moved>4){
+          clearTimeout(mouseGesture.timer);
+          activateLongPress(mouseGesture);
+          if(mouseGesture?.avenue)updateLiveRoadSelection(mouseGesture,clientToLatLng(ev.clientX,ev.clientY));
+          return;
+        }
+        if(!mouseGesture.avenueCandidate&&moved>13){
+          clearTimeout(mouseGesture.timer);
+          mouseGesture=null;
+        }
         return;
       }
+
       if(mouseGesture.avenue)updateLiveRoadSelection(mouseGesture,clientToLatLng(ev.clientX,ev.clientY));
     },{passive:true});
 
     container.addEventListener("pointerup",ev=>{
       const gesture=mouseGesture;mouseGesture=null;
       if(!gesture)return;
+      clearTimeout(gesture.timer);
+      if(!gesture.active)return; // clique simples: deixa o Leaflet abrir o detalhe da avenida
       finishLongPress(gesture,ev.clientX,ev.clientY);
     },{passive:true});
 
@@ -2184,7 +2202,7 @@ function renderAvenues(which){
       weight:34,
       opacity:0,
       interactive:true,
-      className:"map-hit-target"
+      className:"map-hit-target avenue-hit-target"
     }).addTo(map);
 
     const latest=state.occurrences.find(o=>o.location_id===loc.id);
@@ -2203,7 +2221,12 @@ function renderAvenues(which){
       else showMapFocusCard(payload);
     });
 
-    if(which==="full")hit.bindTooltip(loc.name,{sticky:true,className:"avenue-tooltip",direction:"top"});
+    if(which==="full"){
+      hit.bindTooltip(
+        `<b>${esc(loc.name)}</b><span>Clique e arraste para definir a área</span>`,
+        {sticky:true,className:"avenue-tooltip avenue-action-tooltip",direction:"top",opacity:1}
+      );
+    }
     state.avenueLayers[which].push(corridor,core,center,hit);
   });
 }
