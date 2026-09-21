@@ -112,6 +112,25 @@ function renderWeatherSnapshot(snapshot){
     snapshot.windAttention?"Rajadas fortes previstas":
     weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes previstas":"Previsão indisponível"
   );
+
+  // Painel detalhado do desktop.
+  weatherSetText("#desktopWeatherSummary",summary);
+  weatherSetText("#desktopWeatherTemp",tempText);
+  weatherSetText("#desktopWeatherFeels",feelsText);
+  weatherSetText("#desktopWeatherRain",rainText);
+  weatherSetText("#desktopWeatherChance",chanceText==="—"?"Chance —":`Até ${chanceText} de chance`);
+  weatherSetText("#desktopWeatherNowRain",currentRainText);
+  weatherSetText("#desktopWeatherHumidity",humidityText);
+  weatherSetText("#desktopWeatherMinMax",minMaxText);
+  weatherSetText("#desktopWeatherWind",windNowText);
+  weatherSetText("#desktopWeatherHail",snapshot.hailRisk?"Possível":"Sem indicação");
+  weatherSetText("#desktopWeatherHailDetail",snapshot.hailRisk?"Possibilidade de granizo nas próximas 6h.":"Sem indicação de granizo nas próximas 6h.");
+  weatherSetText("#desktopWeatherWind6h",wind6hText);
+  weatherSetText("#desktopWeatherWindStatus",
+    snapshot.windRisk?"Risco de vendaval":
+    snapshot.windAttention?"Rajadas fortes previstas":
+    weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes previstas":"Previsão indisponível"
+  );
 }
 
 function loadCachedWeather(){
@@ -245,3 +264,68 @@ async function loadWeather(){
   renderPushSettings();
   renderSources();
 }
+
+
+function bindDesktopWeatherPanel(){
+  const trigger=document.getElementById("desktopWeatherTrigger");
+  const panel=document.getElementById("desktopWeatherPanel");
+  const close=document.getElementById("desktopWeatherClose");
+  if(!trigger||!panel||trigger.dataset.weatherBound==="1")return;
+
+  trigger.dataset.weatherBound="1";
+
+  const positionPanel=()=>{
+    if(panel.hidden)return;
+    const rect=trigger.getBoundingClientRect();
+    const maxWidth=Math.min(640,Math.max(360,window.innerWidth-32));
+    const width=Math.min(Math.max(rect.width,520),maxWidth);
+    let left=rect.left+rect.width/2-width/2;
+    left=Math.max(16,Math.min(left,window.innerWidth-width-16));
+    panel.style.setProperty("--desktop-weather-left",left+"px");
+    panel.style.setProperty("--desktop-weather-top",(rect.bottom+10)+"px");
+    panel.style.setProperty("--desktop-weather-width",width+"px");
+  };
+
+  const setOpen=open=>{
+    panel.hidden=!open;
+    trigger.setAttribute("aria-expanded",String(open));
+    document.body.classList.toggle("desktop-weather-expanded",open);
+    if(open){
+      positionPanel();
+      requestAnimationFrame(positionPanel);
+    }
+  };
+
+  trigger.addEventListener("click",event=>{
+    event.stopPropagation();
+    setOpen(panel.hidden);
+  });
+
+  close?.addEventListener("click",event=>{
+    event.stopPropagation();
+    setOpen(false);
+    trigger.focus({preventScroll:true});
+  });
+
+  panel.addEventListener("click",event=>event.stopPropagation());
+
+  document.addEventListener("click",()=>{
+    if(!panel.hidden)setOpen(false);
+  });
+
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&!panel.hidden){
+      setOpen(false);
+      trigger.focus({preventScroll:true});
+    }
+  });
+
+  window.addEventListener("resize",positionPanel,{passive:true});
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",bindDesktopWeatherPanel,{once:true});
+}else{
+  bindDesktopWeatherPanel();
+}
+
