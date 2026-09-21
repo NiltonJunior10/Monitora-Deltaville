@@ -329,18 +329,62 @@ function bindRiverWindowControls(){
   });
 }
 
+function bindDesktopRiverSummary(){
+  const button=$("#desktopRiverSummary");
+  if(!button||button.dataset.bound==="1")return;
+  button.dataset.bound="1";
+  button.addEventListener("click",()=>{
+    if(!window.matchMedia("(min-width:1180px)").matches)return;
+    document.body.classList.add("desktop-river-expanded");
+    button.setAttribute("aria-expanded","true");
+    setTimeout(()=>$("#riverLevelCard")?.scrollIntoView({behavior:"smooth",block:"start"}),60);
+  });
+}
+
+function renderDesktopRiverSummary(d,status,latest){
+  const value=$("#desktopRiverLevel");
+  const deltaEl=$("#desktopRiverDelta");
+  const statusEl=$("#desktopRiverStatus");
+  const updated=$("#desktopRiverUpdated");
+  if(!value||!deltaEl||!statusEl||!updated)return;
+
+  statusEl.className=`desktop-river-status ${status||"unknown"}`;
+  const statusText={normal:"Normal",attention:"Atenção",alert:"Alerta",critical:"Crítico",unknown:"Sem cota oficial"};
+  statusEl.textContent=statusText[status]||statusText.unknown;
+
+  if(!latest){
+    value.textContent="—";
+    deltaEl.textContent="Aguardando dados";
+    updated.textContent="Última medição: —";
+    return;
+  }
+
+  value.textContent=`${Number(latest.level_m).toFixed(2).replace(".",",")} m`;
+  const pts24=filterRiverSeries(d?.series||[],24);
+  const delta24=pts24.length>1?pts24[pts24.length-1].v-pts24[0].v:null;
+  if(delta24===null){
+    deltaEl.textContent="Variação 24h: —";
+  }else{
+    const arrow=Math.abs(delta24)<=0.005?"→":delta24>0?"↑":"↓";
+    deltaEl.textContent=`${arrow} ${formatRiverDelta(delta24)} (24h)`;
+  }
+  updated.textContent=`Última medição: ${formatRiverTime(latest.measured_at)}`;
+}
+
 function renderRiverStatus(){
   const d=state.riverStatus;
   const badge=$("#riverStatusBadge");
   const value=$("#riverLevelValue"),trend=$("#riverTrend"),variation=$("#riverVariation"),updated=$("#riverUpdated"),fresh=$("#riverFreshness");
   if(!badge||!value)return;
   bindRiverWindowControls();
+  bindDesktopRiverSummary();
 
   const connection=d?.connection_state||"source_not_configured";
   const latest=d?.latest||null;
   const status=d?.status||"unknown";
   badge.className=`river-status-badge ${status}`;
   badge.textContent=riverStatusLabel(status);
+  renderDesktopRiverSummary(d,status,latest);
 
   if(latest){
     value.textContent=`${Number(latest.level_m).toFixed(2).replace(".",",")} m`;
