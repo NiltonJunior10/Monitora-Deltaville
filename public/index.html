@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=734">
+  <link rel="stylesheet" href="v8.css?v=735">
   <link rel="stylesheet" href="river-desktop.css?v=720">
   <link rel="stylesheet" href="sidebar-desktop.css?v=725">
   <script src="theme-init.js?v=702"></script>
@@ -116,7 +116,7 @@
         </div>
         <p>Juntos por um<br><strong>Deltaville mais seguro</strong><br>e bem cuidado.</p>
         <span class="desktop-community-accent" aria-hidden="true"></span>
-        <small>Monitora Deltaville<br>v7.0.34</small>
+        <small>Monitora Deltaville<br>v7.0.35</small>
       </div>
     </aside>
     <header class="topbar">
@@ -132,7 +132,7 @@
       </button>
       <button type="button" class="v7-mobile-avatar" id="mobileAvatar" data-nav="profile" aria-label="Abrir meu perfil">MD</button>
 
-      <section class="top-weather" aria-label="Previsão local">
+      <button type="button" class="top-weather" id="desktopWeatherTrigger" aria-label="Abrir detalhes da previsão do tempo" aria-expanded="false" aria-controls="desktopWeatherPanel">
         <div class="top-weather-main">
           <div class="top-weather-icon" id="topWeatherIcon" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg></div>
           <div class="top-weather-now">
@@ -146,7 +146,7 @@
           </div>
         </div>
         <small class="top-weather-summary" id="weatherDetail" aria-live="polite">Carregando previsão…</small>
-      </section>
+      </button>
 
       <div class="desktop-account">
         <button type="button" class="desktop-bell" data-nav="alerts" aria-label="Abrir alertas">
@@ -163,6 +163,49 @@
         </button>
       </div>
     </header>
+
+    <section class="desktop-weather-panel" id="desktopWeatherPanel" hidden aria-label="Detalhes da previsão do tempo">
+      <div class="desktop-weather-panel-head">
+        <div>
+          <small>PREVISÃO PARA O DELTAVILLE</small>
+          <strong id="desktopWeatherSummary">Carregando previsão…</strong>
+        </div>
+        <button type="button" class="desktop-weather-close" id="desktopWeatherClose" aria-label="Fechar previsão">×</button>
+      </div>
+
+      <div class="desktop-weather-panel-grid">
+        <article>
+          <small>Temperatura agora</small>
+          <strong id="desktopWeatherTemp">—</strong>
+          <span id="desktopWeatherFeels">Sensação —</span>
+        </article>
+        <article>
+          <small>Chuva • próximas 6h</small>
+          <strong id="desktopWeatherRain">—</strong>
+          <span id="desktopWeatherChance">Chance —</span>
+        </article>
+        <article>
+          <small>Granizo • próximas 6h</small>
+          <strong id="desktopWeatherHail">—</strong>
+          <span id="desktopWeatherHailDetail">Aguardando previsão</span>
+        </article>
+        <article>
+          <small>Rajadas • próximas 6h</small>
+          <strong id="desktopWeatherWind6h">—</strong>
+          <span id="desktopWeatherWindStatus">Aguardando previsão</span>
+        </article>
+        <article>
+          <small>Chuva agora</small>
+          <strong id="desktopWeatherNowRain">—</strong>
+          <span id="desktopWeatherHumidity">Umidade —</span>
+        </article>
+        <article>
+          <small>Hoje</small>
+          <strong id="desktopWeatherMinMax">—</strong>
+          <span id="desktopWeatherWind">Vento agora —</span>
+        </article>
+      </div>
+    </section>
 
     <main>
       <section class="page active" data-page="home">
@@ -1219,7 +1262,7 @@
   <script src="stability-core.js?v=702"></script>
   <script src="auth.js?v=702"></script>
   <script src="river.js?v=734"></script>
-  <script src="weather.js?v=702"></script>
+  <script src="weather.js?v=735"></script>
   <script src="push.js?v=702"></script>
   <script src="app.js?v=713"></script>
   <script src="v6-ui.js?v=707"></script>
