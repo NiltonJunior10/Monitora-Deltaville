@@ -2531,8 +2531,10 @@ function renderV8Status(st,incomplete,reason){
   const unknown=incomplete&&st==="normal";
   const titles={normal:"Tudo tranquilo",attention:"Atenção",alert:"Alerta ativo",critical:"Situação crítica"};
   const icons={normal:"shield-check",attention:"info",alert:"triangle-alert",critical:"octagon-alert"};
-  root.dataset.state=unknown?"unknown":st;
-  root.querySelector("use")?.setAttribute("href","#i-"+(unknown?"info":(icons[st]||"shield-check")));
+  document.querySelectorAll("#v8Status, .desktop-kpi-status").forEach(card=>{
+    card.dataset.state=unknown?"unknown":st;
+    card.querySelector("use")?.setAttribute("href","#i-"+(unknown?"info":(icons[st]||"shield-check")));
+  });
   const t=$("#v8StatusTitle"),r=$("#v8StatusReason");
   if(t)t.textContent=unknown?"Dados não confirmados":(titles[st]||"Tudo tranquilo");
   if(r)r.textContent=reason;

@@ -110,12 +110,33 @@ test('river sync deduplicates source timestamps, upserts corrections and records
   assert.ok(writes.some(w=>w.steps.some(s=>s[0]==='insert'&&s[1].status==='started')));
   assert.ok(writes.some(w=>w.steps.some(s=>s[0]==='update'&&s[1].status==='success')));
 });
+test('desktop and mobile share severity icons, including unconfirmed normal data',()=>{
+  const app=frontend({});
+  app.run(`
+    var cards=[0,1].map(()=>({dataset:{},querySelector:()=>({setAttribute(name,value){this.value=value;}})}));
+    cards.forEach(card=>{card.icon={setAttribute(name,value){this.value=value;}};card.querySelector=()=>card.icon;});
+    document.querySelectorAll=()=>cards;
+  `);
+  for(const [severity,incomplete,expected,icon] of [
+    ['normal',false,'normal','shield-check'],['attention',false,'attention','info'],
+    ['alert',false,'alert','triangle-alert'],['critical',false,'critical','octagon-alert'],
+    ['normal',true,'unknown','info'],['critical',true,'critical','octagon-alert']
+  ]){
+    app.run(`renderV8Status('${severity}',${incomplete},'Status');`);
+    for(let i=0;i<2;i++){
+      assert.equal(app.run(`cards[${i}].dataset.state`),expected);
+      assert.equal(app.run(`cards[${i}].icon.value`),'#i-'+icon);
+    }
+  }
+});
 test('release version and service-worker shell match files',()=>{
   const html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');
-  assert.equal(require('../package.json').version,'5.1.2');assert.ok(html.includes('v5.1.2'));
+  const version=require('../package.json').version;
+  assert.ok(html.includes(`v${version}`),'visible release matches package version');
   assert.ok(!/user-scalable=no|maximum-scale=1/.test(html));
   const sw=fs.readFileSync(path.join(root,'public/service-worker.js'),'utf8');
-  const shell=JSON.parse(sw.match(/const APP_SHELL=(\[[\s\S]*?\]);/)[1]);
+  assert.ok(sw.includes(`monitora-deltaville-v${version.replaceAll('.','')}-`),'cache matches release version');
+  const shell=vm.runInNewContext(sw.match(/const APP_SHELL=(\[[\s\S]*?\]);/)[1]);
   for(const entry of shell){
     if(entry.startsWith('https://')){assert.match(entry,/@\d+\.\d+\.\d+/);continue;}
     assert.ok(fs.existsSync(path.join(root,'public',entry.split('?')[0])),entry);
