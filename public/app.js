@@ -1244,9 +1244,9 @@ function renderSelectedSegmentLayers(){
   const pts=avenuePointsByLocationId(seg.avenueId,seg.routeKey||"main");
   if(!pts)return;
   const section=selectedSegmentRoute(pts,seg);
-  const halo=L.polyline(section,{color:'#FFFFFF',weight:18,opacity:.84,lineCap:'round',lineJoin:'round',interactive:false}).addTo(map);
-  const band=L.polyline(section,{color:'#0A84FF',weight:11,opacity:.94,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-band'}).addTo(map);
-  const wave=L.polyline(section,{color:'#73C6FF',weight:3.2,opacity:.92,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-wave'}).addTo(map);
+  const halo=L.polyline(section,{color:'#FFFFFF',weight:14,opacity:.88,lineCap:'round',lineJoin:'round',interactive:false}).addTo(map);
+  const band=L.polyline(section,{color:'#0A84FF',weight:8,opacity:.96,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-band'}).addTo(map);
+  const wave=L.polyline(section,{color:'#A9DCFF',weight:2,opacity:.78,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-wave'}).addTo(map);
   const start=pointAtRouteRatio(pts,seg.startRatio);
   const end=pointAtRouteRatio(pts,seg.endRatio);
   const startHandle=L.marker(start,{draggable:true,icon:L.divIcon({className:'',html:'<div class="segment-handle start"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map);
@@ -1483,15 +1483,15 @@ function bindMapPointSelection(){
     const section=selectedSegmentRoute(gesture.avenue.pts,state.selectedSegment);
     if(!gesture.liveLayers?.length){
       const halo=L.polyline(section,{
-        color:"#FFFFFF",weight:24,opacity:.72,lineCap:"round",lineJoin:"round",
+        color:"#FFFFFF",weight:15,opacity:.82,lineCap:"round",lineJoin:"round",
         interactive:false,className:"road-drag-halo"
       }).addTo(map);
       const band=L.polyline(section,{
-        color:"#0A84FF",weight:16,opacity:.46,lineCap:"round",lineJoin:"round",
+        color:"#0A84FF",weight:9,opacity:.88,lineCap:"round",lineJoin:"round",
         interactive:false,className:"road-drag-band"
       }).addTo(map);
       const core=L.polyline(section,{
-        color:"#65D5FF",weight:7,opacity:.95,lineCap:"round",lineJoin:"round",
+        color:"#A9DCFF",weight:2.2,opacity:.82,lineCap:"round",lineJoin:"round",
         interactive:false,className:"road-drag-core"
       }).addTo(map);
       gesture.liveLayers=[halo,band,core];
@@ -1854,47 +1854,88 @@ function markerIcon(loc,status,hasOccurrence=false){
 }
 
 const avenueRoutes={
-  /* Malha redesenhada sobre o eixo das pistas cinzas do mapa.
-     Os cruzamentos compartilham coordenadas para manter snap contínuo. */
+  /* Eixos refinados sobre as pistas cinzas da arte-base.
+     Coordenadas compartilhadas nos cruzamentos para snap contínuo. */
   "Av. Egídio Abelino Richartz":[
-    [138,294],[138,340],[138,392],[138,446],[138,500],[138,552],[137,592],
-    [132,620],[122,640],[108,655],[93,665],[82,674],[76,686]
+    [120,288],[120,330],[120,380],[120,430],[120,485],[120,540],[120,585],
+    [117,615],[109,638],[97,653],[82,663],[68,674],[61,688]
   ],
   "Av. Wilson Castelo Branco":[
-    [138,294],[220,294],[310,294],[400,294],[490,294],[580,294],
-    [632,294],[660,294],[688,294],[780,294],[880,294],[980,294],[1070,294],[1162,294]
+    [120,288],[200,288],[290,288],[380,288],[470,288],[560,288],
+    [614,288],[650,288],[684,288],[770,288],[860,288],[950,288],[1040,288],[1132,288]
   ],
   "Av. Deltaville":[
-    /* Circuito principal ao redor do canteiro e dos lagos. */
-    [660,318],[646,320],[636,327],[630,340],[628,360],
-    [628,410],[628,465],[628,520],[628,575],[628,630],[628,685],[628,740],[628,792],[630,826],
-    [636,850],[646,870],[660,879],
-    [674,870],[684,850],[690,826],[692,792],
-    [692,740],[692,685],[692,630],[692,575],[692,520],[692,465],[692,410],[692,360],
-    [690,340],[684,327],[674,320],[660,318]
+    /* Circuito principal ao redor do canteiro/lagos. */
+    [649,318],
+    [635,320],[625,327],[618,340],[615,358],
+    [615,410],[615,465],[615,520],[615,575],[615,630],[615,685],[615,740],[615,790],
+    [617,820],[623,846],[635,866],[649,876],
+    [663,866],[675,846],[681,820],[684,790],
+    [684,740],[684,685],[684,630],[684,575],[684,520],[684,465],[684,410],[684,358],
+    [681,340],[674,327],[663,320],[649,318]
   ],
   "Av. Beira Rio":[
-    /* Continuação norte curva + eixo principal sul. */
-    [1240,18],[1237,48],[1230,82],[1220,120],[1208,160],[1195,202],[1182,240],[1170,272],
-    [1162,294],[1162,345],[1162,400],[1162,455],[1162,510],[1162,565],
-    [1162,620],[1162,675],[1162,730],[1162,780],[1162,820],[1162,846]
+    /* Continuação norte curva + eixo principal vertical. */
+    [1234,22],[1231,47],[1225,77],[1216,110],[1205,145],[1192,184],[1178,222],[1164,258],
+    [1149,278],[1132,288],
+    [1132,345],[1132,400],[1132,455],[1132,510],[1132,565],[1132,620],[1132,675],
+    [1132,720],[1135,755],[1143,776],[1148,792],[1146,812],[1139,832],[1132,846]
   ]
 };
 
-/* Ligações curtas que pertencem à avenida, mas não devem deformar a rota principal. */
+/* Ligações curtas: fazem parte da malha, sem deformar o circuito principal. */
 const avenueBranches={
   "Av. Deltaville":[
-    {key:"north-west",points:[[632,294],[632,304],[634,313],[638,322],[642,327]]},
-    {key:"north-east",points:[[688,294],[688,304],[686,313],[682,322],[678,327]]}
+    {key:"north-west",points:[[614,288],[614,299],[616,309],[620,320],[625,327]]},
+    {key:"north-east",points:[[684,288],[684,299],[682,309],[678,320],[674,327]]}
+  ],
+  "Av. Beira Rio":[
+    {key:"mid-east",points:[[1132,405],[1147,405],[1162,405]]}
   ]
 };
+
+function catmullRomRoute(points,closed=false,steps=7){
+  if(!Array.isArray(points)||points.length<3)return points||[];
+  const src=points.map(p=>[Number(p[0]),Number(p[1])]);
+  const out=[];
+  const n=src.length;
+  const same=(a,b)=>Math.abs(a[0]-b[0])<.001&&Math.abs(a[1]-b[1])<.001;
+  const loop=closed||same(src[0],src[n-1]);
+  const base=loop&&same(src[0],src[n-1])?src.slice(0,-1):src;
+
+  const point=i=>{
+    if(loop){
+      const len=base.length;
+      return base[(i%len+len)%len];
+    }
+    return base[Math.max(0,Math.min(base.length-1,i))];
+  };
+
+  const segCount=loop?base.length:base.length-1;
+  for(let i=0;i<segCount;i++){
+    const p0=point(i-1),p1=point(i),p2=point(i+1),p3=point(i+2);
+    for(let s=0;s<steps;s++){
+      const t=s/steps,t2=t*t,t3=t2*t;
+      const x=.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3);
+      const y=.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
+      out.push([x,y]);
+    }
+  }
+  if(loop)out.push([...out[0]]);
+  else out.push([...base[base.length-1]]);
+  return out;
+}
 
 function avenueRouteDefinitions(name){
   const main=avenueRoutes[name];
   if(!main)return [];
+  const smoothDef=(key,points)=>({
+    key,
+    points:catmullRomRoute(points,points.length>2&&Math.hypot(points[0][0]-points.at(-1)[0],points[0][1]-points.at(-1)[1])<1,7)
+  });
   return [
-    {key:"main",points:main},
-    ...((avenueBranches[name]||[]).map(def=>({key:def.key,points:def.points})))
+    smoothDef("main",main),
+    ...((avenueBranches[name]||[]).map(def=>smoothDef(def.key,def.points)))
   ];
 }
 
@@ -2366,8 +2407,8 @@ function renderAvenues(which){
 
       const corridor=L.polyline(points,{
         color,
-        weight:def.key==="main"?10:8,
-        opacity:.025,
+        weight:def.key==="main"?8:7,
+        opacity:.018,
         lineCap:"round",
         lineJoin:"round",
         interactive:false,
@@ -2376,8 +2417,8 @@ function renderAvenues(which){
 
       const core=L.polyline(points,{
         color,
-        weight:def.key==="main"?2.4:2,
-        opacity:.16,
+        weight:def.key==="main"?2.1:1.8,
+        opacity:.13,
         lineCap:"round",
         lineJoin:"round",
         interactive:false,
