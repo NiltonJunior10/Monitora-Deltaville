@@ -3848,3 +3848,13 @@ body.map-open .leaflet-control-attribution{
   text-align:center!important;
   line-height:1.15!important;
 }
+
+
+/* v7.0.4 — restore common occurrence suggestions */
+#typeChips.type-chip-grid button.v6-secondary-type{
+  display:none!important;
+}
+
+#typeChips.type-chip-grid.v6-show-all button.v6-secondary-type{
+  display:grid!important;
+}
