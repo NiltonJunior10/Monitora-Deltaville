@@ -1,7 +1,7 @@
 {
   "name": "monitora-deltaville",
   "private": true,
-  "version": "7.0.6",
+  "version": "7.0.7",
   "scripts": {
     "deploy": "wrangler deploy",
     "test": "node --test tests/*.test.cjs",
