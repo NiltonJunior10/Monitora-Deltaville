@@ -3406,3 +3406,65 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     border-left:0!important;
   }
 }
+
+
+/* v7.0.46 — centered desktop access card */
+@media(min-width:1180px){
+  /* O acesso fica no centro exato da viewport, independente da altura do conteúdo. */
+  #accessOverlay.overlay.onboarding{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    min-height:100vh!important;
+    padding:24px!important;
+    margin:0!important;
+    display:grid!important;
+    place-items:center!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:auto!important;
+    box-sizing:border-box!important;
+  }
+
+  #accessOverlay>.access-sheet{
+    position:relative!important;
+    inset:auto!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    transform:none!important;
+    margin:auto!important;
+    width:min(520px,calc(100vw - 48px))!important;
+    max-height:calc(100dvh - 48px)!important;
+    box-sizing:border-box!important;
+  }
+
+  /* O select do acesso usa cores nativas legíveis no menu aberto. */
+  #accessOverlay select{
+    color:#16283F!important;
+    background:#FFFFFF!important;
+    -webkit-text-fill-color:#16283F!important;
+    color-scheme:light!important;
+  }
+
+  #accessOverlay select option,
+  #accessOverlay select optgroup{
+    color:#16283F!important;
+    background:#FFFFFF!important;
+    -webkit-text-fill-color:#16283F!important;
+  }
+
+  #accessOverlay select option:checked{
+    color:#0B63CE!important;
+    background:#EAF3FF!important;
+    -webkit-text-fill-color:#0B63CE!important;
+  }
+
+  #accessOverlay select option:disabled{
+    color:#7F8EA3!important;
+    background:#FFFFFF!important;
+    -webkit-text-fill-color:#7F8EA3!important;
+  }
+}
