@@ -54,6 +54,54 @@ function weatherSetHidden(selector,hidden){
   const el=$(selector);
   if(el)el.hidden=hidden;
 }
+function renderDesktopWeatherAlerts(snapshot){
+  const list=document.getElementById("desktopWeatherAlertList");
+  if(!list)return;
+
+  const alerts=[];
+  if(snapshot.stormRisk){
+    alerts.push({type:"storm",label:"Tempestade",detail:"Trovoadas previstas nas próximas 6h",severity:"alert"});
+  }
+  if(snapshot.hailRisk){
+    alerts.push({type:"hail",label:"Granizo",detail:"Possibilidade de granizo nas próximas 6h",severity:"critical"});
+  }
+  if(weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=20){
+    alerts.push({type:"rain",label:"Chuva intensa",detail:`${Number(snapshot.rain).toFixed(1)} mm previstos em 6h`,severity:"alert"});
+  }else if(weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=5){
+    alerts.push({type:"rain",label:"Chuva",detail:`${Number(snapshot.rain).toFixed(1)} mm previstos em 6h`,severity:"attention"});
+  }
+  if(snapshot.windRisk){
+    alerts.push({type:"wind",label:"Rajadas fortes",detail:`Até ${Math.round(Number(snapshot.maxGust)||0)} km/h`,severity:"alert"});
+  }else if(snapshot.windAttention){
+    alerts.push({type:"wind",label:"Atenção para rajadas",detail:`Até ${Math.round(Number(snapshot.maxGust)||0)} km/h`,severity:"attention"});
+  }
+
+  if(!alerts.length){
+    list.innerHTML='<span class="desktop-weather-alert-clear">Sem alertas meteorológicos no momento.</span>';
+  }else{
+    const icon={storm:"⚡",hail:"◆",rain:"●",wind:"↝"};
+    list.innerHTML=alerts.map(a=>`
+      <span class="desktop-weather-alert-chip ${a.severity}">
+        <i aria-hidden="true">${icon[a.type]||"!"}</i>
+        <b>${a.label}</b>
+        <small>${a.detail}</small>
+      </span>
+    `).join("");
+  }
+
+  const hailCard=document.getElementById("desktopWeatherHailCard");
+  const windCard=document.getElementById("desktopWeatherWindCard");
+  const rainCard=document.getElementById("desktopWeatherRainCard");
+  const rainNowCard=document.getElementById("desktopWeatherRainNowCard");
+
+  hailCard?.classList.toggle("has-alert",!!snapshot.hailRisk);
+  windCard?.classList.toggle("has-alert",!!snapshot.windRisk);
+  windCard?.classList.toggle("has-attention",!snapshot.windRisk&&!!snapshot.windAttention);
+  rainCard?.classList.toggle("has-alert",weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=20);
+  rainCard?.classList.toggle("has-attention",weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=5&&Number(snapshot.rain)<20);
+  rainNowCard?.classList.toggle("has-attention",weatherHasNumber(snapshot.currentRain)&&Number(snapshot.currentRain)>0);
+}
+
 function renderWeatherSnapshot(snapshot){
   if(!snapshot)return;
 
@@ -131,6 +179,8 @@ function renderWeatherSnapshot(snapshot){
     snapshot.windAttention?"Rajadas fortes previstas":
     weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes previstas":"Previsão indisponível"
   );
+
+  renderDesktopWeatherAlerts(snapshot);
 }
 
 function loadCachedWeather(){
@@ -195,6 +245,7 @@ async function loadWeather(){
     const prob=Math.max(...nextProbability.map(Number).filter(Number.isFinite),0);
     const maxWind=nextWind.length?Math.max(...nextWind):null;
     const maxGust=nextGust.length?Math.max(...nextGust):null;
+    const stormRisk=nextCodes.some(code=>code===95||code===96||code===99);
     const hailRisk=nextCodes.some(code=>code===96||code===99);
     const windRisk=Number.isFinite(maxGust)&&maxGust>=60;
     const windAttention=Number.isFinite(maxGust)&&maxGust>=50;
@@ -227,7 +278,7 @@ async function loadWeather(){
     const snapshot={
       saved_at:Date.now(),
       rain,prob,temp,max,min,currentRain,humidity,feelsLike,wind,
-      weatherCode,isDay,maxWind,maxGust,hailRisk,windRisk,windAttention,
+      weatherCode,isDay,maxWind,maxGust,stormRisk,hailRisk,windRisk,windAttention,
       detail:weatherDetail,
       short_summary:summary,
       icon:weatherIcon
@@ -253,7 +304,7 @@ async function loadWeather(){
       const unavailable={
         rain:null,prob:null,temp:null,max:null,min:null,currentRain:null,
         humidity:null,feelsLike:null,wind:null,weatherCode:2,isDay:1,
-        maxWind:null,maxGust:null,hailRisk:false,windRisk:false,windAttention:false,
+        maxWind:null,maxGust:null,stormRisk:false,hailRisk:false,windRisk:false,windAttention:false,
         detail:"Previsão temporariamente indisponível",
         short_summary:"Previsão indisponível",
         icon:"🌥️"
