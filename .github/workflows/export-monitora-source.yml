@@ -1,9 +1,8 @@
 name: Export Monitora source files
 
 on:
-  push:
-    paths:
-      - ".github/workflows/export-monitora-source.yml"
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
