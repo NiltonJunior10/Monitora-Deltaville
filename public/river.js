@@ -80,17 +80,38 @@ function updateRiverPeriodMetrics(pts,hours){
   if(label)label.textContent=riverPeriodText(hours);
 
   const deltaEl=$("#riverMetricDelta"),maxEl=$("#riverMetricMax"),minEl=$("#riverMetricMin");
+  const deltaPctEl=$("#riverMetricDeltaPct"),maxTimeEl=$("#riverMetricMaxTime"),minTimeEl=$("#riverMetricMinTime");
+  const deltaIcon=$("#riverMetricDeltaIcon"),deltaCard=$("#riverMetricDeltaCard");
+
   if(!pts.length){
     if(deltaEl)deltaEl.textContent="—";
     if(maxEl)maxEl.textContent="—";
     if(minEl)minEl.textContent="—";
+    if(deltaPctEl)deltaPctEl.textContent="—";
+    if(maxTimeEl)maxTimeEl.textContent="—";
+    if(minTimeEl)minTimeEl.textContent="—";
+    if(deltaIcon)deltaIcon.textContent="→";
+    if(deltaCard)deltaCard.dataset.direction="stable";
     return;
   }
+
   const vals=pts.map(x=>x.v);
   const delta=pts.length>1?vals[vals.length-1]-vals[0]:null;
+  const firstValue=vals[0];
+  const deltaPct=delta!==null&&Math.abs(firstValue)>.0001?(delta/firstValue)*100:null;
+  const maxValue=Math.max(...vals),minValue=Math.min(...vals);
+  const maxPoint=pts[vals.indexOf(maxValue)],minPoint=pts[vals.indexOf(minValue)];
+
   if(deltaEl)deltaEl.textContent=delta===null?"—":formatRiverDelta(delta);
-  if(maxEl)maxEl.textContent=`${Math.max(...vals).toFixed(2).replace(".",",")} m`;
-  if(minEl)minEl.textContent=`${Math.min(...vals).toFixed(2).replace(".",",")} m`;
+  if(deltaPctEl)deltaPctEl.textContent=deltaPct===null?"—":`${deltaPct>0?"+":""}${deltaPct.toFixed(1).replace(".",",")}%`;
+  if(maxEl)maxEl.textContent=`${maxValue.toFixed(2).replace(".",",")} m`;
+  if(minEl)minEl.textContent=`${minValue.toFixed(2).replace(".",",")} m`;
+  if(maxTimeEl)maxTimeEl.textContent=maxPoint?formatRiverTooltipTime(maxPoint.t):"—";
+  if(minTimeEl)minTimeEl.textContent=minPoint?formatRiverTooltipTime(minPoint.t):"—";
+
+  const direction=delta===null||Math.abs(delta)<.0005?"stable":delta>0?"rising":"falling";
+  if(deltaIcon)deltaIcon.textContent=direction==="rising"?"↑":direction==="falling"?"↓":"→";
+  if(deltaCard)deltaCard.dataset.direction=direction;
 }
 function riverSmoothSegments(points){
   if(!points||points.length<2)return "";
@@ -171,6 +192,24 @@ function renderRiverChart(series=[]){
     return `<text x="${x.toFixed(1)}" y="${height-14}" text-anchor="${anchor}" class="river-axis-label river-axis-x">${formatRiverAxisTime(p.t,riverWindowHours)}</text>`;
   }).join("");
 
+  const thresholds=state.riverStatus?.thresholds||{};
+  const officialThresholds=thresholds.official===true&&thresholds.enabled===true;
+  const thresholdItems=officialThresholds?[
+    ["attention",Number(thresholds.attention_m),"Atenção"],
+    ["alert",Number(thresholds.alert_m),"Alerta"],
+    ["critical",Number(thresholds.critical_m),"Crítico"]
+  ].filter(([,value])=>Number.isFinite(value)&&value>=min&&value<=max):[];
+
+  const thresholdMarkup=thresholdItems.map(([kind,value,label])=>{
+    const y=pad.t+((max-value)/span)*plotH;
+    return `
+      <line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${width-pad.r}" y2="${y.toFixed(1)}" class="river-threshold-line ${kind}"/>
+      <g class="river-threshold-label ${kind}" transform="translate(${width-pad.r-8} ${(y-7).toFixed(1)})">
+        <rect x="-116" y="-13" width="116" height="24" rx="10"/>
+        <text x="-8" y="4" text-anchor="end">${label} ${value.toFixed(2).replace(".",",")} m</text>
+      </g>`;
+  }).join("");
+
   host.innerHTML=`
     <div class="river-chart-inspector" id="riverChartInspector" aria-live="polite">
       <span id="riverInspectorLabel">Última medição</span>
@@ -190,6 +229,7 @@ function renderRiverChart(series=[]){
         </filter>
       </defs>
       ${yGrid}
+      ${thresholdMarkup}
       <path d="${areaPath}" class="river-chart-area"/>
       <path d="${linePath}" class="river-chart-line"/>
       <line id="riverCrosshair" x1="${last.x}" y1="${pad.t}" x2="${last.x}" y2="${baseline}" class="river-crosshair" visibility="hidden"/>
@@ -454,10 +494,16 @@ function renderRiverStatus(){
     trend.textContent=riverTrendLabel(trendValue);
     if($("#v7RiverStatus"))$("#v7RiverStatus").textContent=riverStatusLabel(status)==="SEM COTA OFICIAL"?riverTrendLabel(trendValue):riverStatusLabel(status);
     if($("#v7RiverDot"))$("#v7RiverDot").className=status;
-    variation.textContent=delta===null?"Variação em 1 hora: dados insuficientes":`Variação em aproximadamente 1 hora: ${formatRiverDelta(delta.value)} (${delta.minutes} min)`;
+    if(delta===null){
+      variation.textContent="—";
+    }else{
+      const previous=Number(latest.level_m)-Number(delta.value);
+      const pct=Math.abs(previous)>.0001?(Number(delta.value)/previous)*100:null;
+      variation.textContent=`${formatRiverDelta(delta.value)}${pct===null?"":` (${pct>0?"+":""}${pct.toFixed(1).replace(".",",")}%)`}`;
+    }
     updated.textContent=latest.stale
-      ?`Dado desatualizado • medição de ${formatRiverTime(latest.measured_at)}`
-      :`Medição: ${formatRiverTime(latest.measured_at)} • consulta a cada ${d?.source?.polling_minutes||15} min`;
+      ?`Dado desatualizado • ${formatRiverTime(latest.measured_at)}`
+      :`${formatRiverTime(latest.measured_at)} • consulta a cada ${d?.source?.polling_minutes||15} min`;
     fresh.textContent=connection==="unavailable"?"Sem conexão com a fonte • exibindo última medição salva":riverFreshnessText(latest);
     renderRiverChart(d?.series||[]);
   }else{
