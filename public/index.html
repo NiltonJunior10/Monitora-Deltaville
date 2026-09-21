@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=717">
+  <link rel="stylesheet" href="v8.css?v=718">
   <script src="theme-init.js?v=702"></script>
   <title>Monitora Deltaville</title>
 </head>
@@ -195,7 +195,7 @@
         </div>
         <p>Juntos por um<br><strong>Deltaville mais seguro</strong><br>e bem cuidado.</p>
         <span class="desktop-community-accent" aria-hidden="true"></span>
-        <small>Monitora Deltaville<br>v7.0.17</small>
+        <small>Monitora Deltaville<br>v7.0.18</small>
       </div>
     </aside>
     <header class="topbar">
@@ -424,41 +424,72 @@
 
         <section class="river-level-card" id="riverLevelCard" aria-labelledby="riverLevelTitle">
           <div class="river-level-head">
-            <div>
-              <p class="kicker">MONITORAMENTO OFICIAL</p>
-              <h2 id="riverLevelTitle">NÍVEL DO RIO BIGUAÇU</h2>
+            <div class="river-level-title">
+              <span class="river-title-icon" aria-hidden="true">
+                <svg class="ui-i" viewBox="0 0 24 24" focusable="false"><use href="#i-waves3"/></svg>
+              </span>
+              <div>
+                <p class="kicker">MONITORAMENTO OFICIAL</p>
+                <h2 id="riverLevelTitle">NÍVEL DO RIO BIGUAÇU</h2>
+              </div>
             </div>
             <span class="river-status-badge unknown" id="riverStatusBadge">SEM COTA OFICIAL</span>
           </div>
 
           <div class="river-level-body">
-            <div class="river-level-primary">
-              <strong id="riverLevelValue">—</strong>
-              <span class="river-trend unknown" id="riverTrend">Aguardando dados</span>
-              <p id="riverVariation">Variação em 1 hora: —</p>
-              <small id="riverUpdated">Integração da fonte oficial em validação.</small>
-            </div>
+            <aside class="river-level-primary">
+              <div class="river-primary-reading">
+                <strong id="riverLevelValue">—</strong>
+                <span class="river-trend unknown" id="riverTrend">Aguardando dados</span>
+              </div>
+              <div class="river-primary-variation">
+                <span>Variação em 1 hora</span>
+                <b id="riverVariation">—</b>
+              </div>
+              <div class="river-primary-updated">
+                <span>Última medição</span>
+                <small id="riverUpdated">Aguardando dados.</small>
+              </div>
+            </aside>
 
             <div class="river-chart-wrap">
               <div class="river-chart-head">
-                <div>
+                <div class="river-chart-heading">
                   <b>Evolução do nível</b>
                   <small id="riverPeriodLabel">Últimas 24 horas</small>
                 </div>
-                <div class="river-window-chips" id="riverWindowChips" aria-label="Período do gráfico">
-                  <button type="button" data-river-window="1">1h</button>
-                  <button type="button" data-river-window="3">3h</button>
-                  <button type="button" data-river-window="6">6h</button>
-                  <button type="button" data-river-window="12">12h</button>
-                  <button type="button" data-river-window="24" class="active" aria-pressed="true">24h</button>
-                  <button type="button" data-river-window="168">7d</button>
-                </div>
               </div>
 
-              <div class="river-chart-metrics" id="riverChartMetrics">
-                <div><span>Variação</span><strong id="riverMetricDelta">—</strong></div>
-                <div><span>Máximo</span><strong id="riverMetricMax">—</strong></div>
-                <div><span>Mínimo</span><strong id="riverMetricMin">—</strong></div>
+              <div class="river-chart-summarybar">
+                <div class="river-chart-metrics" id="riverChartMetrics">
+                  <div class="river-metric-card" id="riverMetricDeltaCard">
+                    <span class="river-metric-icon" id="riverMetricDeltaIcon" aria-hidden="true">→</span>
+                    <div><span>Variação (24h)</span><strong id="riverMetricDelta">—</strong><small id="riverMetricDeltaPct">—</small></div>
+                  </div>
+                  <div class="river-metric-card">
+                    <span class="river-metric-icon max" aria-hidden="true">↑</span>
+                    <div><span>Máximo (24h)</span><strong id="riverMetricMax">—</strong><small id="riverMetricMaxTime">—</small></div>
+                  </div>
+                  <div class="river-metric-card">
+                    <span class="river-metric-icon min" aria-hidden="true">↓</span>
+                    <div><span>Mínimo (24h)</span><strong id="riverMetricMin">—</strong><small id="riverMetricMinTime">—</small></div>
+                  </div>
+                </div>
+
+                <div class="river-chart-actions">
+                  <div class="river-window-chips" id="riverWindowChips" aria-label="Período do gráfico">
+                    <button type="button" data-river-window="1">1h</button>
+                    <button type="button" data-river-window="3">3h</button>
+                    <button type="button" data-river-window="6">6h</button>
+                    <button type="button" data-river-window="12">12h</button>
+                    <button type="button" data-river-window="24" class="active" aria-pressed="true">24h</button>
+                    <button type="button" data-river-window="168">7d</button>
+                  </div>
+                  <a class="river-details-btn" href="https://ciram.epagri.sc.gov.br/index.php/serv-casan-bigua/" target="_blank" rel="noopener noreferrer">
+                    <svg class="ui-i" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#i-bars"/></svg>
+                    <span>Ver em detalhes</span>
+                  </a>
+                </div>
               </div>
 
               <div class="river-chart" id="riverChart">
@@ -468,7 +499,7 @@
           </div>
 
           <div class="river-level-foot">
-            <span id="riverFreshness">Nenhuma medição armazenada.</span>
+            <span class="river-freshness-wrap"><i aria-hidden="true">◷</i><span id="riverFreshness">Nenhuma medição armazenada.</span></span>
             <span>Fonte: <a href="https://ciram.epagri.sc.gov.br/index.php/serv-casan-bigua/" target="_blank" rel="noopener noreferrer">Epagri/Ciram</a></span>
           </div>
         </section>
@@ -1264,7 +1295,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="stability-core.js?v=702"></script>
   <script src="auth.js?v=702"></script>
-  <script src="river.js?v=716"></script>
+  <script src="river.js?v=718"></script>
   <script src="weather.js?v=702"></script>
   <script src="push.js?v=702"></script>
   <script src="app.js?v=711"></script>
