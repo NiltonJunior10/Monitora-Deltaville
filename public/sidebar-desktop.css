@@ -1,4 +1,4 @@
-/* Monitora Deltaville — Sidebar desktop override v7.0.22 */
+/* Monitora Deltaville — Sidebar desktop override v7.0.23 */
 @media (min-width:1180px){
   .desktop-sidebar{
     overflow:hidden!important;
@@ -76,7 +76,7 @@
 
   .desktop-neighborhood-scene{
     position:absolute!important;
-    inset:8px 0 84px!important;
+    inset:0 0 90px!important;
     display:block!important;
     pointer-events:none!important;
     z-index:0!important;
@@ -86,8 +86,8 @@
     display:block!important;
     width:100%!important;
     height:100%!important;
-    object-fit:cover!important;
-    object-position:center bottom!important;
+    object-fit:fill!important;
+    object-position:center center!important;
     border:0!important;
   }
 
