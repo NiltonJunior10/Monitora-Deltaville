@@ -2634,3 +2634,141 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     background:rgba(48,209,88,.10)!important;
   }
 }
+
+
+/* v7.0.38 — official Epagri/Ciram weather notices */
+@media(min-width:1180px){
+  .desktop-weather-alert-list{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:7px!important;
+  }
+
+  .desktop-weather-official-alert{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    grid-template-areas:
+      "source source"
+      "title title"
+      "events events"
+      "time time"!important;
+    gap:3px!important;
+    min-width:0!important;
+    padding:10px 12px!important;
+    border:1px solid rgba(255,159,10,.20)!important;
+    border-radius:15px!important;
+    background:rgba(255,159,10,.08)!important;
+    color:var(--v6-label)!important;
+    text-decoration:none!important;
+    transition:transform .16s ease,border-color .16s ease,background .16s ease!important;
+  }
+
+  .desktop-weather-official-alert:hover{
+    transform:translateY(-1px)!important;
+    border-color:rgba(10,132,255,.28)!important;
+  }
+
+  .desktop-weather-official-alert.alert{
+    border-color:rgba(255,149,0,.26)!important;
+    background:rgba(255,149,0,.10)!important;
+  }
+
+  .desktop-weather-official-alert.critical{
+    border-color:rgba(255,69,58,.28)!important;
+    background:rgba(255,69,58,.09)!important;
+  }
+
+  .desktop-weather-official-alert.attention{
+    border-color:rgba(255,204,0,.25)!important;
+    background:rgba(255,204,0,.09)!important;
+  }
+
+  .desktop-weather-official-alert .official-alert-source{
+    grid-area:source!important;
+    width:max-content!important;
+    padding:3px 6px!important;
+    border-radius:999px!important;
+    background:rgba(10,132,255,.10)!important;
+    color:var(--v6-blue)!important;
+    font-size:7.5px!important;
+    font-weight:800!important;
+    letter-spacing:.06em!important;
+  }
+
+  .desktop-weather-official-alert b{
+    grid-area:title!important;
+    min-width:0!important;
+    color:var(--v6-label)!important;
+    font-size:11px!important;
+    line-height:1.22!important;
+    font-weight:730!important;
+  }
+
+  .desktop-weather-official-alert small{
+    grid-area:events!important;
+    color:var(--v6-secondary)!important;
+    font-size:9px!important;
+    line-height:1.25!important;
+  }
+
+  .desktop-weather-official-alert em{
+    grid-area:time!important;
+    color:var(--v6-tertiary)!important;
+    font-size:8px!important;
+    line-height:1.2!important;
+    font-style:normal!important;
+  }
+
+  .desktop-weather-alert-pending,
+  .desktop-weather-alert-unavailable{
+    display:block!important;
+    padding:8px 10px!important;
+    border-radius:12px!important;
+    font-size:9px!important;
+    line-height:1.25!important;
+  }
+
+  .desktop-weather-alert-pending{
+    color:var(--v6-secondary)!important;
+    background:rgba(142,142,147,.08)!important;
+  }
+
+  .desktop-weather-alert-unavailable{
+    color:#A35C18!important;
+    background:rgba(255,159,10,.09)!important;
+  }
+
+  :root[data-theme="dark"] .desktop-weather-official-alert{
+    background:rgba(255,159,10,.08)!important;
+  }
+}
+
+/* Mobile: deixa claro quando o aviso vem da fonte oficial. */
+.v7-weather-risk.official{
+  color:#B33A32!important;
+  background:rgba(255,69,58,.10)!important;
+  border-color:rgba(255,69,58,.16)!important;
+  font-weight:700!important;
+}
+
+/* Card oficial também aparece na página Alertas. */
+.epagri-official-card{
+  border-color:rgba(10,132,255,.16)!important;
+  background:
+    linear-gradient(135deg,rgba(10,132,255,.05),rgba(255,255,255,.72))!important;
+}
+.epagri-official-card.alert{
+  border-color:rgba(255,149,0,.24)!important;
+}
+.epagri-official-card.critical{
+  border-color:rgba(255,69,58,.26)!important;
+}
+.epagri-official-link{
+  display:inline-flex!important;
+  margin-top:7px!important;
+  color:var(--v6-blue)!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  text-decoration:none!important;
+}
