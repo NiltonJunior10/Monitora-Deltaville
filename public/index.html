@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=709">
+  <link rel="stylesheet" href="v8.css?v=710">
   <script src="theme-init.js?v=702"></script>
   <title>Monitora Deltaville</title>
 </head>
@@ -116,7 +116,7 @@
           <i></i><i></i><i></i>
         </div>
         <p>Juntos por um<br>Deltaville mais seguro<br>e bem cuidado.</p>
-        <small>Monitora Deltaville<br>v7.0.9</small>
+        <small>Monitora Deltaville<br>v7.0.10</small>
       </div>
     </aside>
     <header class="topbar">
@@ -412,6 +412,26 @@
             <span class="desktop-occurrence-action">Ver ocorrências <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow-right"/></svg></span>
           </button>
         </section>
+
+        <button type="button" class="desktop-river-summary" id="desktopRiverSummary" aria-expanded="false" aria-controls="riverLevelCard">
+          <span class="desktop-river-icon" aria-hidden="true">
+            <svg class="ui-i" viewBox="0 0 24 24" focusable="false"><use href="#i-waves3"/></svg>
+          </span>
+          <span class="desktop-river-summary-copy">
+            <small>Nível do Rio Biguaçu</small>
+            <span class="desktop-river-mainline">
+              <strong id="desktopRiverLevel">—</strong>
+              <span class="desktop-river-delta" id="desktopRiverDelta">Aguardando dados</span>
+            </span>
+            <span class="desktop-river-footline">
+              <span class="desktop-river-status unknown" id="desktopRiverStatus">Sem cota oficial</span>
+              <span id="desktopRiverUpdated">Última medição: —</span>
+            </span>
+          </span>
+          <span class="desktop-river-chevron" aria-hidden="true">
+            <svg class="ui-i" viewBox="0 0 24 24" focusable="false"><use href="#i-chevron-right"/></svg>
+          </span>
+        </button>
 
         <button class="primary wide" id="homeReport">
           <span class="home-report-plus" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></span>
@@ -1152,7 +1172,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="stability-core.js?v=702"></script>
   <script src="auth.js?v=702"></script>
-  <script src="river.js?v=702"></script>
+  <script src="river.js?v=710"></script>
   <script src="weather.js?v=702"></script>
   <script src="push.js?v=702"></script>
   <script src="app.js?v=709"></script>
