@@ -435,24 +435,24 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 }
 
 @media(min-width:1180px) and (pointer:fine){
-  /* Ordem da informação: situação/ocorrências → rio → mapa. */
+  /* Ordem da informação: rio → situação/ocorrências → mapa. */
   .page[data-page="home"].active{
     grid-template-areas:
-      "kpis action"
       "river river"
+      "kpis kpis"
       "map events"
       "bottom bottom"!important;
     gap:12px!important;
   }
 
-  /* Apenas dois controles no resumo. Atenção/Alerta/Crítico ficam na tela de avisos. */
+  /* Resumo compacto com os mesmos símbolos de gravidade do mobile. */
   .desktop-kpi-row{
-    grid-template-columns:minmax(0,1.55fr) minmax(230px,.72fr)!important;
+    grid-template-columns:minmax(240px,1.8fr) minmax(145px,1fr) repeat(3,minmax(95px,.65fr))!important;
     gap:10px!important;
   }
   .desktop-kpi{
     min-height:88px!important;
-    height:88px!important;
+    height:auto!important;
     padding:11px 14px!important;
     border-radius:18px!important;
   }
@@ -468,7 +468,7 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 
   .desktop-kpi-status{
     display:grid!important;
-    grid-template-columns:40px minmax(0,1fr) auto!important;
+    grid-template-columns:28px minmax(0,1fr)!important;
     align-items:center!important;
     gap:12px!important;
   }
@@ -518,7 +518,7 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     stroke-width:2.2;
   }
 
-  /* Um único botão de ocorrências, sem ícone decorativo. */
+  /* Acesso às ocorrências ativas. */
   .desktop-kpi-occurrences{
     display:flex!important;
     align-items:center!important;
@@ -577,12 +577,15 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     height:88px!important;
   }
 
-  /* Lista da home mais limpa: sem pictogramas por ocorrência. */
+  /* Símbolos lineares das ocorrências, sem caixas internas. */
   .home-events-section .event-icon{
-    display:none!important;
+    display:grid!important;
+    place-items:center;
+    width:24px;height:24px;
+    background:none!important;border:0!important;box-shadow:none!important;
   }
   .home-events-section .event-card{
-    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-columns:24px minmax(0,1fr)!important;
     gap:10px!important;
     padding:12px 14px!important;
   }
@@ -598,9 +601,51 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     display:none!important;
   }
 
-  /* O resumo por grau foi removido; sobram apenas conteúdo útil e monitoramento. */
+  /* Rodapé com ocorrências recentes e fontes de monitoramento. */
   .desktop-bottom-grid{
     grid-template-columns:1fr 1.25fr!important;
     gap:12px!important;
   }
+}
+
+/* v7.0.9 — resumo compacto, estado compartilhado e cabeçalho sem cortes. */
+@media(min-width:1180px) and (pointer:fine){
+  .app-shell{display:flex!important;flex-direction:column!important;height:100dvh!important;min-height:0!important}
+  .topbar{flex:none;height:auto!important;min-height:92px!important;grid-template-columns:minmax(0,1fr) minmax(250px,1.1fr) minmax(150px,.7fr)!important;gap:12px!important}
+  .topbar>*{min-width:0!important}
+  .desktop-greeting h1,.desktop-greeting span,.desktop-account-copy b,.desktop-account-copy small,.top-weather-summary{
+    white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere
+  }
+  .desktop-greeting h1{font-size:clamp(20px,1.8vw,28px)!important}
+  .desktop-account{min-width:0!important;max-width:100%;gap:8px!important}
+  .desktop-profile-trigger{min-width:0!important;max-width:100%}
+  .desktop-account-copy{min-width:0!important}
+  .desktop-bell,.desktop-avatar{flex-shrink:0}
+  .top-weather{width:100%!important;min-width:0!important}
+  main{flex:1;min-height:0!important;height:auto!important}
+  .desktop-sidebar{overflow-y:auto!important}
+  .desktop-brand,.desktop-nav,.desktop-community-note{flex-shrink:0}
+  .page[data-page="home"].active{grid-template-columns:minmax(0,1fr) minmax(280px,320px)!important;grid-template-rows:repeat(4,auto)!important;min-height:0!important}
+  .desktop-kpi-row{min-width:0}
+  .desktop-kpi{min-width:0;min-height:82px!important;padding:10px 12px!important;gap:9px!important}
+  :root[data-theme] .desktop-kpi-status{background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--st) 14%,transparent),transparent 62%),var(--v6-surface)!important;border-color:color-mix(in srgb,var(--st) 35%,transparent)!important}
+  .desktop-kpi-status strong{font-size:19px!important;line-height:1.15!important}
+  :root[data-theme] .desktop-kpi-status strong,:root[data-theme] .desktop-kpi-status .desktop-kpi-shield{color:var(--st-ink)!important}
+  .desktop-kpi-status .desktop-kpi-action,.desktop-occurrence-action{display:none}
+  :root[data-theme] .desktop-kpi-status .desktop-kpi-shield,:root[data-theme] .desktop-kpi .desktop-kpi-icon{width:26px!important;height:26px!important;flex-basis:26px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+  .desktop-kpi-occurrences{justify-content:flex-start!important}
+  .desktop-occurrence-copy strong{font-size:24px!important}
+  .desktop-kpi-severity{display:flex!important;align-items:center!important}
+  .desktop-kpi-severity>div{display:flex;flex-direction:column;gap:4px}
+  .desktop-kpi-severity strong{font-size:24px!important;line-height:1!important}
+  .desktop-kpi-severity small{font-size:11px!important}
+  :root[data-theme="dark"] .desktop-kpi-icon.attention{color:var(--v6-yellow)!important}
+  :root[data-theme="dark"] .desktop-kpi-icon.alert{color:var(--v6-orange)!important}
+  :root[data-theme="dark"] .desktop-kpi-icon.critical{color:var(--v6-red)!important}
+  .river-chart,.river-chart-empty{min-height:110px!important}
+  .river-chart svg{height:110px!important;min-height:110px!important}
+  .v7-river-collapse{display:none!important}
+  .home-events-section .event-card{min-width:0}
+  .home-events-section .event-card>div{min-width:0;overflow-wrap:anywhere}
+  .home-events-section .event-owner-actions{grid-column:2}
 }
