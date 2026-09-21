@@ -1299,30 +1299,37 @@ function positionSelectedSegmentAction(){
 
   const pts=avenuePointsByLocationId(seg.avenueId);
   if(!pts)return;
-  const mid=selectedSegmentMidpoint(pts,seg);
-  const point=map.latLngToContainerPoint(L.latLng(mid[0],mid[1]));
+
+  // O popup acompanha o SEGUNDO ponto do gesto (fim do arraste),
+  // nunca o meio do trecho. Assim "Ajustar" não cobre a marcação.
+  const selectedRoute=selectedSegmentRoute(pts,seg);
+  const endPoint=selectedRoute?.length
+    ? selectedRoute[selectedRoute.length-1]
+    : pointAtRouteRatio(pts,seg.endRatio);
+  if(!endPoint)return;
+
+  const point=map.latLngToContainerPoint(L.latLng(endPoint[0],endPoint[1]));
   const mapEl=map.getContainer();
 
   requestAnimationFrame(()=>{
     if(action.hidden||!state.selectedSegment)return;
 
-    const mapRect=mapEl.getBoundingClientRect();
     const width=action.offsetWidth||340;
     const height=action.offsetHeight||92;
     const margin=12;
-    const gap=10;
+    const gap=16;
 
-    // Prioridade: popup lateral e alinhado verticalmente ao centro do trecho.
+    // Fica imediatamente ao lado do ponto 2.
     let left=point.x+gap;
     let side="right";
-    if(left+width>mapRect.width-margin){
+    if(left+width>mapEl.clientWidth-margin){
       left=point.x-width-gap;
       side="left";
     }
-    left=Math.max(margin,Math.min(left,mapRect.width-width-margin));
+    left=Math.max(margin,Math.min(left,mapEl.clientWidth-width-margin));
 
     let top=point.y-(height/2);
-    top=Math.max(margin,Math.min(top,mapRect.height-height-margin));
+    top=Math.max(margin,Math.min(top,mapEl.clientHeight-height-margin));
 
     action.style.setProperty("left",Math.round(left)+"px","important");
     action.style.setProperty("top",Math.round(top)+"px","important");
@@ -1331,6 +1338,7 @@ function positionSelectedSegmentAction(){
     action.style.setProperty("transform","none","important");
     action.dataset.anchorSide=side;
     action.dataset.anchorVertical="center";
+    action.dataset.anchorPoint="end";
   });
 }
 
@@ -3756,7 +3764,7 @@ $("#adjustMapSegmentBtn")?.addEventListener("click",()=>{
   const action=$("#selectedSegmentAction");
   action?.classList.add("adjusting");
   if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Arraste as alças azuis nas pontas do trecho";
-  requestAnimationFrame(positionSelectedSegmentAction);
+  requestAnimationFrame(()=>requestAnimationFrame(positionSelectedSegmentAction));
   setTimeout(()=>action?.classList.remove("adjusting"),900);
 });
 $("#clearMapPointBtn").addEventListener("click",()=>clearSelectedPoint());
