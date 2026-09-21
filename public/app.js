@@ -1097,14 +1097,15 @@ function nearestFeatureForPoint(latlng){
 function syncMapBottomUI(){
   const pointHas=state.selectedPoints.length>0;
   const segmentHas=!!state.selectedSegment;
+  const segmentBusy=!!state.segmentPickMode?.active || !!$("#fullMap")?.classList.contains("road-drag-selecting");
   const focusVisible=!!state.activeMapItem && !$("#mapFocusCard")?.hidden;
   const pointAction=$("#selectedPointAction");
   const segmentAction=$("#selectedSegmentAction");
   const pick=$("#pickPointBtn");
 
-  // Progressive disclosure: never stack bottom controls.
+  // Nunca exibe duas ações ao mesmo tempo.
   if(pointAction)pointAction.hidden=!pointHas || segmentHas;
-  if(segmentAction)segmentAction.hidden=!segmentHas;
+  if(segmentAction)segmentAction.hidden=!segmentHas || segmentBusy;
   if(pick)pick.hidden=pointHas || segmentHas || focusVisible;
 }
 
@@ -1260,7 +1261,7 @@ function positionSelectedSegmentAction(){
     const width=action.offsetWidth||360;
     const height=action.offsetHeight||92;
     const margin=16;
-    const gap=18;
+    const gap=8;
     const safeTop=126;
     const safeBottom=18;
 
@@ -1365,6 +1366,15 @@ function prefillOccurrenceFromSelectedPoint(){
   if(!state.reportLocationIds.includes(loc.id))state.reportLocationIds.push(loc.id);
   setOccurrenceType(type,{keepLocations:true});
 }
+function closeMapAvenueTooltips(){
+  const map=state.maps.full;
+  if(!map)return;
+  try{map.closeTooltip();}catch(_){}
+  for(const layer of state.avenueLayers.full||[]){
+    try{layer.closeTooltip?.();}catch(_){}
+  }
+}
+
 function bindMapPointSelection(){
   if(state.mapInteractionBound||!state.maps.full)return;
   state.mapInteractionBound=true;
@@ -1451,7 +1461,9 @@ function bindMapPointSelection(){
     try{map.touchZoom.disable();}catch(_){}
     try{map.doubleClickZoom.disable();}catch(_){}
     container.classList.add("road-drag-selecting");
+    closeMapAvenueTooltips();
     hideMapFocusCard?.();
+    if($("#selectedSegmentAction"))$("#selectedSegmentAction").hidden=true;
 
     if(avenue){
       clearSelectedPoint({silent:true});
@@ -1491,12 +1503,14 @@ function bindMapPointSelection(){
 
       if(gesture.dragged){
         state.segmentPickMode=null;
+        closeMapAvenueTooltips();
         renderSelectedSegmentLayers();
         updateSegmentUI();
         if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=gesture.avenue.loc.name;
         if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent="Trecho selecionado • arraste as alças para ajustar";
+        const segmentAction=$("#selectedSegmentAction");
+        if(segmentAction)segmentAction.hidden=false;
         requestAnimationFrame(positionSelectedSegmentAction);
-        toast(`Trecho marcado em ${gesture.avenue.loc.name}.`);
         try{navigator.vibrate?.([12,24,12]);}catch(_){}
       }else{
         clearSegmentSelection({silent:true});
@@ -2284,6 +2298,11 @@ function renderAvenues(which){
         `<b>${esc(loc.name)}</b><span>Clique e arraste para definir a área</span>`,
         {sticky:true,className:"avenue-tooltip avenue-action-tooltip",direction:"top",opacity:1}
       );
+      hit.on("mouseover",()=>{
+        if(state.selectedSegment || state.segmentPickMode?.active || $("#fullMap")?.classList.contains("road-drag-selecting")){
+          try{hit.closeTooltip();}catch(_){}
+        }
+      });
     }
     state.avenueLayers[which].push(corridor,core,center,hit);
   });
