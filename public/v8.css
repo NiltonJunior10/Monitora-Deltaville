@@ -3468,3 +3468,15 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     -webkit-text-fill-color:#7F8EA3!important;
   }
 }
+
+
+/* v7.0.47 — access overlay hidden state */
+#accessOverlay[hidden]{
+  display:none!important;
+}
+
+@media(min-width:1180px){
+  #accessOverlay.overlay.onboarding[hidden]{
+    display:none!important;
+  }
+}
