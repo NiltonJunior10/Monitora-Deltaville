@@ -211,9 +211,18 @@
     const grid=q("#typeChips");
     if(!grid||grid.dataset.v6Ready==="1")return;
     grid.dataset.v6Ready="1";
-    qa("[data-occ-type]",grid).forEach(btn=>{
-      if(!PRIMARY_TYPES.has(btn.dataset.occType))btn.classList.add("v6-secondary-type");
+
+    const buttons=qa("[data-occ-type]",grid);
+    const primary=buttons.filter(btn=>PRIMARY_TYPES.has(btn.dataset.occType));
+    const secondary=buttons.filter(btn=>!PRIMARY_TYPES.has(btn.dataset.occType));
+
+    // Mantém as sugestões iniciais exatamente na frente.
+    // Ao abrir "todos", apenas acrescenta os demais depois delas.
+    [...primary,...secondary].forEach(btn=>{
+      btn.classList.toggle("v6-secondary-type",!PRIMARY_TYPES.has(btn.dataset.occType));
+      grid.appendChild(btn);
     });
+
     const more=document.createElement("button");
     more.type="button";
     more.className="v6-more-types";
