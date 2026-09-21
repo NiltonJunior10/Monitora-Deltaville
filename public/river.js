@@ -460,10 +460,13 @@ function renderDesktopRiverSummary(d,status,latest){
   const pts24=filterRiverSeries(d?.series||[],24);
   const delta24=pts24.length>1?pts24[pts24.length-1].v-pts24[0].v:null;
   if(delta24===null){
-    deltaEl.textContent="Variação 24h: —";
+    deltaEl.className="desktop-river-delta unknown";
+    deltaEl.textContent="Tendência indisponível";
   }else{
-    const arrow=Math.abs(delta24)<=0.005?"→":delta24>0?"↑":"↓";
-    deltaEl.textContent=`${arrow} ${formatRiverDelta(delta24)} (24h)`;
+    const trendValue=Math.abs(delta24)<=0.02?"stable":delta24>0?"rising":"falling";
+    const trendLabel=trendValue==="rising"?"↑ Subindo":trendValue==="falling"?"↓ Baixando":"→ Estável";
+    deltaEl.className=`desktop-river-delta ${trendValue}`;
+    deltaEl.textContent=`${trendLabel} • ${formatRiverDelta(delta24)} (24h)`;
   }
   updated.textContent=`Última medição: ${formatRiverTime(latest.measured_at)}`;
   if(scaleMarker){
