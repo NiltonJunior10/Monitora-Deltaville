@@ -3798,3 +3798,53 @@ body.map-open .leaflet-control-attribution{
   .admin-users-card,.admin-occurrences-card{grid-column:1}
   .admin-alert-card,.admin-alerts-list-card{grid-column:2}
 }
+
+
+/* =========================================================
+   v7.0.3 — occurrence card icon alignment
+   ========================================================= */
+#typeChips.type-chip-grid button{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:34px minmax(30px,auto)!important;
+  align-content:center!important;
+  align-items:center!important;
+  justify-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  text-align:center!important;
+}
+
+#typeChips .occ-type-icon{
+  width:100%!important;
+  height:34px!important;
+  min-height:34px!important;
+  flex:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  padding:0!important;
+  line-height:0!important;
+}
+
+#typeChips .occ-type-icon .occ-icon-svg{
+  width:30px!important;
+  height:30px!important;
+  display:block!important;
+  margin:0 auto!important;
+  position:static!important;
+  transform:none!important;
+}
+
+#typeChips .occ-type-label{
+  width:100%!important;
+  min-height:30px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0 auto!important;
+  padding:0!important;
+  text-align:center!important;
+  line-height:1.15!important;
+}
