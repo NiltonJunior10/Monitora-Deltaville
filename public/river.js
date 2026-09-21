@@ -133,8 +133,8 @@ function renderRiverChart(series=[]){
 
   const vals=pts.map(x=>x.v);
   const {min,max,span}=niceRiverBounds(vals);
-  const width=760,height=250;
-  const pad={l:62,r:28,t:34,b:44};
+  const width=Math.max(640,Math.round(host.clientWidth||760)),height=210;
+  const pad={l:40,r:16,t:28,b:34};
   const plotW=width-pad.l-pad.r,plotH=height-pad.t-pad.b;
 
   const xy=pts.map((x,i)=>{
