@@ -54,40 +54,105 @@ function weatherSetHidden(selector,hidden){
   const el=$(selector);
   if(el)el.hidden=hidden;
 }
-function renderDesktopWeatherAlerts(snapshot){
+
+let lastWeatherSnapshot=null;
+
+function weatherEscapeHtml(value){
+  return String(value??"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function weatherEventLabel(event){
+  return ({
+    storm:"Tempestade",
+    hail:"Granizo",
+    heavy_rain:"Chuva intensa",
+    wind:"Vendaval / rajadas",
+    lightning:"Raios",
+    tornado:"Tornado / tromba d’água"
+  })[event]||event;
+}
+
+function weatherOfficialSeverity(notice){
+  if(notice?.risk==="very_high")return "critical";
+  if(notice?.risk==="high")return "alert";
+  if(notice?.risk==="moderate")return "attention";
+  return notice?.status==="active"?"alert":"attention";
+}
+
+function weatherOfficialTime(iso){
+  if(!iso)return "—";
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime()))return "—";
+  return d.toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+}
+
+function renderOfficialWeatherAlerts(data){
   const list=document.getElementById("desktopWeatherAlertList");
-  if(!list)return;
+  const sourceTitle=document.querySelector(".desktop-weather-alerts-title>span");
+  const sourceSub=document.querySelector(".desktop-weather-alerts-title>small");
+  if(sourceTitle)sourceTitle.textContent="Avisos oficiais Epagri/Ciram";
+  if(sourceSub)sourceSub.textContent="Biguaçu / Grande Florianópolis";
 
-  const alerts=[];
-  if(snapshot.stormRisk){
-    alerts.push({type:"storm",label:"Tempestade",detail:"Trovoadas previstas nas próximas 6h",severity:"alert"});
-  }
-  if(snapshot.hailRisk){
-    alerts.push({type:"hail",label:"Granizo",detail:"Possibilidade de granizo nas próximas 6h",severity:"critical"});
-  }
-  if(weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=20){
-    alerts.push({type:"rain",label:"Chuva intensa",detail:`${Number(snapshot.rain).toFixed(1)} mm previstos em 6h`,severity:"alert"});
-  }else if(weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=5){
-    alerts.push({type:"rain",label:"Chuva",detail:`${Number(snapshot.rain).toFixed(1)} mm previstos em 6h`,severity:"attention"});
-  }
-  if(snapshot.windRisk){
-    alerts.push({type:"wind",label:"Rajadas fortes",detail:`Até ${Math.round(Number(snapshot.maxGust)||0)} km/h`,severity:"alert"});
-  }else if(snapshot.windAttention){
-    alerts.push({type:"wind",label:"Atenção para rajadas",detail:`Até ${Math.round(Number(snapshot.maxGust)||0)} km/h`,severity:"attention"});
+  if(list){
+    if(!data){
+      list.innerHTML='<span class="desktop-weather-alert-pending">Consultando avisos da Epagri/Ciram…</span>';
+    }else if(data.error){
+      list.innerHTML='<span class="desktop-weather-alert-unavailable">Não foi possível consultar a Epagri/Ciram agora. Isso não significa ausência de risco.</span>';
+    }else{
+      const notices=[...(data.active||[]),...(data.upcoming||[])];
+      if(!notices.length){
+        list.innerHTML='<span class="desktop-weather-alert-clear">Nenhum aviso meteorológico ativo ou previsto para Biguaçu.</span>';
+      }else{
+        list.innerHTML=notices.map(n=>{
+          const severity=weatherOfficialSeverity(n);
+          const events=(n.events||[]).map(weatherEventLabel).join(" • ");
+          const timing=n.status==="active"
+            ?`Ativo até ${weatherOfficialTime(n.ends_at)}`
+            :`Previsto a partir de ${weatherOfficialTime(n.starts_at)}`;
+          const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso oficial";
+          return `
+            <a class="desktop-weather-official-alert ${severity}" href="${weatherEscapeHtml(n.url)}" target="_blank" rel="noopener noreferrer">
+              <span class="official-alert-source">EPAGRI/CIRAM</span>
+              <b>${weatherEscapeHtml(n.title)}</b>
+              <small>${weatherEscapeHtml(events||risk)}</small>
+              <em>${weatherEscapeHtml(risk)} • ${weatherEscapeHtml(timing)}</em>
+            </a>
+          `;
+        }).join("");
+      }
+    }
   }
 
-  if(!alerts.length){
-    list.innerHTML='<span class="desktop-weather-alert-clear">Sem alertas meteorológicos no momento.</span>';
-  }else{
-    const icon={storm:"⚡",hail:"◆",rain:"●",wind:"↝"};
-    list.innerHTML=alerts.map(a=>`
-      <span class="desktop-weather-alert-chip ${a.severity}">
-        <i aria-hidden="true">${icon[a.type]||"!"}</i>
-        <b>${a.label}</b>
-        <small>${a.detail}</small>
-      </span>
-    `).join("");
+  const mobileRisk=document.getElementById("v7WeatherRisk");
+  if(mobileRisk){
+    const official=(data?.active||[])[0]||(data?.upcoming||[])[0]||null;
+    if(official){
+      const labels=(official.events||[]).map(weatherEventLabel);
+      const prefix=official.status==="active"?"Aviso Epagri/Ciram ativo":"Aviso Epagri/Ciram previsto";
+      mobileRisk.textContent=`${prefix}: ${labels.length?labels.join(", "):official.title}`;
+      mobileRisk.hidden=false;
+      mobileRisk.classList.add("official");
+    }else{
+      mobileRisk.classList.remove("official");
+      const s=lastWeatherSnapshot;
+      let trend="";
+      if(s?.hailRisk&&s?.windRisk)trend="Tendência do modelo: granizo e rajadas fortes possíveis";
+      else if(s?.hailRisk)trend="Tendência do modelo: possibilidade de granizo";
+      else if(s?.windRisk)trend="Tendência do modelo: possibilidade de vendaval";
+      else if(s?.windAttention)trend=`Tendência do modelo: rajadas até ${Math.round(Number(s.maxGust)||0)} km/h`;
+      mobileRisk.textContent=trend;
+      mobileRisk.hidden=!trend;
+    }
   }
+}
+
+function renderDesktopWeatherAlerts(snapshot){
+  lastWeatherSnapshot=snapshot;
 
   const hailCard=document.getElementById("desktopWeatherHailCard");
   const windCard=document.getElementById("desktopWeatherWindCard");
@@ -100,6 +165,25 @@ function renderDesktopWeatherAlerts(snapshot){
   rainCard?.classList.toggle("has-alert",weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=20);
   rainCard?.classList.toggle("has-attention",weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=5&&Number(snapshot.rain)<20);
   rainNowCard?.classList.toggle("has-attention",weatherHasNumber(snapshot.currentRain)&&Number(snapshot.currentRain)>0);
+
+  renderOfficialWeatherAlerts(state.epagriWeatherAlerts||null);
+}
+
+async function loadEpagriWeatherAlerts(){
+  if(!state.user)return;
+  try{
+    const {data,error}=await db.functions.invoke("epagri-weather-alerts",{method:"GET"});
+    if(error)throw error;
+    state.epagriWeatherAlerts=data||{active:[],upcoming:[],notices:[]};
+  }catch(error){
+    console.warn("Epagri/Ciram avisos:",error);
+    state.epagriWeatherAlerts={error:"unavailable",active:[],upcoming:[],notices:[]};
+  }
+
+  renderOfficialWeatherAlerts(state.epagriWeatherAlerts);
+  if(typeof renderAlertsPage==="function")renderAlertsPage();
+  if(typeof renderOccurrences==="function")renderOccurrences();
+  if(typeof renderSources==="function")renderSources();
 }
 
 function renderWeatherSnapshot(snapshot){
@@ -135,10 +219,10 @@ function renderWeatherSnapshot(snapshot){
   weatherSetText("#v7WeatherChance",chanceText==="—"?"Chance —":`${chanceText} de chance`);
 
   let riskText="";
-  if(snapshot.hailRisk&&snapshot.windRisk)riskText="Granizo e vendaval possíveis";
-  else if(snapshot.hailRisk)riskText="Possibilidade de granizo";
-  else if(snapshot.windRisk)riskText="Possibilidade de vendaval";
-  else if(snapshot.windAttention)riskText=`Rajadas até ${Math.round(Number(snapshot.maxGust)||0)} km/h`;
+  if(snapshot.hailRisk&&snapshot.windRisk)riskText="Tendência do modelo: granizo e rajadas fortes possíveis";
+  else if(snapshot.hailRisk)riskText="Tendência do modelo: possibilidade de granizo";
+  else if(snapshot.windRisk)riskText="Tendência do modelo: possibilidade de vendaval";
+  else if(snapshot.windAttention)riskText=`Tendência do modelo: rajadas até ${Math.round(Number(snapshot.maxGust)||0)} km/h`;
   weatherSetText("#v7WeatherRisk",riskText);
   weatherSetHidden("#v7WeatherRisk",!riskText);
 
@@ -312,6 +396,7 @@ async function loadWeather(){
       renderWeatherSnapshot(unavailable);
     }
   }
+  loadEpagriWeatherAlerts();
   renderPushSettings();
   renderSources();
 }
