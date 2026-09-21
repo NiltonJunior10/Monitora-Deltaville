@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v703-ios27";
+const CACHE="monitora-deltaville-v704-ios27";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -8,13 +8,13 @@ const APP_SHELL=[
   "./styles.css?v=702",
   "./stability.css?v=702",
   "./apple-ui.css?v=702",
-  "./v6.css?v=703",
+  "./v6.css?v=704",
   "./auth.js?v=702",
   "./river.js?v=702",
   "./weather.js?v=702",
   "./push.js?v=702",
   "./app.js?v=702",
-  "./v6-ui.js?v=702",
+  "./v6-ui.js?v=704",
   "./stability-core.js?v=702",
   "./theme-init.js?v=702",
   "./manifest.webmanifest",
