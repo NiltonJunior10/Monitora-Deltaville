@@ -385,3 +385,222 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 
 /* Pílula "Sistema online": o halo do ponto (4 px) invadia o texto */
 .v7-system-pill{gap:11px!important;padding:0 12px 0 13px!important;font-size:11px!important}
+
+
+/* =========================================================
+   v7.0.8 — desktop home: less redundancy, stronger priorities
+   ========================================================= */
+
+/* Três arcos da comunidade: substituem a ilustração antiga, sem ondas/água. */
+.desktop-arches{
+  position:relative;
+  width:160px;
+  height:66px;
+  margin:0 auto 12px;
+}
+.desktop-arches i{
+  position:absolute;
+  bottom:7px;
+  display:block;
+  background:transparent;
+  border-style:solid;
+  border-bottom:0;
+  border-radius:999px 999px 0 0;
+  transform-origin:center bottom;
+}
+.desktop-arches i:nth-child(1){
+  left:3px;
+  width:78px;
+  height:42px;
+  border-width:6px;
+  border-color:#2D87A8;
+}
+.desktop-arches i:nth-child(2){
+  left:55px;
+  width:54px;
+  height:34px;
+  border-width:6px;
+  border-color:#258E9A;
+  z-index:2;
+}
+.desktop-arches i:nth-child(3){
+  right:2px;
+  width:78px;
+  height:46px;
+  border-width:6px;
+  border-color:#2D87A8;
+}
+:root[data-theme="dark"] .desktop-arches i{
+  filter:saturate(.95) brightness(1.2);
+}
+
+@media(min-width:1180px) and (pointer:fine){
+  /* Ordem da informação: situação/ocorrências → rio → mapa. */
+  .page[data-page="home"].active{
+    grid-template-areas:
+      "kpis action"
+      "river river"
+      "map events"
+      "bottom bottom"!important;
+    gap:12px!important;
+  }
+
+  /* Apenas dois controles no resumo. Atenção/Alerta/Crítico ficam na tela de avisos. */
+  .desktop-kpi-row{
+    grid-template-columns:minmax(0,1.55fr) minmax(230px,.72fr)!important;
+    gap:10px!important;
+  }
+  .desktop-kpi{
+    min-height:88px!important;
+    height:88px!important;
+    padding:11px 14px!important;
+    border-radius:18px!important;
+  }
+  button.desktop-kpi{
+    width:100%;
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+    color:var(--v6-label);
+    appearance:none;
+    -webkit-appearance:none;
+  }
+
+  .desktop-kpi-status{
+    display:grid!important;
+    grid-template-columns:40px minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:12px!important;
+  }
+  .desktop-kpi-status>div{
+    height:auto!important;
+    justify-content:center!important;
+  }
+  .desktop-kpi-status .desktop-kpi-shield{
+    width:40px!important;
+    height:40px!important;
+    flex-basis:40px!important;
+    border-radius:13px!important;
+  }
+  .desktop-kpi-status small{
+    margin:0 0 3px!important;
+    font-size:10px!important;
+  }
+  .desktop-kpi-status strong{
+    font-size:22px!important;
+    line-height:1.04!important;
+  }
+  .desktop-kpi-status p{
+    margin:4px 0 0!important;
+    max-width:none!important;
+    font-size:10px!important;
+    line-height:1.3!important;
+  }
+  .desktop-kpi-action,
+  .desktop-occurrence-action{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    min-height:34px;
+    padding:0 10px;
+    border-radius:999px;
+    font-size:10.5px;
+    font-weight:750;
+    white-space:nowrap;
+    color:var(--v6-blue);
+    background:rgba(10,132,255,.09);
+  }
+  .desktop-kpi-action .ui-i,
+  .desktop-occurrence-action .ui-i{
+    width:14px;
+    height:14px;
+    stroke-width:2.2;
+  }
+
+  /* Um único botão de ocorrências, sem ícone decorativo. */
+  .desktop-kpi-occurrences{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:14px!important;
+    border-color:rgba(10,132,255,.18)!important;
+    background:
+      linear-gradient(135deg,rgba(10,132,255,.105),rgba(10,132,255,.035)),
+      var(--v6-surface)!important;
+  }
+  .desktop-occurrence-copy{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+  }
+  .desktop-occurrence-copy small{
+    margin:0 0 4px!important;
+    font-size:10px!important;
+    color:var(--v6-secondary)!important;
+  }
+  .desktop-occurrence-copy strong{
+    font-size:30px!important;
+    line-height:1!important;
+    color:var(--v6-label)!important;
+  }
+
+  /* Registrar ocorrência fica compacto para não disputar atenção com o status. */
+  .page[data-page="home"]>#homeReport{
+    height:88px!important;
+    min-height:88px!important;
+    border-radius:18px!important;
+  }
+
+  /* O Rio Biguaçu sobe na hierarquia da home e ocupa a largura útil. */
+  .river-level-card{
+    grid-area:river!important;
+    margin:0!important;
+    padding:14px 16px!important;
+    border-radius:22px!important;
+  }
+  .river-level-body{
+    grid-template-columns:240px minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+  .river-level-primary{
+    padding:12px 14px!important;
+  }
+  .river-level-primary>strong{
+    font-size:34px!important;
+    line-height:1!important;
+  }
+  .river-chart{
+    min-height:88px!important;
+  }
+  .river-chart svg{
+    height:88px!important;
+  }
+
+  /* Lista da home mais limpa: sem pictogramas por ocorrência. */
+  .home-events-section .event-icon{
+    display:none!important;
+  }
+  .home-events-section .event-card{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:10px!important;
+    padding:12px 14px!important;
+  }
+  .home-events-section .event-card h3{
+    margin-top:0!important;
+  }
+
+  /* Também simplifica a lista de resolvidas no rodapé da home. */
+  .desktop-recent-row{
+    grid-template-columns:minmax(0,1fr) auto!important;
+  }
+  .desktop-recent-row .desktop-recent-icon{
+    display:none!important;
+  }
+
+  /* O resumo por grau foi removido; sobram apenas conteúdo útil e monitoramento. */
+  .desktop-bottom-grid{
+    grid-template-columns:1fr 1.25fr!important;
+    gap:12px!important;
+  }
+}
