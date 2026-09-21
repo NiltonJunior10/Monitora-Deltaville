@@ -329,18 +329,6 @@ function bindRiverWindowControls(){
   });
 }
 
-function bindDesktopRiverSummary(){
-  const button=$("#desktopRiverSummary");
-  if(!button||button.dataset.bound==="1")return;
-  button.dataset.bound="1";
-  button.addEventListener("click",()=>{
-    if(!window.matchMedia("(min-width:1180px)").matches)return;
-    document.body.classList.add("desktop-river-expanded");
-    button.setAttribute("aria-expanded","true");
-    setTimeout(()=>$("#riverLevelCard")?.scrollIntoView({behavior:"smooth",block:"start"}),60);
-  });
-}
-
 function renderDesktopRiverSummary(d,status,latest){
   const value=$("#desktopRiverLevel");
   const deltaEl=$("#desktopRiverDelta");
@@ -352,10 +340,12 @@ function renderDesktopRiverSummary(d,status,latest){
   const statusText={normal:"Normal",attention:"Atenção",alert:"Alerta",critical:"Crítico",unknown:"Sem cota oficial"};
   statusEl.textContent=statusText[status]||statusText.unknown;
 
+  const scaleMarker=$("#desktopRiverScaleMarker");
   if(!latest){
     value.textContent="—";
     deltaEl.textContent="Aguardando dados";
     updated.textContent="Última medição: —";
+    if(scaleMarker)scaleMarker.style.setProperty("--river-pct","0%");
     return;
   }
 
@@ -369,6 +359,10 @@ function renderDesktopRiverSummary(d,status,latest){
     deltaEl.textContent=`${arrow} ${formatRiverDelta(delta24)} (24h)`;
   }
   updated.textContent=`Última medição: ${formatRiverTime(latest.measured_at)}`;
+  if(scaleMarker){
+    const pct=Math.max(0,Math.min(100,(Number(latest.level_m)/4)*100));
+    scaleMarker.style.setProperty("--river-pct",`${pct.toFixed(1)}%`);
+  }
 }
 
 function renderRiverStatus(){
@@ -377,7 +371,6 @@ function renderRiverStatus(){
   const value=$("#riverLevelValue"),trend=$("#riverTrend"),variation=$("#riverVariation"),updated=$("#riverUpdated"),fresh=$("#riverFreshness");
   if(!badge||!value)return;
   bindRiverWindowControls();
-  bindDesktopRiverSummary();
 
   const connection=d?.connection_state||"source_not_configured";
   const latest=d?.latest||null;
