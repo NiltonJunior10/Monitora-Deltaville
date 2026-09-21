@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 430" role="img" aria-labelledby="t d">
+<title id="t">Entrada do Deltaville</title>
+<desc id="d">Ilustração vetorial flat da entrada do bairro Deltaville com três arcos, avenida curva, casas, palmeiras e vegetação.</desc>
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#EAF9FF"/>
+    <stop offset="42%" stop-color="#CFF3FD"/>
+    <stop offset="72%" stop-color="#DDF7F8"/>
+    <stop offset="100%" stop-color="#F8FCFF"/>
+  </linearGradient>
+  <linearGradient id="road" x1="0" y1="0" x2="0.15" y2="1">
+    <stop offset="0%" stop-color="#8CC9E8"/>
+    <stop offset="100%" stop-color="#B9DFF3"/>
+  </linearGradient>
+</defs>
+
+<!-- fundo em degradê -->
+<rect width="220" height="430" fill="url(#sky)"/>
+
+<!-- nuvens -->
+<g fill="#EEF9FD" opacity=".96">
+  <path d="M-6 145h83c-3-10-11-16-23-16-6 0-11 2-16 6-5-13-16-20-29-20-18 0-30 12-31 30H-6z"/>
+  <path d="M153 160h73c-3-8-10-13-20-13-5 0-10 2-14 5-5-11-14-17-26-17-15 0-25 10-27 25h14z"/>
+</g>
+
+<!-- montanhas suaves -->
+<path d="M0 204c24-19 48-19 72 0 22-22 44-25 72-6 25-19 50-18 76 3v44H0z" fill="#C5ECF4"/>
+<path d="M0 225c24-20 47-19 71 1 31-28 60-28 92 1 21-17 39-16 57-2v32H0z" fill="#A5DDE9"/>
+
+<!-- casas e bairro -->
+<g>
+  <g transform="translate(4 217)">
+    <rect x="0" y="16" width="43" height="29" rx="2.5" fill="#FAF7F2"/>
+    <rect x="4" y="7" width="35" height="12" rx="1.5" fill="#D5CCC2"/>
+    <rect x="6" y="24" width="9" height="9" rx="1" fill="#8BC4D7"/>
+    <rect x="19" y="24" width="9" height="9" rx="1" fill="#8BC4D7"/>
+    <rect x="32" y="21" width="8" height="24" rx="1" fill="#8B99A7"/>
+  </g>
+  <g transform="translate(48 224)">
+    <rect x="0" y="11" width="33" height="24" rx="2.5" fill="#FBF9F5"/>
+    <rect x="4" y="3" width="25" height="10" rx="1.5" fill="#D7CEC4"/>
+    <rect x="5" y="18" width="7" height="7" rx="1" fill="#8EC7D9"/>
+    <rect x="20" y="16" width="7" height="19" rx="1" fill="#8E9AA7"/>
+  </g>
+  <g transform="translate(139 221)">
+    <rect x="0" y="13" width="36" height="25" rx="2.5" fill="#FBF9F5"/>
+    <rect x="4" y="4" width="28" height="11" rx="1.5" fill="#D8CEC3"/>
+    <rect x="6" y="20" width="8" height="7" rx="1" fill="#8EC7D9"/>
+    <rect x="22" y="18" width="8" height="20" rx="1" fill="#8F9BA8"/>
+  </g>
+  <g transform="translate(178 218)">
+    <rect x="0" y="15" width="38" height="27" rx="2.5" fill="#FAF7F2"/>
+    <rect x="4" y="6" width="30" height="11" rx="1.5" fill="#D7CEC3"/>
+    <rect x="6" y="23" width="8" height="8" rx="1" fill="#8CC5D8"/>
+    <rect x="25" y="20" width="8" height="22" rx="1" fill="#8D9BA8"/>
+  </g>
+</g>
+
+<!-- palmeiras -->
+<g>
+  <g transform="translate(16 183)">
+    <path d="M10 67C12 47 11 25 9 5" fill="none" stroke="#4A877E" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M9 8C-4-2-16 3-20 16-7 11 1 12 10 16M9 8C19-5 31-2 39 10 26 8 17 11 10 17M10 7C3-11 12-22 23-24 18-9 15 0 10 12" fill="#278A83"/>
+  </g>
+  <g transform="translate(190 189)">
+    <path d="M8 60C7 43 8 24 9 5" fill="none" stroke="#4A877E" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M9 8C-4-2-15 2-20 15-8 11 1 11 10 16M9 8C19-5 31-2 38 10 26 8 17 11 10 17M10 7C3-11 12-22 23-24 18-9 15 0 10 12" fill="#278A83"/>
+  </g>
+  <g transform="translate(153 209) scale(.68)">
+    <path d="M8 60C8 42 8 24 9 5" fill="none" stroke="#4A877E" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M9 8C-4-2-15 2-20 15-8 11 1 11 10 16M9 8C19-5 31-2 38 10 26 8 17 11 10 17M10 7C3-11 12-22 23-24 18-9 15 0 10 12" fill="#278A83"/>
+  </g>
+</g>
+
+<!-- vegetação -->
+<g fill="#4DBA8E">
+  <circle cx="2" cy="252" r="18"/><circle cx="20" cy="248" r="15"/><circle cx="38" cy="254" r="19"/>
+  <circle cx="177" cy="253" r="16"/><circle cx="196" cy="248" r="17"/><circle cx="219" cy="254" r="20"/>
+  <circle cx="62" cy="249" r="10"/><circle cx="157" cy="247" r="10"/>
+</g>
+<g fill="#2F9F88">
+  <circle cx="12" cy="260" r="12"/><circle cx="52" cy="258" r="11"/><circle cx="167" cy="259" r="12"/><circle cx="207" cy="260" r="13"/>
+</g>
+
+<!-- postes -->
+<g fill="none" stroke="#587F9A" stroke-width="2.2" stroke-linecap="round">
+  <path d="M54 281v-43M54 240c-5-7-11-7-15-5M54 240c5-7 11-7 15-5"/>
+  <path d="M166 278v-42M166 238c-5-7-11-7-15-5M166 238c5-7 11-7 15-5"/>
+</g>
+
+<!-- arcos principais -->
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 302C23 227 62 199 92 294" stroke="#26799A" stroke-width="12"/>
+  <path d="M77 304C81 222 103 204 111 301" stroke="#2D9CAE" stroke-width="10"/>
+  <path d="M96 302C108 208 176 180 207 302" stroke="#26799A" stroke-width="13"/>
+</g>
+
+<!-- canteiro/placa -->
+<g transform="translate(127 274)">
+  <rect x="-4" y="12" width="75" height="20" rx="10" fill="#E7F7F3"/>
+  <rect x="0" y="0" width="67" height="23" rx="10" fill="#F7FCFA" stroke="#59B8A8"/>
+  <text x="33.5" y="16" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#1E7892">Deltaville</text>
+</g>
+
+<!-- avenida principal -->
+<path d="M-34 430C3 370 37 337 76 318c44-21 93-24 178 22v90z" fill="url(#road)"/>
+<path d="M-28 421C11 368 45 341 83 324c45-20 91-19 163 19" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+<path d="M-7 430C25 386 55 360 95 342c42-18 83-15 139 16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+<path d="M36 399c15-15 30-26 47-35M110 348c15-6 31-8 47-6" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+
+<!-- faixa de pedestres como na referência -->
+<g fill="#fff" opacity=".96" transform="translate(5 388) rotate(3)">
+  <rect x="0" y="0" width="22" height="7" rx="1"/>
+  <rect x="27" y="0" width="22" height="7" rx="1"/>
+  <rect x="54" y="0" width="22" height="7" rx="1"/>
+  <rect x="81" y="0" width="22" height="7" rx="1"/>
+  <rect x="108" y="0" width="22" height="7" rx="1"/>
+</g>
+</svg>
