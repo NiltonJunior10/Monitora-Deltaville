@@ -1989,3 +1989,90 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     display:none!important;
   }
 }
+
+
+/* v7.0.30 — river compact typography + remove duplicate update */
+@media(min-width:1180px){
+  .desktop-river-summary{
+    padding:10px 14px!important;
+    grid-template-columns:44px minmax(0,1fr) 18px!important;
+    gap:12px!important;
+  }
+
+  .desktop-river-summary-copy{
+    gap:4px!important;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif!important;
+  }
+
+  .desktop-river-titleline>small{
+    font-size:clamp(10px,.68vw,12px)!important;
+    line-height:1.15!important;
+    font-weight:700!important;
+    letter-spacing:-.01em!important;
+  }
+
+  .desktop-river-status.updated{
+    min-height:24px!important;
+    padding:0 9px!important;
+    font-size:clamp(9px,.58vw,10.5px)!important;
+    line-height:1!important;
+    font-weight:600!important;
+    letter-spacing:0!important;
+  }
+
+  .desktop-river-mainline{
+    gap:11px!important;
+  }
+
+  .desktop-river-mainline>strong{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif!important;
+    font-size:clamp(25px,1.75vw,31px)!important;
+    line-height:.98!important;
+    font-weight:650!important;
+    letter-spacing:-.035em!important;
+  }
+
+  .desktop-river-delta{
+    font-size:clamp(9px,.62vw,11px)!important;
+    line-height:1.1!important;
+    font-weight:600!important;
+  }
+
+  .desktop-river-scale-labels{
+    font-size:clamp(7.5px,.5vw,9px)!important;
+  }
+
+  /* Informação já aparece no topo como “Última atualização”. */
+  .desktop-river-footline{
+    display:none!important;
+  }
+}
+
+/* Em monitores maiores, ganha legibilidade sem aumentar demais o card. */
+@media(min-width:1600px){
+  .desktop-river-summary{
+    grid-template-columns:48px minmax(0,1fr) 18px!important;
+    padding-inline:16px!important;
+  }
+
+  .desktop-river-icon{
+    width:44px!important;
+    height:44px!important;
+  }
+
+  .desktop-river-titleline>small{
+    font-size:12px!important;
+  }
+
+  .desktop-river-status.updated{
+    font-size:10.5px!important;
+  }
+
+  .desktop-river-mainline>strong{
+    font-size:31px!important;
+  }
+
+  .desktop-river-delta{
+    font-size:11px!important;
+  }
+}
