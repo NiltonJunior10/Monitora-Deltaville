@@ -1976,3 +1976,16 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     box-sizing:border-box!important;
   }
 }
+
+
+/* v7.0.29 — river last update label */
+@media(min-width:1180px){
+  .desktop-river-status.updated{
+    color:var(--v6-secondary)!important;
+    background:rgba(142,142,147,.08)!important;
+    font-weight:650!important;
+  }
+  .desktop-river-status.updated::before{
+    display:none!important;
+  }
+}
