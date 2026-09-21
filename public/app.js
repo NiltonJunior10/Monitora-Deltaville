@@ -2561,6 +2561,14 @@ function renderStatus(){
     $("#desktopOverallStatus").textContent=text;
     $("#desktopOverallStatus").className=st;
   }
+  const desktopStatusCard=$(".desktop-kpi-status");
+  if(desktopStatusCard){
+    const desktopUnknown=incomplete&&st==="normal";
+    const desktopState=desktopUnknown?"unknown":st;
+    const desktopIcons={normal:"shield-check",attention:"info",alert:"triangle-alert",critical:"octagon-alert",unknown:"info"};
+    desktopStatusCard.dataset.state=desktopState;
+    desktopStatusCard.querySelector("use")?.setAttribute("href","#i-"+(desktopIcons[desktopState]||"shield-check"));
+  }
   if($("#desktopStatusReason"))$("#desktopStatusReason").textContent=incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st];
   renderV8Status(st,incomplete,incomplete?"Últimos registros disponíveis; conexão pendente.":reasons[st]);
 }
