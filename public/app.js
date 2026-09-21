@@ -1485,7 +1485,9 @@ function bindMapPointSelection(){
       gesture.liveLayers.forEach(layer=>layer.setLatLngs(section));
     }
     const delta=Math.abs(Number(state.selectedSegment?.span)||0);
-    gesture.dragged=delta>.006;
+    // O movimento em pixels define a intenção do usuário.
+    // Mesmo um trecho curto deve continuar sendo tratado como arraste.
+    gesture.dragged=!!gesture.dragStarted || delta>.001;
     if($("#selectedSegmentActionTitle"))$("#selectedSegmentActionTitle").textContent=gesture.avenue.loc.name;
     if($("#selectedSegmentActionText"))$("#selectedSegmentActionText").textContent=gesture.dragged?"Solte para marcar este trecho":"Arraste pela via";
   };
@@ -1498,6 +1500,7 @@ function bindMapPointSelection(){
     gesture.startLatLng=latlng;
     gesture.avenue=avenue;
     suppressClickUntil=Date.now()+900;
+    state.mapSuppressPointClickUntil=suppressClickUntil;
 
     try{map.dragging.disable();}catch(_){}
     try{map.touchZoom.disable();}catch(_){}
@@ -1538,6 +1541,7 @@ function bindMapPointSelection(){
     if(!gesture.active)return false;
 
     suppressClickUntil=Date.now()+700;
+    state.mapSuppressPointClickUntil=suppressClickUntil;
     if(gesture.avenue){
       const endLatLng=clientToLatLng(endX??gesture.startX,endY??gesture.startY);
       updateLiveRoadSelection(gesture,endLatLng);
@@ -1578,7 +1582,7 @@ function bindMapPointSelection(){
   };
 
   map.on("click",e=>{
-    if(Date.now()<suppressClickUntil)return;
+    if(Date.now()<suppressClickUntil || Date.now()<(state.mapSuppressPointClickUntil||0))return;
     if(e.originalEvent?.__monitoraPointHandled)return;
     if(state.segmentPickMode?.active){setSelectedSegmentPoint(e.latlng);return;}
 
@@ -1633,6 +1637,7 @@ function bindMapPointSelection(){
     // not to Leaflet's pan gesture.
     ev.preventDefault();
     if(touchGesture.avenue){
+      if(moved>4)touchGesture.dragStarted=true;
       updateLiveRoadSelection(touchGesture,clientToLatLng(t.clientX,t.clientY));
     }
   },{passive:false});
@@ -1672,7 +1677,8 @@ function bindMapPointSelection(){
       const moved=Math.hypot(ev.clientX-mouseGesture.startX,ev.clientY-mouseGesture.startY);
 
       if(!mouseGesture.active){
-        if(mouseGesture.avenueCandidate&&moved>4){
+        if(mouseGesture.avenueCandidate&&moved>3){
+          mouseGesture.dragStarted=true;
           clearTimeout(mouseGesture.timer);
           activateLongPress(mouseGesture);
           if(mouseGesture?.avenue)updateLiveRoadSelection(mouseGesture,clientToLatLng(ev.clientX,ev.clientY));
@@ -1685,7 +1691,10 @@ function bindMapPointSelection(){
         return;
       }
 
-      if(mouseGesture.avenue)updateLiveRoadSelection(mouseGesture,clientToLatLng(ev.clientX,ev.clientY));
+      if(mouseGesture.avenue){
+        if(moved>3)mouseGesture.dragStarted=true;
+        updateLiveRoadSelection(mouseGesture,clientToLatLng(ev.clientX,ev.clientY));
+      }
     },{passive:true});
 
     container.addEventListener("pointerup",ev=>{
@@ -2343,6 +2352,7 @@ function renderAvenues(which){
         openMapFromPreview();
         return;
       }
+      if(Date.now()<(state.mapSuppressPointClickUntil||0))return;
       closeMapAvenueTooltips();
       hideMapFocusCard();
       if(e?.latlng){
