@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=757">
   <link rel="stylesheet" href="apple-ui.css?v=757">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=760">
+  <link rel="stylesheet" href="v8.css?v=762">
   <link rel="stylesheet" href="river-desktop.css?v=720">
   <link rel="stylesheet" href="sidebar-desktop.css?v=758">
   <script src="theme-init.js?v=702"></script>
@@ -164,7 +164,23 @@
           <small>PREVISÃO PARA O DELTAVILLE</small>
           <strong id="desktopWeatherSummary">Carregando previsão…</strong>
         </div>
-        <button type="button" class="desktop-weather-close" id="desktopWeatherClose" aria-label="Fechar previsão">×</button>
+        <div class="weather-panel-head-actions">
+          <span class="weather-provider-pill" id="desktopWeatherProvider">Google Weather</span>
+          <button type="button" class="desktop-weather-close" id="desktopWeatherClose" aria-label="Fechar previsão">×</button>
+        </div>
+      </div>
+
+      <div class="weather-expanded-hero desktop-weather-hero">
+        <div class="weather-expanded-icon" id="desktopWeatherHeroIcon" aria-hidden="true"></div>
+        <div class="weather-expanded-now">
+          <span id="desktopWeatherCondition">Condição atual</span>
+          <strong id="desktopWeatherHeroTemp">—</strong>
+          <small id="desktopWeatherHeroRange">Máx. — • Mín. —</small>
+        </div>
+        <div class="weather-expanded-source">
+          <b id="desktopWeatherSourceLabel">Google Weather</b>
+          <span id="desktopWeatherUpdated">Atualizando…</span>
+        </div>
       </div>
 
       <div class="desktop-weather-alerts" id="desktopWeatherAlerts" aria-live="polite">
@@ -307,6 +323,30 @@
               </div>
               <button type="button" data-v7-weather-close>Fechar</button>
             </div>
+
+            <div class="weather-expanded-hero v7-weather-expanded-hero">
+              <div class="weather-expanded-icon" id="v7WeatherHeroIcon" aria-hidden="true"></div>
+              <div class="weather-expanded-now">
+                <span id="v7WeatherCondition">Condição atual</span>
+                <strong id="v7WeatherHeroTemp">—</strong>
+                <small id="v7WeatherHeroRange">Máx. — • Mín. —</small>
+              </div>
+              <div class="weather-expanded-source">
+                <b id="v7WeatherProvider">Google Weather</b>
+                <span id="v7WeatherUpdated">Atualizando…</span>
+              </div>
+            </div>
+
+            <div class="v7-weather-official-alerts" aria-live="polite">
+              <div class="v7-weather-official-head">
+                <span>Avisos oficiais</span>
+                <small>Epagri/Ciram • Biguaçu</small>
+              </div>
+              <div class="desktop-weather-alert-list v7-weather-alert-list" id="v7WeatherAlertList">
+                <span class="desktop-weather-alert-pending">Consultando avisos da Epagri/Ciram…</span>
+              </div>
+            </div>
+
             <div class="v7-weather-detail-grid">
               <article>
                 <small>Temperatura agora</small>
@@ -1267,7 +1307,7 @@
   <script src="stability-core.js?v=702"></script>
   <script src="auth.js?v=747"></script>
   <script src="river.js?v=744"></script>
-  <script src="weather.js?v=761"></script>
+  <script src="weather.js?v=762"></script>
   <script src="push.js?v=702"></script>
   <script src="road-network.js?v=756"></script>
   <script src="app.js?v=761"></script>
