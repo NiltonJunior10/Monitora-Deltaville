@@ -2980,7 +2980,6 @@ function weatherNoticeTranslateTitle(raw,eventLabel="Aviso meteorológico"){
   ];
   for(const [pattern,replacement] of replacements)text=text.replace(pattern,replacement);
   text=text.replace(/\s*:\s*/g,": ").replace(/\s{2,}/g," ").trim();
-  if(text===raw&&eventLabel&&eventLabel!=="Aviso meteorológico")return eventLabel;
   return text||eventLabel;
 }
 function weatherNoticeDisplayTitle(n){
