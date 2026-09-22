@@ -45,3 +45,24 @@ Os vértices foram traçados sobre a arte local e revisados visualmente. **Não 
 Para precisão geográfica, obter a planta CAD/GIS ou ortofoto georreferenciada e vetorializar as vias, validar em campo e publicar uma camada GeoJSON WGS84. Leaflet suporta essa camada, mas migrar os relatos atuais exige pontos de controle, avaliação de erro e uma transformação explícita. OSM pode ajudar como base inicial, sujeito a cobertura e validação das ruas internas.
 
 Validação: `node --test tests/*.test.cjs` e `npm run check`. Os testes da malha cobrem pistas separadas, exclusão de canteiros/lago/lazer, compatibilidade de trechos antigos e cache offline. O teste de release passa a comparar a interface com package.json, eliminando a expectativa obsoleta fixa em 5.1.2.
+
+
+## Google Weather — fonte principal
+
+A previsão meteorológica do app usa o **Google Weather API** como fonte principal, mantendo o **Open-Meteo como fallback automático**.
+
+A chave do Google nunca fica no JavaScript público. O Cloudflare Worker expõe somente `/api/weather` e lê a chave pela variável secreta:
+
+```bash
+npx wrangler secret put GOOGLE_WEATHER_API_KEY
+```
+
+No Google Cloud, habilite a **Weather API** e restrinja a chave para essa API. O Worker mantém caches separados para reduzir chamadas:
+
+- condições atuais: 15 minutos;
+- previsão horária: 30 minutos;
+- máxima/mínima diária: 6 horas.
+
+Em um único cache ativo, isso corresponde a aproximadamente **4.440 chamadas Google/mês** em funcionamento contínuo, abaixo da franquia mensal de 10.000 eventos da SKU Weather Usage. Como cache de edge não é um contador global, configure também uma cota de uso conservadora no Google Cloud para impedir gastos inesperados.
+
+Se a chave não estiver configurada ou o Google estiver temporariamente indisponível, o frontend usa Open-Meteo automaticamente, sem interromper o card de previsão.

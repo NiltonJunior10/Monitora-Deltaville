@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v760-lake-popup";
+const CACHE="monitora-deltaville-v761-google-weather";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -14,10 +14,10 @@ const APP_SHELL=[
   "./sidebar-desktop.css?v=758",
   "./auth.js?v=747",
   "./river.js?v=744",
-  "./weather.js?v=740",
+  "./weather.js?v=761",
   "./push.js?v=702",
   "./road-network.js?v=756",
-  "./app.js?v=760",
+  "./app.js?v=761",
   "./v6-ui.js?v=707",
   "./v8-ux.js?v=704",
   "./stability-core.js?v=702",

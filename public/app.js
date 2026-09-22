@@ -65,8 +65,16 @@ function renderSources(){
   const hosts=[$("#monitoringSources"),$("#homeMonitoringSources"),$("#mobileMonitoringSources")].filter(Boolean);if(!hosts.length)return;
   const river=state.riverStatus;
   const sourceText=river?.connection_state==='ok'?"Medição disponível":river?.connection_state==='stale'?"Medição desatualizada":river?.connection_state==='degraded'?"Fonte com falha recente":"Consulta indisponível ou pendente";
-  let weatherText="Consulta pendente";
-  try{const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");if(cached?.saved_at){const mins=Math.max(0,Math.floor((Date.now()-cached.saved_at)/60000));weatherText=(state.weatherUnavailable||mins>60?"Desatualizado":"Online")+" • atualização há "+mins+" min";}}catch(_){}
+  let weatherText="Consulta pendente",weatherProvider="Google Weather";
+  try{
+    const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
+    if(cached?.source==="open_meteo")weatherProvider="Open-Meteo · fallback";
+    else if(cached?.source==="google_weather")weatherProvider="Google Weather";
+    if(cached?.saved_at){
+      const mins=Math.max(0,Math.floor((Date.now()-cached.saved_at)/60000));
+      weatherText=(state.weatherUnavailable||mins>60?"Desatualizado":"Online")+" • atualização há "+mins+" min";
+    }
+  }catch(_){}
   const official=state.epagriWeatherAlerts;
   let officialText="Consulta pendente";
   if(official?.error)officialText="Temporariamente indisponível";
@@ -77,7 +85,7 @@ function renderSources(){
       :"Nenhum aviso ativo ou previsto para Biguaçu";
   }
   const pushText=state.pushEnabled?"Ativas neste aparelho":"Desativadas ou não confirmadas neste aparelho";
-  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>Epagri/Ciram · Avisos meteorológicos</b> — ${officialText}</p><p><b>Previsão numérica · Open-Meteo</b> — ${weatherText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
+  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>Epagri/Ciram · Avisos meteorológicos</b> — ${officialText}</p><p><b>Previsão numérica · ${weatherProvider}</b> — ${weatherText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
 }
 async function loadPushConfig(){
   const {data,error}=await db.functions.invoke("app-config",{method:"GET"});
