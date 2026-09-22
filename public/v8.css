@@ -3617,3 +3617,29 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 .road-network-hit { cursor: crosshair; }
 .road-network-hit:focus { outline: none; }
 .road-network-hit:focus-visible { stroke: #237CB1; stroke-opacity: .4; }
+
+
+/* v7.0.58 — popup do trecho ancorado fora da linha, sempre pelo ponto 2 */
+@media(min-width:1180px) and (pointer:fine){
+  body.map-open [data-page="map"] #selectedSegmentAction[data-anchor-side="center"][data-anchor-vertical="below"]::after{
+    left:50%!important;
+    right:auto!important;
+    top:-8px!important;
+    bottom:auto!important;
+    margin-left:-7px!important;
+    margin-top:0!important;
+    border-bottom:0!important;
+    border-right:0!important;
+  }
+
+  body.map-open [data-page="map"] #selectedSegmentAction[data-anchor-side="center"][data-anchor-vertical="above"]::after{
+    left:50%!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:-8px!important;
+    margin-left:-7px!important;
+    margin-top:0!important;
+    border-top:0!important;
+    border-left:0!important;
+  }
+}
