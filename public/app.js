@@ -1303,21 +1303,15 @@ function positionSelectedSegmentAction(){
   const pts=avenuePointsByLocationId(seg.avenueId,seg.routeKey||"main");
   if(!pts)return;
 
-  // Ancora sempre no PONTO 2 (fim do arraste). O card tenta continuar
-  // no sentido de saída do trecho para nunca voltar sobre a linha tracejada.
+  // O popup acompanha o SEGUNDO ponto do gesto (fim do arraste),
+  // nunca o meio do trecho. Assim "Ajustar" não cobre a marcação.
   const selectedRoute=selectedSegmentRoute(pts,seg);
   const endPoint=selectedRoute?.length
     ? selectedRoute[selectedRoute.length-1]
     : pointAtRouteRatio(pts,seg.endRatio);
   if(!endPoint)return;
 
-  const previousPoint=selectedRoute?.length>1
-    ? selectedRoute[selectedRoute.length-2]
-    : null;
   const point=map.latLngToContainerPoint(L.latLng(endPoint[0],endPoint[1]));
-  const previous=previousPoint
-    ? map.latLngToContainerPoint(L.latLng(previousPoint[0],previousPoint[1]))
-    : null;
   const mapEl=map.getContainer();
 
   requestAnimationFrame(()=>{
@@ -1326,57 +1320,19 @@ function positionSelectedSegmentAction(){
     const width=action.offsetWidth||340;
     const height=action.offsetHeight||92;
     const margin=12;
-    const gap=22;
-    const mapWidth=mapEl.clientWidth;
-    const mapHeight=mapEl.clientHeight;
+    const gap=16;
 
-    const dx=previous?point.x-previous.x:1;
-    const dy=previous?point.y-previous.y:0;
-    const preferredSide=Math.abs(dx)>4
-      ?(dx>=0?"right":"left")
-      :(point.x<mapWidth/2?"right":"left");
-
-    const fitsRight=point.x+gap+width<=mapWidth-margin;
-    const fitsLeft=point.x-gap-width>=margin;
-    const fitsBelow=point.y+gap+height<=mapHeight-margin;
-    const fitsAbove=point.y-gap-height>=margin;
-
-    let left;
-    let top;
-    let side=preferredSide;
-    let vertical="center";
-
-    const placeHorizontal=chosenSide=>{
-      side=chosenSide;
-      vertical="center";
-      left=chosenSide==="right"?point.x+gap:point.x-width-gap;
-      top=point.y-(height/2);
-    };
-
-    const placeVertical=chosenVertical=>{
-      side="center";
-      vertical=chosenVertical;
-      left=point.x-(width/2);
-      top=chosenVertical==="below"?point.y+gap:point.y-height-gap;
-    };
-
-    // 1) Prioridade: continuar além do ponto 2, seguindo a direção do gesto.
-    if(preferredSide==="right"&&fitsRight)placeHorizontal("right");
-    else if(preferredSide==="left"&&fitsLeft)placeHorizontal("left");
-    else {
-      // 2) Se a borda do mapa impedir, sai por cima/baixo do ponto 2
-      // em vez de inverter e cobrir novamente o trecho selecionado.
-      const preferredVertical=dy>=0?"below":"above";
-      if(preferredVertical==="below"&&fitsBelow)placeVertical("below");
-      else if(preferredVertical==="above"&&fitsAbove)placeVertical("above");
-      else if(fitsBelow)placeVertical("below");
-      else if(fitsAbove)placeVertical("above");
-      else if(fitsRight)placeHorizontal("right");
-      else placeHorizontal("left");
+    // Fica imediatamente ao lado do ponto 2.
+    let left=point.x+gap;
+    let side="right";
+    if(left+width>mapEl.clientWidth-margin){
+      left=point.x-width-gap;
+      side="left";
     }
+    left=Math.max(margin,Math.min(left,mapEl.clientWidth-width-margin));
 
-    left=Math.max(margin,Math.min(left,mapWidth-width-margin));
-    top=Math.max(margin,Math.min(top,mapHeight-height-margin));
+    let top=point.y-(height/2);
+    top=Math.max(margin,Math.min(top,mapEl.clientHeight-height-margin));
 
     action.style.setProperty("left",Math.round(left)+"px","important");
     action.style.setProperty("top",Math.round(top)+"px","important");
@@ -1384,7 +1340,7 @@ function positionSelectedSegmentAction(){
     action.style.setProperty("bottom","auto","important");
     action.style.setProperty("transform","none","important");
     action.dataset.anchorSide=side;
-    action.dataset.anchorVertical=vertical;
+    action.dataset.anchorVertical="center";
     action.dataset.anchorPoint="end";
   });
 }
@@ -2163,23 +2119,22 @@ function shortestLoopSpan(startRatio,endRatio){
 function avenueLocationById(id){
   return state.locations.find(l=>String(l.id)===String(id) && l.category==='avenue')||null;
 }
-function avenueRouteDefinitions(name,{includeLegacy=false}={}){
+function avenueRouteDefinitions(name){
   return (window.MonitoraRoadNetwork?.roads||[])
-    .filter(road=>road.avenue===name&&(includeLegacy||!road.legacy))
+    .filter(road=>road.avenue===name)
     .map(road=>({key:road.id,points:road.points,width:road.width}));
 }
 function avenuePointsByLocationId(id,routeKey="main"){
   const loc=avenueLocationById(id);
   if(!loc)return null;
   // Saved ratios refer to a specific geometry. Never reassign them to another lane.
-  const def=avenueRouteDefinitions(loc.name,{includeLegacy:true}).find(item=>item.key===routeKey)
+  const def=avenueRouteDefinitions(loc.name).find(item=>item.key===routeKey)
     ||legacyAvenueRouteDefinitions(loc.name).find(item=>item.key===routeKey);
   return def?routeToLatLng(def.points):null;
 }
 function nearestRoadProjection(latlng,maxDistance=10){
   let best=null;
   for(const road of window.MonitoraRoadNetwork?.roads||[]){
-    if(road.legacy)continue;
     const projection=projectPointOnRoute(latlng,routeToLatLng(road.points));
     const limit=Math.min(maxDistance,road.width/2+2);
     if(projection.distance<=limit&&(!best||projection.distance<best.projection.distance)){
@@ -2449,46 +2404,6 @@ function clearAvenueLayers(which){
   (state.avenueLayers[which]||[]).forEach(l=>l.remove());
   state.avenueLayers[which]=[];
 }
-function smoothVisualRoad(points,{radius=12,samples=4}={}){
-  if(!Array.isArray(points)||points.length<3)return points;
-  const same=(a,b)=>Math.hypot(Number(a[0])-Number(b[0]),Number(a[1])-Number(b[1]))<.001;
-  const closed=same(points[0],points[points.length-1]);
-  const src=(closed?points.slice(0,-1):points).map(p=>[Number(p[0]),Number(p[1])]);
-  if(src.length<3)return points;
-
-  const rounded=[];
-  const appendCorner=(prev,curr,next)=>{
-    const a=[prev[0]-curr[0],prev[1]-curr[1]];
-    const b=[next[0]-curr[0],next[1]-curr[1]];
-    const da=Math.hypot(a[0],a[1]),db=Math.hypot(b[0],b[1]);
-    if(da<.001||db<.001){rounded.push(curr);return;}
-    const dot=(a[0]*b[0]+a[1]*b[1])/(da*db);
-    // Trechos praticamente retos continuam exatamente retos.
-    if(dot<-.997){rounded.push(curr);return;}
-    const trim=Math.min(radius,da*.28,db*.28);
-    const pin=[curr[0]+a[0]*(trim/da),curr[1]+a[1]*(trim/da)];
-    const pout=[curr[0]+b[0]*(trim/db),curr[1]+b[1]*(trim/db)];
-    rounded.push(pin);
-    for(let s=1;s<samples;s++){
-      const t=s/samples,mt=1-t;
-      rounded.push([
-        mt*mt*pin[0]+2*mt*t*curr[0]+t*t*pout[0],
-        mt*mt*pin[1]+2*mt*t*curr[1]+t*t*pout[1]
-      ]);
-    }
-    rounded.push(pout);
-  };
-
-  if(closed){
-    for(let i=0;i<src.length;i++)appendCorner(src[(i-1+src.length)%src.length],src[i],src[(i+1)%src.length]);
-    rounded.push([...rounded[0]]);
-  }else{
-    rounded.push(src[0]);
-    for(let i=1;i<src.length-1;i++)appendCorner(src[i-1],src[i],src[i+1]);
-    rounded.push(src[src.length-1]);
-  }
-  return rounded;
-}
 function renderAvenues(which){
   const map=state.maps[which];if(!map)return;
   clearAvenueLayers(which);
@@ -2496,13 +2411,9 @@ function renderAvenues(which){
   if(!visible)return; // Alert-only view keeps occurrence layers, not the whole street mesh.
   const paths=[];
   for(const road of window.MonitoraRoadNetwork?.roads||[]){
-    if(road.legacy)continue;
     const points=routeToLatLng(road.points);
-    // Suavização exclusivamente visual: preserva o traçado real usado para clique,
-    // seleção de trecho e compatibilidade com ocorrências já salvas.
-    const visualPoints=smoothVisualRoad(points,{radius:12,samples:5});
-    const line=L.polyline(visualPoints,{
-      color:'#237CB1',weight:1,opacity:which==='home'?.32:.56,
+    const line=L.polyline(points,{
+      color:'#237CB1',weight:1,opacity:which==='home'?.35:.65,
       lineCap:'round',lineJoin:'round',smoothFactor:0,interactive:false,
       className:'road-network-line'
     }).addTo(map);

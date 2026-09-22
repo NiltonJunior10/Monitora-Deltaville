@@ -39,7 +39,7 @@ h1,h2,h3,h4,.hello h1,.page-title h1,.section-head h2,.sheet-head h2,.onboarding
 .desktop-kpi strong{font-size:24px!important}.desktop-kpi small{font-size:13px!important;line-height:1.35!important}.desktop-kpi p{font-size:13px!important;line-height:1.4!important}
 .desktop-card-head b,.desktop-recent-card b,.desktop-monitor-card b{font-size:16px!important}
 .desktop-monitoring-list span,.desktop-monitoring-list b{font-size:14px!important}
-.bottom-nav b{font-size:12px!important;line-height:1.2!important}.bottom-nav button{font-size:20px!important}
+.bottom-nav b{line-height:1.2!important}.bottom-nav button{font-size:20px!important}
 .top-weather-summary,.top-weather-rain small{font-size:12px!important}.top-weather-now strong,.top-weather-rain b{font-size:18px!important}
 .river-axis-label{font-size:12px!important}.river-tooltip strong{font-size:15px!important}.river-tooltip span{font-size:12px!important}
 .leaflet-control-attribution{font-size:10px!important}

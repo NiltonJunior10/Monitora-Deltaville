@@ -1,3 +1,11 @@
+# v7.0.57 — Limpeza do CSS do rodapé (bottom-nav)
+
+- Remove regras duplicadas/mortas de `.bottom-nav`, `.nav-icon` e `.report-icon` que existiam simultaneamente em `styles.css`, `stability.css`, `apple-ui.css`, `v6.css` e `v8.css`, cada uma competindo com `!important`.
+- `v6.css` e `v8.css` continuam sendo a fonte real do visual do rodapé (tamanho, cor, blur e ícones); os outros arquivos só mantêm o que ainda não era sobrescrito por eles.
+- Nenhuma mudança visual: a limpeza foi validada renderizando o rodapé antes/depois num navegador headless e comparando todos os estilos computados (claro/escuro, mobile/desktop) — resultado idêntico.
+- Reduz o peso de CSS carregado e elimina a principal fonte de conflito que causava o desalinhamento de ícones relatado.
+- Note: o changelog estava parado na v6.9.0 mesmo com o projeto já na v7.0.56 (com `v8.css`/`v8-ux.js` em produção); as mudanças entre essas versões não foram documentadas aqui e não foram reconstruídas nesta entrada.
+
 # v6.9.0 — Home web no padrão iOS 27
 
 - Reorganiza a home desktop em uma hierarquia mais clara: hero, indicadores, ação principal, mapa, ocorrências, rio e painéis de apoio.
