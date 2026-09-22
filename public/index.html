@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=757">
   <link rel="stylesheet" href="apple-ui.css?v=757">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=763">
+  <link rel="stylesheet" href="v8.css?v=764">
   <link rel="stylesheet" href="river-desktop.css?v=720">
   <link rel="stylesheet" href="sidebar-desktop.css?v=758">
   <script src="theme-init.js?v=702"></script>
@@ -124,22 +124,24 @@
       </button>
       <button type="button" class="v7-mobile-avatar" id="mobileAvatar" data-nav="profile" aria-label="Abrir meu perfil">MD</button>
 
-      <button type="button" class="top-weather" id="desktopWeatherTrigger" aria-label="Abrir detalhes da previsão do tempo" aria-expanded="false" aria-controls="desktopWeatherPanel">
-        <div class="top-weather-main">
-          <div class="top-weather-icon" id="topWeatherIcon" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg></div>
-          <div class="top-weather-now">
-            <span id="weatherHeadline">Clima local</span>
+      <button type="button" class="top-weather weather-compact" id="desktopWeatherTrigger" aria-label="Abrir detalhes da previsão do tempo" aria-expanded="false" aria-controls="desktopWeatherPanel">
+        <div class="weather-compact__current">
+          <div class="weather-compact__icon" id="topWeatherIcon" aria-hidden="true"></div>
+          <div class="weather-compact__copy">
+            <span id="weatherHeadline">Deltaville</span>
             <strong id="weatherTemp">—</strong>
-          </div>
-          <div class="top-weather-alert-slot" aria-live="polite">
-            <span class="top-weather-official-badge" id="topWeatherOfficialAlert" hidden></span>
-          </div>
-          <div class="top-weather-divider"></div>
-          <div class="top-weather-rain">
-            <span>Próx. 6h</span>
-            <b id="topWeatherRain">—</b>
+            <small id="topWeatherCondition">Condição atual</small>
           </div>
         </div>
+
+        <span class="top-weather-official-badge weather-compact__alert" id="topWeatherOfficialAlert" hidden aria-live="polite"></span>
+
+        <div class="weather-compact__rain">
+          <span>Chuva nas próximas 6h</span>
+          <b id="topWeatherRain">—</b>
+        </div>
+
+        <span class="weather-compact__chevron" aria-hidden="true">›</span>
       </button>
 
       <div class="desktop-account">
@@ -158,70 +160,74 @@
       </div>
     </header>
 
-    <section class="desktop-weather-panel" id="desktopWeatherPanel" hidden aria-label="Detalhes da previsão do tempo">
-      <div class="desktop-weather-panel-head">
+    <section class="desktop-weather-panel weather-sheet weather-sheet--desktop" id="desktopWeatherPanel" hidden aria-label="Detalhes da previsão do tempo">
+      <div class="weather-sheet__header">
         <div>
-          <small>PREVISÃO PARA O DELTAVILLE</small>
-          <strong id="desktopWeatherSummary">Carregando previsão…</strong>
+          <h2>Previsão para o Deltaville</h2>
+          <p id="desktopWeatherProviderLine">Atualizado pelo Google Weather</p>
         </div>
-        <div class="weather-panel-head-actions">
-          <button type="button" class="desktop-weather-close" id="desktopWeatherClose" aria-label="Fechar previsão">×</button>
+        <button type="button" class="weather-sheet__close desktop-weather-close" id="desktopWeatherClose" aria-label="Fechar previsão">×</button>
+      </div>
+
+      <div class="weather-sheet__hero">
+        <div class="weather-sheet__hero-main">
+          <div class="weather-sheet__hero-icon" id="desktopWeatherHeroIcon" aria-hidden="true"></div>
+          <div class="weather-sheet__hero-temp">
+            <strong id="desktopWeatherHeroTemp">—</strong>
+            <span id="desktopWeatherCondition">Condição atual</span>
+          </div>
+        </div>
+        <div class="weather-sheet__hero-meta">
+          <b id="desktopWeatherHeroRange">Máx. — • Mín. —</b>
+          <span id="desktopWeatherSourceLabel">Google Weather</span>
+          <small id="desktopWeatherUpdated">Atualizando…</small>
         </div>
       </div>
 
-      <div class="weather-expanded-hero desktop-weather-hero">
-        <div class="weather-expanded-icon" id="desktopWeatherHeroIcon" aria-hidden="true"></div>
-        <div class="weather-expanded-now">
-          <span id="desktopWeatherCondition">Condição atual</span>
-          <strong id="desktopWeatherHeroTemp">—</strong>
-          <small id="desktopWeatherHeroRange">Máx. — • Mín. —</small>
-        </div>
-        <div class="weather-expanded-source">
-          <b id="desktopWeatherSourceLabel">Google Weather</b>
-          <span id="desktopWeatherUpdated">Atualizando…</span>
-        </div>
+      <div class="weather-sheet__alerts" id="desktopWeatherAlerts" hidden aria-live="polite">
+        <div class="desktop-weather-alert-list" id="desktopWeatherAlertList"></div>
       </div>
 
-      <div class="desktop-weather-alerts" id="desktopWeatherAlerts" aria-live="polite">
-        <div class="desktop-weather-alerts-title">
-          <span>Avisos meteorológicos</span>
-          <small>Google Weather • Biguaçu</small>
-        </div>
-        <div class="desktop-weather-alert-list" id="desktopWeatherAlertList">
-          <span class="desktop-weather-alert-pending">Consultando avisos do Google Weather…</span>
-        </div>
-      </div>
+      <div class="weather-sheet__grid">
+        <article class="weather-mini-card" id="desktopWeatherRainCard">
+          <div class="weather-mini-card__icon rain" aria-hidden="true">⌁</div>
+          <div>
+            <small>Chuva próximas 6h</small>
+            <strong id="desktopWeatherRain">—</strong>
+            <span id="desktopWeatherChance">Chance —</span>
+          </div>
+        </article>
 
-      <div class="desktop-weather-panel-grid">
-        <article class="weather-metric-card tone-rain" id="desktopWeatherRainCard">
-          <small>Chuva • próximas 6h</small>
-          <strong id="desktopWeatherRain">—</strong>
-          <span id="desktopWeatherChance">Chance —</span>
+        <article class="weather-mini-card" id="desktopWeatherHailCard">
+          <div class="weather-mini-card__icon hail" aria-hidden="true">•••</div>
+          <div>
+            <small>Granizo</small>
+            <strong id="desktopWeatherHail">—</strong>
+            <span id="desktopWeatherHailDetail">Aguardando previsão</span>
+          </div>
         </article>
-        <article class="weather-metric-card tone-hail" id="desktopWeatherHailCard">
-          <small>Granizo • próximas 6h</small>
-          <strong id="desktopWeatherHail">—</strong>
-          <span id="desktopWeatherHailDetail">Aguardando previsão</span>
+
+        <article class="weather-mini-card" id="desktopWeatherWindCard">
+          <div class="weather-mini-card__icon wind" aria-hidden="true">≋</div>
+          <div>
+            <small>Rajadas de vento</small>
+            <strong id="desktopWeatherWind6h">—</strong>
+            <span id="desktopWeatherWindStatus">Aguardando previsão</span>
+          </div>
         </article>
-        <article class="weather-metric-card tone-wind" id="desktopWeatherWindCard">
-          <small>Rajadas • próximas 6h</small>
-          <strong id="desktopWeatherWind6h">—</strong>
-          <span id="desktopWeatherWindStatus">Aguardando previsão</span>
-        </article>
-        <article class="weather-metric-card tone-rain-now" id="desktopWeatherRainNowCard">
-          <small>Precipitação • última hora</small>
-          <strong id="desktopWeatherNowRain">—</strong>
-          <span id="desktopWeatherNowRainDetail">Estimativa do Google Weather</span>
-        </article>
-        <article class="weather-metric-card tone-today" id="desktopWeatherTodayCard">
-          <small>Vento agora</small>
-          <strong id="desktopWeatherWindNow">—</strong>
-          <span id="desktopWeatherHumidity">Umidade —</span>
+
+        <article class="weather-mini-card" id="desktopWeatherRainNowCard">
+          <div class="weather-mini-card__icon rain" aria-hidden="true">⌁</div>
+          <div>
+            <small>Precipitação última hora</small>
+            <strong id="desktopWeatherNowRain">—</strong>
+            <span id="desktopWeatherNowRainDetail">Estimativa do Google Weather</span>
+          </div>
         </article>
       </div>
     </section>
 
-    <main>
+        <main>
       <section class="page active" data-page="home">
         <div class="hello">
           <div>
@@ -309,68 +315,76 @@
             </button>
           </div>
 
-          <section class="v7-weather-details" id="v7WeatherDetails" hidden aria-label="Detalhes das condições do tempo">
-            <div class="v7-weather-details-head">
+          <section class="v7-weather-details weather-sheet weather-sheet--mobile" id="v7WeatherDetails" hidden aria-label="Detalhes das condições do tempo">
+            <div class="weather-sheet__grabber" aria-hidden="true"></div>
+
+            <div class="weather-sheet__header">
               <div>
-                <small>Previsão para o Deltaville</small>
-                <strong id="v7WeatherDetailSummary">Carregando previsão…</strong>
+                <h2>Previsão para o Deltaville</h2>
+                <p id="v7WeatherProvider">Atualizado pelo Google Weather</p>
               </div>
-              <button type="button" data-v7-weather-close>Fechar</button>
+              <button type="button" class="weather-sheet__close" data-v7-weather-close aria-label="Fechar previsão">×</button>
             </div>
 
-            <div class="weather-expanded-hero v7-weather-expanded-hero">
-              <div class="weather-expanded-icon" id="v7WeatherHeroIcon" aria-hidden="true"></div>
-              <div class="weather-expanded-now">
-                <span id="v7WeatherCondition">Condição atual</span>
-                <strong id="v7WeatherHeroTemp">—</strong>
-                <small id="v7WeatherHeroRange">Máx. — • Mín. —</small>
+            <div class="weather-sheet__hero">
+              <div class="weather-sheet__hero-main">
+                <div class="weather-sheet__hero-icon" id="v7WeatherHeroIcon" aria-hidden="true"></div>
+                <div class="weather-sheet__hero-temp">
+                  <strong id="v7WeatherHeroTemp">—</strong>
+                  <span id="v7WeatherCondition">Condição atual</span>
+                </div>
               </div>
-              <div class="weather-expanded-source">
-                <b id="v7WeatherProvider">Google Weather</b>
-                <span id="v7WeatherUpdated">Atualizando…</span>
-              </div>
-            </div>
-
-            <div class="v7-weather-official-alerts" aria-live="polite">
-              <div class="v7-weather-official-head">
-                <span>Avisos oficiais</span>
-                <small>Google Weather • Biguaçu</small>
-              </div>
-              <div class="desktop-weather-alert-list v7-weather-alert-list" id="v7WeatherAlertList">
-                <span class="desktop-weather-alert-pending">Consultando avisos do Google Weather…</span>
+              <div class="weather-sheet__hero-meta">
+                <b id="v7WeatherHeroRange">Máx. — • Mín. —</b>
+                <span>Google Weather</span>
+                <small id="v7WeatherUpdated">Atualizando…</small>
               </div>
             </div>
 
-            <div class="v7-weather-detail-grid">
-              <article>
-                <small>Chuva nas próximas 6h</small>
-                <strong id="v7WeatherRainDetail">—</strong>
-                <span id="v7WeatherChanceDetail">Chance —</span>
+            <div class="weather-sheet__alerts" id="v7WeatherOfficialAlerts" hidden aria-live="polite">
+              <div class="desktop-weather-alert-list v7-weather-alert-list" id="v7WeatherAlertList"></div>
+            </div>
+
+            <div class="weather-sheet__grid">
+              <article class="weather-mini-card">
+                <div class="weather-mini-card__icon rain" aria-hidden="true">⌁</div>
+                <div>
+                  <small>Chuva próximas 6h</small>
+                  <strong id="v7WeatherRainDetail">—</strong>
+                  <span id="v7WeatherChanceDetail">Chance —</span>
+                </div>
               </article>
-              <article>
-                <small>Granizo • próximas 6h</small>
-                <strong id="v7WeatherHail">—</strong>
-                <span id="v7WeatherHailDetail">Aguardando previsão</span>
+
+              <article class="weather-mini-card">
+                <div class="weather-mini-card__icon hail" aria-hidden="true">•••</div>
+                <div>
+                  <small>Granizo</small>
+                  <strong id="v7WeatherHail">—</strong>
+                  <span id="v7WeatherHailDetail">Aguardando previsão</span>
+                </div>
               </article>
-              <article>
-                <small>Vento / rajadas • próximas 6h</small>
-                <strong id="v7WeatherWind6h">—</strong>
-                <span id="v7WeatherWindStatus">Aguardando previsão</span>
+
+              <article class="weather-mini-card">
+                <div class="weather-mini-card__icon wind" aria-hidden="true">≋</div>
+                <div>
+                  <small>Rajadas de vento</small>
+                  <strong id="v7WeatherWind6h">—</strong>
+                  <span id="v7WeatherWindStatus">Aguardando previsão</span>
+                </div>
               </article>
-              <article>
-                <small>Precipitação • última hora</small>
-                <strong id="v7WeatherNowRain">—</strong>
-                <span id="v7WeatherNowRainDetail">Estimativa do Google Weather</span>
-              </article>
-              <article>
-                <small>Vento agora</small>
-                <strong id="v7WeatherWindNow">—</strong>
-                <span id="v7WeatherHumidity">Umidade —</span>
+
+              <article class="weather-mini-card">
+                <div class="weather-mini-card__icon rain" aria-hidden="true">⌁</div>
+                <div>
+                  <small>Precipitação última hora</small>
+                  <strong id="v7WeatherNowRain">—</strong>
+                  <span id="v7WeatherNowRainDetail">Estimativa do Google Weather</span>
+                </div>
               </article>
             </div>
           </section>
 
-          <section class="v7-recent-panel">
+                    <section class="v7-recent-panel">
             <div class="v7-section-head">
               <div>
                 <span class="v7-section-icon" aria-hidden="true">
@@ -1296,7 +1310,7 @@
   <script src="stability-core.js?v=702"></script>
   <script src="auth.js?v=747"></script>
   <script src="river.js?v=744"></script>
-  <script src="weather.js?v=763"></script>
+  <script src="weather.js?v=764"></script>
   <script src="push.js?v=702"></script>
   <script src="road-network.js?v=756"></script>
   <script src="app.js?v=763"></script>
