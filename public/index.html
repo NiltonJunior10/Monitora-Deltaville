@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="stability.css?v=702">
   <link rel="stylesheet" href="apple-ui.css?v=702">
   <link rel="stylesheet" href="v6.css?v=704">
-  <link rel="stylesheet" href="v8.css?v=751">
+  <link rel="stylesheet" href="v8.css?v=756">
   <link rel="stylesheet" href="river-desktop.css?v=720">
   <link rel="stylesheet" href="sidebar-desktop.css?v=725">
   <script src="theme-init.js?v=702"></script>
@@ -116,7 +116,7 @@
         </div>
         <p>Juntos por um<br><strong>Deltaville mais seguro</strong><br>e bem cuidado.</p>
         <span class="desktop-community-accent" aria-hidden="true"></span>
-        <small>Monitora Deltaville<br>v7.0.55</small>
+        <small>Monitora Deltaville<br>v7.0.56</small>
       </div>
     </aside>
     <header class="topbar">
@@ -628,7 +628,7 @@
         <div class="chips" id="mapFilters">
           <button class="selected" data-filter="all">Todos</button>
           <button data-filter="lake">Lagos</button>
-          <button data-filter="avenue">Avenidas</button>
+          <button data-filter="avenue">Vias</button>
           <button data-filter="river">Rio</button>
           <button data-filter="alerts">Alertas</button>
         </div>
@@ -647,7 +647,7 @@
             </div>
             <div class="map-inline-legend__grid">
               <span><i class="legend-symbol water"></i>Lagos monitorados</span>
-              <span><i class="legend-symbol road"></i>Avenidas monitoradas</span>
+              <span><i class="legend-symbol road"></i>Ruas e avenidas</span>
               <span><i class="legend-symbol river"></i>Rio Biguaçu</span>
               <span><i class="legend-dot normal"></i>Normal</span>
               <span><i class="legend-dot attention"></i>Atenção</span>
@@ -703,7 +703,7 @@
             <b id="pickPointText">Marcar ponto</b>
           </span>
         </button>
-            <div class="map-pick-help" id="mapPickHelp">Segure e arraste sobre uma via para delimitar um trecho.</div>
+            <div class="map-pick-help" id="mapPickHelp">Toque numa via para marcar. Nas avenidas, segure e arraste para delimitar um trecho.</div>
 
         <div class="map-focus-card" id="mapFocusCard" hidden>
           <div class="map-focus-card__top">
@@ -1277,7 +1277,8 @@
   <script src="river.js?v=744"></script>
   <script src="weather.js?v=740"></script>
   <script src="push.js?v=702"></script>
-  <script src="app.js?v=755"></script>
+  <script src="road-network.js?v=756"></script>
+  <script src="app.js?v=756"></script>
   <script src="v6-ui.js?v=707"></script>
   <script src="v8-ux.js?v=704"></script>
 </body>

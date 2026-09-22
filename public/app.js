@@ -1015,6 +1015,13 @@ function makeMap(id, preview=false){
   const overlay=L.imageOverlay("assets/mapa-deltaville-clean.webp",MAP_BOUNDS,{
     interactive:false,className:"map-core-layer"
   }).addTo(map);
+  const resizeRoadStroke=layer=>{
+    if(!layer?.options?.roadWidth||!layer.setStyle)return;
+    const scale=map.getZoomScale(map.getZoom(),0);
+    layer.setStyle({weight:Math.min(layer.options.roadMaxWidth||14,layer.options.roadWidth*scale)});
+  };
+  map.on("layeradd",e=>resizeRoadStroke(e.layer));
+  map.on("zoomend",()=>map.eachLayer(resizeRoadStroke));
   map.fitBounds(MAP_BOUNDS,{padding:[0,0],animate:false});
   overlay.on("load",()=>ensureMapLayout(map,true));
   map.whenReady(()=>setTimeout(()=>ensureMapLayout(map,true),80));
@@ -1081,14 +1088,8 @@ function nearestFeatureForPoint(latlng){
       return;
     }
     if(loc.category==="avenue"){
-      const route=avenueRoutes[loc.name];
-      if(!route)return;
-      const pts=routeToLatLng(route);
-      let min=Infinity;
-      for(let i=0;i<pts.length-1;i++){
-        min=Math.min(min,pointToSegmentDistance(latlng,{lat:pts[i][0],lng:pts[i][1]},{lat:pts[i+1][0],lng:pts[i+1][1]}));
-      }
-      if(min<=avenueThreshold&&(!best||min<best.distance))best={category:"avenue",loc,distance:min};
+      const match=nearestAvenueProjectionForLocation(loc.id,latlng,avenueThreshold);
+      if(match&&(!best||match.projection.distance<best.distance))best={category:"avenue",loc,distance:match.projection.distance};
       return;
     }
     if(loc.category==="river"){
@@ -1131,7 +1132,7 @@ function setPointPickMode(enabled,options={}){
   const btn=$("#pickPointBtn");if(btn)btn.classList.toggle("active",enabled);
   $("#fullMap")?.classList.toggle("point-pick-active",enabled);
   if($("#pickPointText"))$("#pickPointText").textContent=enabled?(state.multiPointMode?"Adicionar pontos":"Toque no mapa"):"Marcar ponto";
-  if($("#mapPickHelp"))$("#mapPickHelp").textContent=enabled?(state.multiPointMode?"Marque quantos pontos precisar. Depois toque em “Concluir”.":"Modo de marcação ativo: toque uma vez no ponto exato."):"Segure e arraste sobre uma via para delimitar um trecho.";
+  if($("#mapPickHelp"))$("#mapPickHelp").textContent=enabled?(state.multiPointMode?"Marque quantos pontos precisar. Depois toque em “Concluir”.":"Modo de marcação ativo: toque uma vez no ponto exato."):"Toque numa via para marcar. Nas avenidas, segure e arraste para delimitar um trecho.";
 }
 function renderSelectedPointMarkers(){
   state.selectedPointMarkers.forEach(m=>m.remove());state.selectedPointMarkers=[];
@@ -1144,8 +1145,10 @@ function renderSelectedPointMarkers(){
   state.selectedPointMarker=state.selectedPointMarkers.at(-1)||null;
 }
 function setSelectedPoint(latlng,options={}){
-  const near=nearestFeatureForPoint(latlng),n=latLngToNormalized(latlng);
-  const point={lat:Number(latlng.lat),lng:Number(latlng.lng),map_x:n.map_x,map_y:n.map_y,loc:near?.loc||null};
+  const road=nearestRoadProjection(latlng);
+  if(road)latlng=road.projection.latlng;
+  const near=road?{loc:road.loc}:nearestFeatureForPoint(latlng),n=latLngToNormalized(latlng);
+  const point={lat:Number(latlng.lat),lng:Number(latlng.lng),map_x:n.map_x,map_y:n.map_y,loc:near?.loc||null,roadName:road?.road.name||null};
   const append=options.append??state.multiPointMode;
   if(append){
     const duplicate=state.selectedPoints.some(p=>Math.hypot(p.lng-point.lng,p.lat-point.lat)<18);
@@ -1214,7 +1217,7 @@ function updateSelectedPointUI(){
   if($("#clearReportPointBtn"))$("#clearReportPointBtn").hidden=!has;
   if($("#multiPointSummary"))$("#multiPointSummary").textContent=has?`${count} ${count===1?"ponto marcado":"pontos marcados"}`:"Nenhum ponto exato marcado.";
   if(has){
-    if($("#selectedPointActionTitle"))$("#selectedPointActionTitle").textContent=count===1?(state.selectedPoints[0]?.loc?.name||"Ponto selecionado"):`${count} pontos marcados`;
+    if($("#selectedPointActionTitle"))$("#selectedPointActionTitle").textContent=count===1?(state.selectedPoints[0]?.roadName||state.selectedPoints[0]?.loc?.name||"Ponto selecionado"):`${count} pontos marcados`;
     if($("#selectedPointActionText"))$("#selectedPointActionText").textContent=state.multiPointMode?"Marque outros ou conclua":"Registrar ocorrência neste ponto";
     if($("#reportHereBtn"))$("#reportHereBtn").textContent=state.multiPointMode?"Concluir":"Registrar";
     if($("#clearMapPointBtn"))$("#clearMapPointBtn").textContent="Cancelar";
@@ -1244,9 +1247,9 @@ function renderSelectedSegmentLayers(){
   const pts=avenuePointsByLocationId(seg.avenueId,seg.routeKey||"main");
   if(!pts)return;
   const section=selectedSegmentRoute(pts,seg);
-  const halo=L.polyline(section,{color:'#FFFFFF',weight:14,opacity:.88,lineCap:'round',lineJoin:'round',interactive:false}).addTo(map);
-  const band=L.polyline(section,{color:'#0A84FF',weight:8,opacity:.96,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-band'}).addTo(map);
-  const wave=L.polyline(section,{color:'#A9DCFF',weight:2,opacity:.78,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-wave'}).addTo(map);
+  const halo=L.polyline(section,{roadWidth:10,roadMaxWidth:14,color:'#FFFFFF',weight:14,opacity:.88,lineCap:'round',lineJoin:'round',interactive:false}).addTo(map);
+  const band=L.polyline(section,{roadWidth:7,roadMaxWidth:8,color:'#0A84FF',weight:8,opacity:.96,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-band'}).addTo(map);
+  const wave=L.polyline(section,{roadWidth:2,roadMaxWidth:2,color:'#A9DCFF',weight:2,opacity:.78,lineCap:'round',lineJoin:'round',interactive:false,className:'selected-segment-wave'}).addTo(map);
   const start=pointAtRouteRatio(pts,seg.startRatio);
   const end=pointAtRouteRatio(pts,seg.endRatio);
   const startHandle=L.marker(start,{draggable:true,icon:L.divIcon({className:'',html:'<div class="segment-handle start"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map);
@@ -1483,15 +1486,15 @@ function bindMapPointSelection(){
     const section=selectedSegmentRoute(gesture.avenue.pts,state.selectedSegment);
     if(!gesture.liveLayers?.length){
       const halo=L.polyline(section,{
-        color:"#FFFFFF",weight:15,opacity:.82,lineCap:"round",lineJoin:"round",
+        roadWidth:10,roadMaxWidth:15,color:"#FFFFFF",weight:15,opacity:.82,lineCap:"round",lineJoin:"round",
         interactive:false,className:"road-drag-halo"
       }).addTo(map);
       const band=L.polyline(section,{
-        color:"#0A84FF",weight:9,opacity:.88,lineCap:"round",lineJoin:"round",
+        roadWidth:7,roadMaxWidth:9,color:"#0A84FF",weight:9,opacity:.88,lineCap:"round",lineJoin:"round",
         interactive:false,className:"road-drag-band"
       }).addTo(map);
       const core=L.polyline(section,{
-        color:"#A9DCFF",weight:2.2,opacity:.82,lineCap:"round",lineJoin:"round",
+        roadWidth:2,roadMaxWidth:2.2,color:"#A9DCFF",weight:2.2,opacity:.82,lineCap:"round",lineJoin:"round",
         interactive:false,className:"road-drag-core"
       }).addTo(map);
       gesture.liveLayers=[halo,band,core];
@@ -1615,7 +1618,7 @@ function bindMapPointSelection(){
     if(avenue){
       clearSelectedPoint({silent:true});
       clearSegmentSelection({silent:true});
-      state.selectedSegment={avenueId:avenue.loc.id,startRatio:avenue.projection.ratio,endRatio:avenue.projection.ratio,span:0,wrap:false};
+      state.selectedSegment={avenueId:avenue.loc.id,routeKey:avenue.routeKey,startRatio:avenue.projection.ratio,endRatio:avenue.projection.ratio,span:0,wrap:false};
       renderSelectedSegmentLayers();
       updateSegmentUI();
     }else setSelectedPoint(e.latlng);
@@ -1752,9 +1755,9 @@ function renderOccurrencePointMarkers(){
         if(pts){
           const latlngs=selectedSegmentRoute(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});
           const color=o.severity==="critical"?"#E13B4B":o.severity==="alert"?"#F27A2C":"#F4B740";
-          const halo=L.polyline(latlngs,{color:'#FFFFFF',weight:20,opacity:.70,lineCap:'round',interactive:false}).addTo(map);
-          const flood=L.polyline(latlngs,{color,weight:14,opacity:.62,lineCap:'round',interactive:false,className:`flood-segment flood-${o.severity}`}).addTo(map);
-          const water=L.polyline(latlngs,{color:'#36C7F4',weight:9,opacity:.78,dashArray:'9 11',lineCap:'round',interactive:false,className:'flood-wave'}).addTo(map);
+          const halo=L.polyline(latlngs,{roadWidth:10,roadMaxWidth:20,color:'#FFFFFF',weight:20,opacity:.70,lineCap:'round',interactive:false}).addTo(map);
+          const flood=L.polyline(latlngs,{roadWidth:8,roadMaxWidth:14,color,weight:14,opacity:.62,lineCap:'round',interactive:false,className:`flood-segment flood-${o.severity}`}).addTo(map);
+          const water=L.polyline(latlngs,{roadWidth:4,roadMaxWidth:9,color:'#36C7F4',weight:9,opacity:.78,dashArray:'9 11',lineCap:'round',interactive:false,className:'flood-wave'}).addTo(map);
           const hit=L.polyline(latlngs,{color:'#000',weight:26,opacity:0,interactive:true,className:'map-hit-target'}).addTo(map);
           const mid=selectedSegmentMidpoint(pts,{startRatio:meta.startRatio,endRatio:meta.endRatio,span:Number.isFinite(Number(meta.span))?Number(meta.span):undefined,wrap:!!meta.wrap});
           const popup=`<div class="popup"><h4>${esc(occurrenceLabels[o.occurrence_type]||"Ocorrência")}</h4><p><b>${esc(locationName(o))}</b></p><p class="statusline">${severityLabels[o.severity]||o.severity} • trecho delimitado</p>${note?`<p>${esc(note)}</p>`:''}<p>${age(o.created_at)}</p></div>`;
@@ -1928,7 +1931,7 @@ function catmullRomRoute(points,closed=false,steps=7){
   return out;
 }
 
-function avenueRouteDefinitions(name){
+function legacyAvenueRouteDefinitions(name){
   const main=avenueRoutes[name];
   if(!main)return [];
   const smoothDef=(key,points)=>({
@@ -2116,12 +2119,30 @@ function shortestLoopSpan(startRatio,endRatio){
 function avenueLocationById(id){
   return state.locations.find(l=>String(l.id)===String(id) && l.category==='avenue')||null;
 }
+function avenueRouteDefinitions(name){
+  return (window.MonitoraRoadNetwork?.roads||[])
+    .filter(road=>road.avenue===name)
+    .map(road=>({key:road.id,points:road.points,width:road.width}));
+}
 function avenuePointsByLocationId(id,routeKey="main"){
   const loc=avenueLocationById(id);
   if(!loc)return null;
-  const def=avenueRouteDefinitions(loc.name).find(item=>item.key===(routeKey||"main"))
-    ||avenueRouteDefinitions(loc.name)[0];
+  // Saved ratios refer to a specific geometry. Never reassign them to another lane.
+  const def=avenueRouteDefinitions(loc.name).find(item=>item.key===routeKey)
+    ||legacyAvenueRouteDefinitions(loc.name).find(item=>item.key===routeKey);
   return def?routeToLatLng(def.points):null;
+}
+function nearestRoadProjection(latlng,maxDistance=10){
+  let best=null;
+  for(const road of window.MonitoraRoadNetwork?.roads||[]){
+    const projection=projectPointOnRoute(latlng,routeToLatLng(road.points));
+    const limit=Math.min(maxDistance,road.width/2+2);
+    if(projection.distance<=limit&&(!best||projection.distance<best.projection.distance)){
+      const loc=road.avenue?state.locations.find(item=>item.category==='avenue'&&item.name===road.avenue):null;
+      best={road,loc:loc||null,projection};
+    }
+  }
+  return best;
 }
 
 function nearestAvenueProjectionForLocation(id,latlng,maxDistance=Infinity){
@@ -2132,7 +2153,7 @@ function nearestAvenueProjectionForLocation(id,latlng,maxDistance=Infinity){
     const pts=routeToLatLng(def.points);
     if(pts.length<2)continue;
     const projection=projectPointOnRoute(latlng,pts);
-    if(projection.distance<=maxDistance&&(!best||projection.distance<best.projection.distance)){
+    if(projection.distance<=Math.min(maxDistance,(def.width||10)/2+2)&&(!best||projection.distance<best.projection.distance)){
       best={loc,pts,projection,routeKey:def.key};
     }
   }
@@ -2146,7 +2167,7 @@ function nearestAvenueProjection(latlng,maxDistance=46){
       const pts=routeToLatLng(def.points);
       if(pts.length<2)continue;
       const projection=projectPointOnRoute(latlng,pts);
-      if(projection.distance<=maxDistance&&(!best||projection.distance<best.projection.distance)){
+      if(projection.distance<=Math.min(maxDistance,(def.width||10)/2+2)&&(!best||projection.distance<best.projection.distance)){
         best={loc,pts,projection,routeKey:def.key};
       }
     }
@@ -2378,103 +2399,55 @@ function renderLakeZones(which){
   });
 }
 function clearAvenueLayers(which){
+  const map=state.maps[which];
+  if(map?._roadNetworkResize){map.off("zoomend",map._roadNetworkResize);map._roadNetworkResize=null;}
   (state.avenueLayers[which]||[]).forEach(l=>l.remove());
   state.avenueLayers[which]=[];
 }
 function renderAvenues(which){
   const map=state.maps[which];if(!map)return;
   clearAvenueLayers(which);
-  const visible=which==="home"?true:(state.filter==="all"||state.filter==="avenue"||state.filter==="alerts");
-  if(!visible)return;
-
-  state.locations.filter(loc=>loc.category==="avenue").forEach(loc=>{
-    const defs=avenueRouteDefinitions(loc.name);if(!defs.length)return;
-    const status=statusForLocation(loc.id);
-    if(which==="full"&&state.filter==="alerts"&&status==="normal")return;
-
-    const color="#1684D8";
-    const latest=state.occurrences.find(o=>o.location_id===loc.id);
-    const payload={
-      title:loc.name,
-      status,
-      category:"avenue",
-      locationId:loc.id,
-      typeLabel:"Avenida monitorada",
-      timeLabel:latest?age(latest.created_at):"Sem ocorrência ativa",
-      description:latest?`${occurrenceLabels[latest.occurrence_type]||"Ocorrência"} • ${severityLabels[latest.severity]||latest.severity}`:"Clique para marcar um ponto ou arraste para selecionar um trecho."
-    };
-
-    defs.forEach(def=>{
-      const points=routeToLatLng(def.points);
-
-      const corridor=L.polyline(points,{
-        color,
-        weight:def.key==="main"?8:7,
-        opacity:.018,
-        lineCap:"round",
-        lineJoin:"round",
-        interactive:false,
-        className:"avenue-corridor"
-      }).addTo(map);
-
-      const core=L.polyline(points,{
-        color,
-        weight:def.key==="main"?2.1:1.8,
-        opacity:.13,
-        lineCap:"round",
-        lineJoin:"round",
-        interactive:false,
-        className:"avenue-core"
-      }).addTo(map);
-
-      const center=L.polyline(points,{
-        color:"#FFFFFF",
-        weight:1,
-        opacity:.08,
-        lineCap:"round",
-        interactive:false,
-        dashArray:"3 8",
-        className:"avenue-center-static"
-      }).addTo(map);
-
-      const hit=L.polyline(points,{
-        color:"#000",
-        weight:def.key==="main"?34:30,
-        opacity:0,
-        interactive:true,
-        className:"map-hit-target avenue-hit-target"
-      }).addTo(map);
-
-      hit.on("click",e=>{
-        if(which==="home"){
-          openMapFromPreview();
-          return;
-        }
-        if(Date.now()<(state.mapSuppressPointClickUntil||0))return;
-        closeMapAvenueTooltips();
-        hideMapFocusCard();
-        if(e?.latlng){
-          if(e.originalEvent)e.originalEvent.__monitoraPointHandled=true;
-          clearSegmentSelection({silent:true});
-          state.multiPointMode=false;
-          setSelectedPoint(e.latlng,{append:false});
-        }
-      });
-
-      if(which==="full"){
-        hit.bindTooltip(
-          `<b>${esc(loc.name)}</b><span>Clique para marcar • arraste para definir trecho</span>`,
-          {sticky:true,className:"avenue-tooltip avenue-action-tooltip",direction:"top",opacity:1}
-        );
-        hit.on("mouseover",()=>{
-          if(state.selectedSegment || state.segmentPickMode?.active || $("#fullMap")?.classList.contains("road-drag-selecting")){
-            try{hit.closeTooltip();}catch(_){}
-          }
-        });
-      }
-      state.avenueLayers[which].push(corridor,core,center,hit);
+  const visible=which==="home"||state.filter==="all"||state.filter==="avenue";
+  if(!visible)return; // Alert-only view keeps occurrence layers, not the whole street mesh.
+  const paths=[];
+  for(const road of window.MonitoraRoadNetwork?.roads||[]){
+    const points=routeToLatLng(road.points);
+    const line=L.polyline(points,{
+      color:'#237CB1',weight:1,opacity:which==='home'?.35:.65,
+      lineCap:'round',lineJoin:'round',smoothFactor:0,interactive:false,
+      className:'road-network-line'
+    }).addTo(map);
+    const hit=L.polyline(points,{
+      color:'#000',weight:8,opacity:0,smoothFactor:0,interactive:true,
+      bubblingMouseEvents:false,className:'map-hit-target road-network-hit'
+    }).addTo(map);
+    hit.on('click',e=>{
+      if(which==='home'){openMapFromPreview();return;}
+      if(Date.now()<(state.mapSuppressPointClickUntil||0))return;
+      if(e.originalEvent)e.originalEvent.__monitoraPointHandled=true;
+      const projected=projectPointOnRoute(e.latlng,points);
+      clearSegmentSelection({silent:true});
+      setSelectedPoint(projected.latlng,{append:state.multiPointMode});
     });
+    if(which==='full'){
+      hit.bindTooltip(`<b>${esc(road.name)}</b><span>${road.avenue?'Toque para marcar • segure para selecionar trecho':'Toque para registrar um ponto nesta via'}</span>`,
+        {sticky:true,className:'avenue-tooltip avenue-action-tooltip',direction:'top'});
+    }
+    hit.on('mouseover',()=>{
+      if(state.selectedSegment||state.segmentPickMode?.active)hit.closeTooltip();
+    });
+    paths.push({line,hit,road});
+    state.avenueLayers[which].push(line,hit);
+  }
+  // Width scales with the source image: zooming out cannot paint over adjacent lots.
+  const resize=()=>paths.forEach(({line,hit,road})=>{
+    const width=road.width*map.getZoomScale(map.getZoom(),0);
+    line.setStyle({weight:Math.min(3,Math.max(.6,width*.24))});
+    hit.setStyle({weight:Math.max(2,width)});
   });
+  if(map._roadNetworkResize)map.off('zoomend',map._roadNetworkResize);
+  map._roadNetworkResize=resize;
+  map.on('zoomend',resize);resize();
 }
 
 function clearRiverLayers(which){
@@ -3456,7 +3429,7 @@ function buildReportTargets(){
   state.selectedPoints.forEach((point,index)=>{
     const loc=point.loc&&locationCompatibleWithType(type,point.loc)?point.loc:null,locId=loc?String(loc.id):null;
     if(locId&&represented.has(locId)&&String(state.selectedSegment?.avenueId)===locId)return;
-    targets.push({location_id:locId,custom_location:locId?null:`Ponto ${index+1} marcado no mapa`,exact_map_x:point.map_x,exact_map_y:point.map_y,pointIndex:index+1});if(locId)represented.add(locId);
+    targets.push({location_id:locId,custom_location:locId?null:(point.roadName||`Ponto ${index+1} marcado no mapa`),exact_map_x:point.map_x,exact_map_y:point.map_y,pointIndex:index+1});if(locId)represented.add(locId);
   });
   for(const raw of state.reportLocationIds){
     const id=String(raw);
