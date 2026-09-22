@@ -105,6 +105,7 @@ function buildWeatherAlerts(raw){
       status,
       risk:alertRiskFromSeverity(alert?.severity),
       title:alert?.alertTitle?.text||"Aviso meteorológico",
+      title_language:alert?.alertTitle?.languageCode||null,
       events:alert?.eventType?[alert.eventType]:[],
       area_name:alert?.areaName||"",
       description:alert?.description||"",
