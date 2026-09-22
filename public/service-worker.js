@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v768-weather-title-priority";
+const CACHE="monitora-deltaville-v769-weather-icon-fill";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -9,12 +9,12 @@ const APP_SHELL=[
   "./stability.css?v=757",
   "./apple-ui.css?v=757",
   "./v6.css?v=704",
-  "./v8.css?v=764",
+  "./v8.css?v=769",
   "./river-desktop.css?v=720",
   "./sidebar-desktop.css?v=758",
   "./auth.js?v=747",
   "./river.js?v=744",
-  "./weather.js?v=768",
+  "./weather.js?v=769",
   "./push.js?v=702",
   "./road-network.js?v=756",
   "./app.js?v=768",
