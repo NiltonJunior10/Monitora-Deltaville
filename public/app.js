@@ -1303,15 +1303,21 @@ function positionSelectedSegmentAction(){
   const pts=avenuePointsByLocationId(seg.avenueId,seg.routeKey||"main");
   if(!pts)return;
 
-  // O popup acompanha o SEGUNDO ponto do gesto (fim do arraste),
-  // nunca o meio do trecho. Assim "Ajustar" não cobre a marcação.
+  // Ancora sempre no PONTO 2 (fim do arraste). O card tenta continuar
+  // no sentido de saída do trecho para nunca voltar sobre a linha tracejada.
   const selectedRoute=selectedSegmentRoute(pts,seg);
   const endPoint=selectedRoute?.length
     ? selectedRoute[selectedRoute.length-1]
     : pointAtRouteRatio(pts,seg.endRatio);
   if(!endPoint)return;
 
+  const previousPoint=selectedRoute?.length>1
+    ? selectedRoute[selectedRoute.length-2]
+    : null;
   const point=map.latLngToContainerPoint(L.latLng(endPoint[0],endPoint[1]));
+  const previous=previousPoint
+    ? map.latLngToContainerPoint(L.latLng(previousPoint[0],previousPoint[1]))
+    : null;
   const mapEl=map.getContainer();
 
   requestAnimationFrame(()=>{
@@ -1320,19 +1326,57 @@ function positionSelectedSegmentAction(){
     const width=action.offsetWidth||340;
     const height=action.offsetHeight||92;
     const margin=12;
-    const gap=16;
+    const gap=22;
+    const mapWidth=mapEl.clientWidth;
+    const mapHeight=mapEl.clientHeight;
 
-    // Fica imediatamente ao lado do ponto 2.
-    let left=point.x+gap;
-    let side="right";
-    if(left+width>mapEl.clientWidth-margin){
-      left=point.x-width-gap;
-      side="left";
+    const dx=previous?point.x-previous.x:1;
+    const dy=previous?point.y-previous.y:0;
+    const preferredSide=Math.abs(dx)>4
+      ?(dx>=0?"right":"left")
+      :(point.x<mapWidth/2?"right":"left");
+
+    const fitsRight=point.x+gap+width<=mapWidth-margin;
+    const fitsLeft=point.x-gap-width>=margin;
+    const fitsBelow=point.y+gap+height<=mapHeight-margin;
+    const fitsAbove=point.y-gap-height>=margin;
+
+    let left;
+    let top;
+    let side=preferredSide;
+    let vertical="center";
+
+    const placeHorizontal=chosenSide=>{
+      side=chosenSide;
+      vertical="center";
+      left=chosenSide==="right"?point.x+gap:point.x-width-gap;
+      top=point.y-(height/2);
+    };
+
+    const placeVertical=chosenVertical=>{
+      side="center";
+      vertical=chosenVertical;
+      left=point.x-(width/2);
+      top=chosenVertical==="below"?point.y+gap:point.y-height-gap;
+    };
+
+    // 1) Prioridade: continuar além do ponto 2, seguindo a direção do gesto.
+    if(preferredSide==="right"&&fitsRight)placeHorizontal("right");
+    else if(preferredSide==="left"&&fitsLeft)placeHorizontal("left");
+    else {
+      // 2) Se a borda do mapa impedir, sai por cima/baixo do ponto 2
+      // em vez de inverter e cobrir novamente o trecho selecionado.
+      const preferredVertical=dy>=0?"below":"above";
+      if(preferredVertical==="below"&&fitsBelow)placeVertical("below");
+      else if(preferredVertical==="above"&&fitsAbove)placeVertical("above");
+      else if(fitsBelow)placeVertical("below");
+      else if(fitsAbove)placeVertical("above");
+      else if(fitsRight)placeHorizontal("right");
+      else placeHorizontal("left");
     }
-    left=Math.max(margin,Math.min(left,mapEl.clientWidth-width-margin));
 
-    let top=point.y-(height/2);
-    top=Math.max(margin,Math.min(top,mapEl.clientHeight-height-margin));
+    left=Math.max(margin,Math.min(left,mapWidth-width-margin));
+    top=Math.max(margin,Math.min(top,mapHeight-height-margin));
 
     action.style.setProperty("left",Math.round(left)+"px","important");
     action.style.setProperty("top",Math.round(top)+"px","important");
@@ -1340,7 +1384,7 @@ function positionSelectedSegmentAction(){
     action.style.setProperty("bottom","auto","important");
     action.style.setProperty("transform","none","important");
     action.dataset.anchorSide=side;
-    action.dataset.anchorVertical="center";
+    action.dataset.anchorVertical=vertical;
     action.dataset.anchorPoint="end";
   });
 }
