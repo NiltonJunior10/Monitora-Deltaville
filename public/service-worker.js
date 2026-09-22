@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v757-road-circuits";
+const CACHE="monitora-deltaville-v758-segment-popup";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -9,7 +9,7 @@ const APP_SHELL=[
   "./stability.css?v=702",
   "./apple-ui.css?v=702",
   "./v6.css?v=704",
-  "./v8.css?v=756",
+  "./v8.css?v=758",
   "./river-desktop.css?v=720",
   "./sidebar-desktop.css?v=725",
   "./auth.js?v=747",
@@ -17,7 +17,7 @@ const APP_SHELL=[
   "./weather.js?v=740",
   "./push.js?v=702",
   "./road-network.js?v=757",
-  "./app.js?v=757",
+  "./app.js?v=758",
   "./v6-ui.js?v=707",
   "./v8-ux.js?v=704",
   "./stability-core.js?v=702",
