@@ -2205,7 +2205,48 @@ function lakeColor(status){
   if(status==="attention")return "#F4B740";
   return "#00A7BC";
 }
-function showMapFocusCard(payload){
+function positionMapFocusCard(){
+  const card=$("#mapFocusCard");
+  const map=state.maps.full;
+  const anchor=card?._mapAnchorLatLng;
+  if(!card||!map||!anchor||card.hidden||!card.classList.contains("map-focus-card--contextual"))return;
+
+  const point=map.latLngToContainerPoint(anchor);
+  const mapEl=map.getContainer();
+
+  requestAnimationFrame(()=>{
+    if(card.hidden||!card._mapAnchorLatLng)return;
+
+    const width=card.offsetWidth||300;
+    const height=card.offsetHeight||180;
+    const margin=12;
+    const gap=20;
+    const mapWidth=mapEl.clientWidth;
+    const mapHeight=mapEl.clientHeight;
+
+    let side="right";
+    let left=point.x+gap;
+    if(left+width>mapWidth-margin){
+      side="left";
+      left=point.x-width-gap;
+    }
+    left=Math.max(margin,Math.min(left,mapWidth-width-margin));
+
+    let top=point.y-height/2;
+    top=Math.max(margin,Math.min(top,mapHeight-height-margin));
+
+    const arrowY=Math.max(18,Math.min(height-18,point.y-top));
+
+    card.style.setProperty("left",Math.round(left)+"px","important");
+    card.style.setProperty("top",Math.round(top)+"px","important");
+    card.style.setProperty("right","auto","important");
+    card.style.setProperty("bottom","auto","important");
+    card.style.setProperty("transform","none","important");
+    card.style.setProperty("--map-focus-arrow-y",Math.round(arrowY)+"px");
+    card.dataset.anchorSide=side;
+  });
+}
+function showMapFocusCard(payload,anchorLatLng=null){
   state.activeMapItem=payload;
   const card=$("#mapFocusCard");
   if(!card)return;
@@ -2227,11 +2268,39 @@ function showMapFocusCard(payload){
   badge.className=`mini-status ${status}`;
   badge.textContent=severityLabels[status]||"Normal";
   card.hidden=false;
+  if(anchorLatLng){
+    card.classList.add("map-focus-card--contextual");
+    card._mapAnchorLatLng=L.latLng(anchorLatLng);
+    state.maps.full?.closePopup();
+    requestAnimationFrame(positionMapFocusCard);
+  }else{
+    card.classList.remove("map-focus-card--contextual");
+    card._mapAnchorLatLng=null;
+    card.removeAttribute("data-anchor-side");
+    card.style.removeProperty("left");
+    card.style.removeProperty("top");
+    card.style.removeProperty("right");
+    card.style.removeProperty("bottom");
+    card.style.removeProperty("transform");
+    card.style.removeProperty("--map-focus-arrow-y");
+  }
   syncMapBottomUI();
 }
 function hideMapFocusCard(){
   state.activeMapItem=null;
-  if($("#mapFocusCard"))$("#mapFocusCard").hidden=true;
+  const card=$("#mapFocusCard");
+  if(card){
+    card.hidden=true;
+    card.classList.remove("map-focus-card--contextual");
+    card._mapAnchorLatLng=null;
+    card.removeAttribute("data-anchor-side");
+    card.style.removeProperty("left");
+    card.style.removeProperty("top");
+    card.style.removeProperty("right");
+    card.style.removeProperty("bottom");
+    card.style.removeProperty("transform");
+    card.style.removeProperty("--map-focus-arrow-y");
+  }
   syncMapBottomUI();
 }
 function focusLocationById(id){
@@ -2274,6 +2343,7 @@ function bindMapUX(){
   state.maps.full?.on("move zoom resize",()=>{
     positionSelectedSegmentAction();
     positionSelectedPointAction();
+    positionMapFocusCard();
   });
   $("#mapFocusReportBtn")?.addEventListener("click",()=>{
     const item=state.activeMapItem;
@@ -2391,9 +2461,9 @@ function renderLakeZones(which){
         }
       }
 
-      baseLayer.on("click",()=>{
+      baseLayer.on("click",e=>{
         if(which==="home"){openMapFromPreview();}
-        else showMapFocusCard(payload);
+        else showMapFocusCard(payload,e.latlng);
       });
     });
   });
@@ -2586,7 +2656,7 @@ function renderMapMarkers(){
       };
       marker.on("click",()=>{
         if(which==="home"){openMapFromPreview();}
-        else showMapFocusCard(payload);
+        else showMapFocusCard(payload,marker.getLatLng());
       });
       if(which==="full"){
         marker.bindTooltip(shortLakeName(loc.name),{permanent:true,direction:"top",offset:[0,-17],className:"lake-name-tooltip"}).openTooltip();
