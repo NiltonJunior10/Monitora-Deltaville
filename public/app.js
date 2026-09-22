@@ -2119,22 +2119,23 @@ function shortestLoopSpan(startRatio,endRatio){
 function avenueLocationById(id){
   return state.locations.find(l=>String(l.id)===String(id) && l.category==='avenue')||null;
 }
-function avenueRouteDefinitions(name){
+function avenueRouteDefinitions(name,{includeLegacy=false}={}){
   return (window.MonitoraRoadNetwork?.roads||[])
-    .filter(road=>road.avenue===name)
+    .filter(road=>road.avenue===name&&(includeLegacy||!road.legacy))
     .map(road=>({key:road.id,points:road.points,width:road.width}));
 }
 function avenuePointsByLocationId(id,routeKey="main"){
   const loc=avenueLocationById(id);
   if(!loc)return null;
   // Saved ratios refer to a specific geometry. Never reassign them to another lane.
-  const def=avenueRouteDefinitions(loc.name).find(item=>item.key===routeKey)
+  const def=avenueRouteDefinitions(loc.name,{includeLegacy:true}).find(item=>item.key===routeKey)
     ||legacyAvenueRouteDefinitions(loc.name).find(item=>item.key===routeKey);
   return def?routeToLatLng(def.points):null;
 }
 function nearestRoadProjection(latlng,maxDistance=10){
   let best=null;
   for(const road of window.MonitoraRoadNetwork?.roads||[]){
+    if(road.legacy)continue;
     const projection=projectPointOnRoute(latlng,routeToLatLng(road.points));
     const limit=Math.min(maxDistance,road.width/2+2);
     if(projection.distance<=limit&&(!best||projection.distance<best.projection.distance)){
@@ -2411,6 +2412,7 @@ function renderAvenues(which){
   if(!visible)return; // Alert-only view keeps occurrence layers, not the whole street mesh.
   const paths=[];
   for(const road of window.MonitoraRoadNetwork?.roads||[]){
+    if(road.legacy)continue;
     const points=routeToLatLng(road.points);
     const line=L.polyline(points,{
       color:'#237CB1',weight:1,opacity:which==='home'?.35:.65,
