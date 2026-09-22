@@ -52,7 +52,7 @@ function weatherIconMarkup(code,isDay=1){
   }else{
     shape=cloud;
   }
-  return `<svg class="weather-condition-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${shape}</svg>`;
+  return `<svg class="weather-condition-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${shape}</svg>`;
 }
 
 const WEATHER_CACHE_KEY="monitora_weather_v2";
