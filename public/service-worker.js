@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v766-weather-alert-title";
+const CACHE="monitora-deltaville-v767-mobile-alert-title";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -14,7 +14,7 @@ const APP_SHELL=[
   "./sidebar-desktop.css?v=758",
   "./auth.js?v=747",
   "./river.js?v=744",
-  "./weather.js?v=766",
+  "./weather.js?v=767",
   "./push.js?v=702",
   "./road-network.js?v=756",
   "./app.js?v=766",
