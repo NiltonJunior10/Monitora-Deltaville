@@ -1,4 +1,4 @@
-/* v7.0.61: Google Weather como fonte principal; Open-Meteo permanece como fallback. */
+/* v7.0.63: Google Weather para previsão e avisos; Open-Meteo permanece como fallback de previsão. */
 function weatherIconForCode(code,isDay=1){
   const c=Number(code), day=Number(isDay)===1;
   if(c===0) return day?"☀️":"🌙";
@@ -231,11 +231,19 @@ function renderDesktopWeatherAlerts(snapshot){
 
 function renderWeatherSnapshot(snapshot){
   if(!snapshot)return;
+  if(snapshot.alerts){
+    state.weatherAlerts=snapshot.alerts;
+    renderOfficialWeatherAlerts(state.weatherAlerts);
+    if(typeof renderAlertsPage==="function")renderAlertsPage();
+    if(typeof renderOccurrences==="function")renderOccurrences();
+    if(typeof renderSources==="function")renderSources();
+  }
 
   const rainText=weatherHasNumber(snapshot.rain)?`${Number(snapshot.rain).toFixed(1)} mm`:"—";
   const chanceText=weatherHasNumber(snapshot.prob)?`${Math.round(Number(snapshot.prob))}%`:"—";
   const tempText=weatherHasNumber(snapshot.temp)?`${Math.round(Number(snapshot.temp))}°`:"—";
   const currentRainText=weatherHasNumber(snapshot.currentRain)?`${Number(snapshot.currentRain).toFixed(1)} mm`:"—";
+  const currentPrecipChance=weatherHasNumber(snapshot.currentPrecipProbability)?`${Math.round(Number(snapshot.currentPrecipProbability))}%`:"—";
   const feelsText=weatherHasNumber(snapshot.feelsLike)?`Sensação ${Math.round(Number(snapshot.feelsLike))}°`:"Sensação —";
   const humidityText=weatherHasNumber(snapshot.humidity)?`Umidade ${Math.round(Number(snapshot.humidity))}%`:"Umidade —";
   const windNowText=weatherHasNumber(snapshot.wind)?`Vento agora ${Math.round(Number(snapshot.wind))} km/h`:"Vento agora —";
@@ -271,14 +279,12 @@ function renderWeatherSnapshot(snapshot){
 
   // Painel expandido.
   weatherSetText("#v7WeatherDetailSummary",summary);
-  weatherSetText("#v7WeatherTempDetail",tempText);
-  weatherSetText("#v7WeatherFeels",feelsText);
   weatherSetText("#v7WeatherRainDetail",rainText);
   weatherSetText("#v7WeatherChanceDetail",chanceText==="—"?"Chance —":`Até ${chanceText} de chance`);
   weatherSetText("#v7WeatherNowRain",currentRainText);
+  weatherSetText("#v7WeatherNowRainDetail",currentPrecipChance==="—"?`Estimativa da última hora • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`:`${currentPrecipChance} de chance • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`);
+  weatherSetText("#v7WeatherWindNow",weatherHasNumber(snapshot.wind)?`${Math.round(Number(snapshot.wind))} km/h`:"—");
   weatherSetText("#v7WeatherHumidity",humidityText);
-  weatherSetText("#v7WeatherMinMax",minMaxText);
-  weatherSetText("#v7WeatherWind",windNowText);
   weatherSetText("#v7WeatherHail",snapshot.hailRisk?"Possível":"Sem indicação");
   weatherSetText("#v7WeatherHailDetail",snapshot.hailRisk?"Código meteorológico com possibilidade de granizo nas próximas 6h.":"Sem indicação de granizo nas próximas 6h.");
   weatherSetText("#v7WeatherWind6h",wind6hText);
@@ -290,14 +296,12 @@ function renderWeatherSnapshot(snapshot){
 
   // Painel detalhado do desktop.
   weatherSetText("#desktopWeatherSummary",summary);
-  weatherSetText("#desktopWeatherTemp",tempText);
-  weatherSetText("#desktopWeatherFeels",feelsText);
   weatherSetText("#desktopWeatherRain",rainText);
   weatherSetText("#desktopWeatherChance",chanceText==="—"?"Chance —":`Até ${chanceText} de chance`);
   weatherSetText("#desktopWeatherNowRain",currentRainText);
+  weatherSetText("#desktopWeatherNowRainDetail",currentPrecipChance==="—"?`Estimativa da última hora • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`:`${currentPrecipChance} de chance • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`);
+  weatherSetText("#desktopWeatherWindNow",weatherHasNumber(snapshot.wind)?`${Math.round(Number(snapshot.wind))} km/h`:"—");
   weatherSetText("#desktopWeatherHumidity",humidityText);
-  weatherSetText("#desktopWeatherMinMax",minMaxText);
-  weatherSetText("#desktopWeatherWind",windNowText);
   weatherSetText("#desktopWeatherHail",snapshot.hailRisk?"Possível":"Sem indicação");
   weatherSetText("#desktopWeatherHailDetail",snapshot.hailRisk?"Possibilidade de granizo nas próximas 6h.":"Sem indicação de granizo nas próximas 6h.");
   weatherSetText("#desktopWeatherWind6h",wind6hText);
@@ -309,7 +313,8 @@ function renderWeatherSnapshot(snapshot){
 
   const provider=snapshot.source_label||(snapshot.source==="google_weather"?"Google Weather":snapshot.source==="open_meteo"?"Open-Meteo":"Previsão");
   const condition=snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay);
-  const updatedMinutes=Math.max(0,Math.floor((Date.now()-Number(snapshot.saved_at||Date.now()))/60000));
+  const providerTime=snapshot.provider_updated_at?new Date(snapshot.provider_updated_at).getTime():Number(snapshot.saved_at||Date.now());
+  const updatedMinutes=Math.max(0,Math.floor((Date.now()-(Number.isFinite(providerTime)?providerTime:Date.now()))/60000));
   const updatedText=updatedMinutes<1?"Atualizado agora":`Atualizado há ${updatedMinutes} min`;
   const rangeText=weatherHasNumber(snapshot.max)&&weatherHasNumber(snapshot.min)
     ?`Máx. ${Math.round(Number(snapshot.max))}° • Mín. ${Math.round(Number(snapshot.min))}°`
@@ -365,6 +370,7 @@ async function loadGoogleWeatherSnapshot(){
   if(!data?.ok||!data?.weather)throw new Error(data?.error||"google_weather_invalid");
   const snapshot=data.weather;
   snapshot.saved_at=Date.now();
+  snapshot.alerts=data.alerts||{source:"google_weather",notices:[],active:[],upcoming:[]};
   snapshot.source="google_weather";
   snapshot.source_label="Google Weather";
   snapshot.icon=weatherIconForCode(snapshot.weatherCode,snapshot.isDay);
@@ -415,6 +421,7 @@ async function loadOpenMeteoWeatherSnapshot(){
 
   const temp=Number(w.current?.temperature_2m);
   const currentRain=Number(w.current?.precipitation);
+  const currentPrecipProbability=nextProbability.length?Number(nextProbability[0]):null;
   const humidity=Number(w.current?.relative_humidity_2m);
   const feelsLike=Number(w.current?.apparent_temperature);
   const wind=Number(w.current?.wind_speed_10m);
@@ -443,7 +450,7 @@ async function loadOpenMeteoWeatherSnapshot(){
     source_label:"Open-Meteo",
     fallback:true,
     saved_at:Date.now(),
-    rain,prob,temp,max,min,currentRain,humidity,feelsLike,wind,
+    rain,prob,temp,max,min,currentRain,currentPrecipProbability,humidity,feelsLike,wind,
     weatherCode,isDay,maxWind,maxGust,stormRisk,hailRisk,windRisk,windAttention,
     detail:weatherDetail,
     short_summary:summary,
@@ -497,7 +504,6 @@ async function loadWeather(){
     }
   }
 
-  loadEpagriWeatherAlerts();
   renderPushSettings();
   renderSources();
 }
