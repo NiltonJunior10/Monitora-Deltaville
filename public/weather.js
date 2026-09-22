@@ -88,8 +88,21 @@ function weatherEventLabel(event){
     heavy_rain:"Chuva intensa",
     wind:"Vendaval / rajadas",
     lightning:"Raios",
-    tornado:"Tornado / tromba d’água"
-  })[event]||event;
+    tornado:"Tornado / tromba d’água",
+    STORM:"Tempestade",
+    THUNDERSTORM:"Tempestade",
+    SEVERE_THUNDERSTORM_WARNING:"Tempestade severa",
+    HAIL:"Granizo",
+    RAIN:"Chuva",
+    FLOOD:"Alagamento / inundação",
+    FLASH_FLOOD:"Inundação repentina",
+    RIVER_FLOODING:"Cheia de rio",
+    WIND:"Vento forte",
+    TORNADO:"Tornado",
+    TORNADO_WARNING:"Alerta de tornado",
+    COASTAL_FLOOD:"Inundação costeira",
+    LANDSLIDE:"Deslizamento"
+  })[event]||String(event||"").replaceAll("_"," ").toLowerCase();
 }
 
 function weatherOfficialSeverity(notice){
@@ -111,24 +124,19 @@ function renderOfficialWeatherAlerts(data){
     document.getElementById("desktopWeatherAlertList"),
     document.getElementById("v7WeatherAlertList")
   ].filter(Boolean);
-  const list=lists[0]||null;
   const topBadge=document.getElementById("topWeatherOfficialAlert");
+  const notice=(data?.active||[])[0]||(data?.upcoming||[])[0]||null;
 
   if(topBadge){
-    const notice=(data?.active||[])[0]||(data?.upcoming||[])[0]||null;
     if(notice&&!data?.error){
       const labels=(notice.events||[]).map(weatherEventLabel);
-      let shortLabel="";
-      if(labels.length>=2)shortLabel=labels.slice(0,2).join(" • ");
-      else if(labels.length)shortLabel=labels[0];
-      else shortLabel="Alerta meteorológico";
-
+      const shortLabel=labels.length?labels.slice(0,2).join(" • "):"Alerta meteorológico";
       topBadge.innerHTML=notice.status==="active"
         ?`<b>⚠ ALERTA</b><span>${weatherEscapeHtml(shortLabel)}</span>`
         :`<b>⚠ PREVISTO</b><span>${weatherEscapeHtml(shortLabel)}</span>`;
       topBadge.className=`top-weather-official-badge ${weatherOfficialSeverity(notice)}`;
       topBadge.hidden=false;
-      topBadge.title=notice.title||"Aviso oficial Epagri/Ciram";
+      topBadge.title=notice.title||"Aviso meteorológico";
     }else{
       topBadge.hidden=true;
       topBadge.textContent="";
@@ -136,21 +144,22 @@ function renderOfficialWeatherAlerts(data){
       topBadge.removeAttribute("title");
     }
   }
+
   const sourceTitle=document.querySelector(".desktop-weather-alerts-title>span");
   const sourceSub=document.querySelector(".desktop-weather-alerts-title>small");
-  if(sourceTitle)sourceTitle.textContent="Avisos oficiais Epagri/Ciram";
-  if(sourceSub)sourceSub.textContent="Biguaçu / Grande Florianópolis";
+  if(sourceTitle)sourceTitle.textContent="Avisos meteorológicos";
+  if(sourceSub)sourceSub.textContent="Google Weather • Biguaçu";
 
   if(lists.length){
     let alertHtml="";
     if(!data){
-      alertHtml='<span class="desktop-weather-alert-pending">Consultando avisos da Epagri/Ciram…</span>';
+      alertHtml='<span class="desktop-weather-alert-pending">Consultando avisos do Google Weather…</span>';
     }else if(data.error){
-      alertHtml='<span class="desktop-weather-alert-unavailable">Não foi possível consultar a Epagri/Ciram agora. Isso não significa ausência de risco.</span>';
+      alertHtml='<span class="desktop-weather-alert-unavailable">Não foi possível consultar os avisos do Google Weather agora. Isso não significa ausência de risco.</span>';
     }else{
       const notices=[...(data.active||[]),...(data.upcoming||[])];
       if(!notices.length){
-        alertHtml='<span class="desktop-weather-alert-clear"><i></i><span><b>Sem avisos meteorológicos</b><small>Nenhum aviso oficial ativo ou previsto para Biguaçu.</small></span></span>';
+        alertHtml='<span class="desktop-weather-alert-clear"><i></i><span><b>Sem avisos meteorológicos</b><small>Nenhum aviso ativo ou previsto para Biguaçu.</small></span></span>';
       }else{
         alertHtml=notices.map(n=>{
           const severity=weatherOfficialSeverity(n);
@@ -159,17 +168,21 @@ function renderOfficialWeatherAlerts(data){
             ?`Ativo até ${weatherOfficialTime(n.ends_at)}`
             :`Previsto a partir de ${weatherOfficialTime(n.starts_at)}`;
           const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso oficial";
+          const source=n.source_name||"Fonte oficial";
+          const sourceMarkup=n.source_url
+            ?`<a class="official-alert-source" href="${weatherEscapeHtml(n.source_url)}" target="_blank" rel="noopener noreferrer">${weatherEscapeHtml(source)}</a>`
+            :`<span class="official-alert-source">${weatherEscapeHtml(source)}</span>`;
           return `
-            <a class="desktop-weather-official-alert ${severity}" href="${weatherEscapeHtml(n.url)}" target="_blank" rel="noopener noreferrer">
+            <div class="desktop-weather-official-alert ${severity}">
               <span class="official-alert-icon" aria-hidden="true">!</span>
               <span class="official-alert-copy">
-                <span class="official-alert-source">EPAGRI/CIRAM</span>
+                ${sourceMarkup}
                 <b>${weatherEscapeHtml(n.title)}</b>
                 <small>${weatherEscapeHtml(events||risk)}</small>
                 <em>${weatherEscapeHtml(risk)} • ${weatherEscapeHtml(timing)}</em>
               </span>
-              <span class="official-alert-open" aria-hidden="true">›</span>
-            </a>
+              ${n.source_url?`<a class="official-alert-open" href="${weatherEscapeHtml(n.source_url)}" target="_blank" rel="noopener noreferrer" aria-label="Abrir fonte oficial">›</a>`:""}
+            </div>
           `;
         }).join("");
       }
@@ -179,11 +192,10 @@ function renderOfficialWeatherAlerts(data){
 
   const mobileRisk=document.getElementById("v7WeatherRisk");
   if(mobileRisk){
-    const official=(data?.active||[])[0]||(data?.upcoming||[])[0]||null;
-    if(official){
-      const labels=(official.events||[]).map(weatherEventLabel);
-      const prefix=official.status==="active"?"Aviso Epagri/Ciram ativo":"Aviso Epagri/Ciram previsto";
-      mobileRisk.textContent=`${prefix}: ${labels.length?labels.join(", "):official.title}`;
+    if(notice){
+      const labels=(notice.events||[]).map(weatherEventLabel);
+      const prefix=notice.status==="active"?"Aviso meteorológico ativo":"Aviso meteorológico previsto";
+      mobileRisk.textContent=`${prefix}: ${labels.length?labels.join(", "):notice.title}`;
       mobileRisk.hidden=false;
       mobileRisk.classList.add("official");
     }else{
@@ -202,7 +214,6 @@ function renderOfficialWeatherAlerts(data){
 
 function renderDesktopWeatherAlerts(snapshot){
   lastWeatherSnapshot=snapshot;
-
   const hailCard=document.getElementById("desktopWeatherHailCard");
   const windCard=document.getElementById("desktopWeatherWindCard");
   const rainCard=document.getElementById("desktopWeatherRainCard");
@@ -215,24 +226,7 @@ function renderDesktopWeatherAlerts(snapshot){
   rainCard?.classList.toggle("has-attention",weatherHasNumber(snapshot.rain)&&Number(snapshot.rain)>=5&&Number(snapshot.rain)<20);
   rainNowCard?.classList.toggle("has-attention",weatherHasNumber(snapshot.currentRain)&&Number(snapshot.currentRain)>0);
 
-  renderOfficialWeatherAlerts(state.epagriWeatherAlerts||null);
-}
-
-async function loadEpagriWeatherAlerts(){
-  if(!state.user)return;
-  try{
-    const {data,error}=await db.functions.invoke("epagri-weather-alerts",{method:"GET"});
-    if(error)throw error;
-    state.epagriWeatherAlerts=data||{active:[],upcoming:[],notices:[]};
-  }catch(error){
-    console.warn("Epagri/Ciram avisos:",error);
-    state.epagriWeatherAlerts={error:"unavailable",active:[],upcoming:[],notices:[]};
-  }
-
-  renderOfficialWeatherAlerts(state.epagriWeatherAlerts);
-  if(typeof renderAlertsPage==="function")renderAlertsPage();
-  if(typeof renderOccurrences==="function")renderOccurrences();
-  if(typeof renderSources==="function")renderSources();
+  renderOfficialWeatherAlerts(state.weatherAlerts||null);
 }
 
 function renderWeatherSnapshot(snapshot){
