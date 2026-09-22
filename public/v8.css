@@ -4584,3 +4584,24 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     border-radius:10px!important;
   }
 }
+
+
+/* v7.0.69 — impede preenchimento preto nos ícones SVG de clima */
+.weather-condition-svg,
+.weather-condition-svg path,
+.weather-condition-svg circle,
+.weather-condition-svg ellipse,
+.weather-condition-svg line,
+.weather-condition-svg polyline,
+.weather-condition-svg polygon{
+  fill:none!important;
+}
+.weather-condition-svg{
+  color:#4f91db!important;
+  stroke:#4f91db!important;
+}
+.weather-compact__icon .weather-condition-svg,
+.weather-sheet__hero-icon .weather-condition-svg{
+  color:#4f91db!important;
+  stroke:#4f91db!important;
+}
