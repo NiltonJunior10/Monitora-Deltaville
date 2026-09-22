@@ -32,7 +32,7 @@
     padding:9px 10px!important;
     margin-bottom:2px!important;
     display:grid!important;
-    grid-template-columns:36px minmax(0,1fr) 14px!important;
+    grid-template-columns:36px minmax(0,1fr)!important;
     align-items:center!important;
     gap:9px!important;
     border:1px solid rgba(10,132,255,.16)!important;
@@ -89,12 +89,6 @@
     font-size:8px!important;
     line-height:1.15!important;
     font-weight:520!important;
-  }
-
-  .desktop-nav-register-chevron{
-    display:grid!important;
-    place-items:center!important;
-    color:#4088C8!important;
   }
 
   /* Quase sem espaço entre Tema escuro e a ilustração. */
