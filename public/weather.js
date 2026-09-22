@@ -1,4 +1,4 @@
-/* v6.8.0: previsão local completa para chuva, granizo e vento nas próximas 6h. */
+/* v7.0.61: Google Weather como fonte principal; Open-Meteo permanece como fallback. */
 function weatherIconForCode(code,isDay=1){
   const c=Number(code), day=Number(isDay)===1;
   if(c===0) return day?"☀️":"🌙";
@@ -314,89 +314,119 @@ document.addEventListener("visibilitychange",()=>{
   }
 });
 
+async function loadGoogleWeatherSnapshot(){
+  const response=await fetch("/api/weather",{cache:"no-store",headers:{"Accept":"application/json"}});
+  if(!response.ok)throw new Error("google_weather_"+response.status);
+  const data=await response.json();
+  if(!data?.ok||!data?.weather)throw new Error(data?.error||"google_weather_invalid");
+  const snapshot=data.weather;
+  snapshot.saved_at=Date.now();
+  snapshot.source="google_weather";
+  snapshot.source_label="Google Weather";
+  snapshot.icon=weatherIconForCode(snapshot.weatherCode,snapshot.isDay);
+  return snapshot;
+}
+
+async function loadOpenMeteoWeatherSnapshot(){
+  const lat=-27.48755, lon=-48.66852;
+  const currentFields=[
+    "temperature_2m",
+    "relative_humidity_2m",
+    "apparent_temperature",
+    "precipitation",
+    "weather_code",
+    "is_day",
+    "wind_speed_10m"
+  ].join(",");
+  const hourlyFields=[
+    "precipitation",
+    "precipitation_probability",
+    "weather_code",
+    "wind_speed_10m",
+    "wind_gusts_10m"
+  ].join(",");
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=${currentFields}&hourly=${hourlyFields}&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=America%2FSao_Paulo`;
+  const r=await fetch(url);
+  if(!r.ok)throw new Error("open_meteo_"+r.status);
+  const w=await r.json();
+
+  let nowIdx=w.hourly.time.findIndex(t=>new Date(t)>=new Date());
+  if(nowIdx<0)nowIdx=Math.max(0,w.hourly.time.length-6);
+
+  const range=(key)=>(w.hourly?.[key]||[]).slice(nowIdx,nowIdx+6);
+  const nextRain=range("precipitation");
+  const nextProbability=range("precipitation_probability");
+  const nextCodes=range("weather_code").map(Number).filter(Number.isFinite);
+  const nextWind=range("wind_speed_10m").map(Number).filter(Number.isFinite);
+  const nextGust=range("wind_gusts_10m").map(Number).filter(Number.isFinite);
+
+  const rain=nextRain.reduce((a,b)=>a+(Number(b)||0),0);
+  const prob=Math.max(...nextProbability.map(Number).filter(Number.isFinite),0);
+  const maxWind=nextWind.length?Math.max(...nextWind):null;
+  const maxGust=nextGust.length?Math.max(...nextGust):null;
+  const stormRisk=nextCodes.some(code=>code===95||code===96||code===99);
+  const hailRisk=nextCodes.some(code=>code===96||code===99);
+  const windRisk=Number.isFinite(maxGust)&&maxGust>=60;
+  const windAttention=Number.isFinite(maxGust)&&maxGust>=50;
+
+  const temp=Number(w.current?.temperature_2m);
+  const currentRain=Number(w.current?.precipitation);
+  const humidity=Number(w.current?.relative_humidity_2m);
+  const feelsLike=Number(w.current?.apparent_temperature);
+  const wind=Number(w.current?.wind_speed_10m);
+  const weatherCode=Number(w.current?.weather_code);
+  const isDay=Number(w.current?.is_day);
+  const max=Number(w.daily?.temperature_2m_max?.[0]);
+  const min=Number(w.daily?.temperature_2m_min?.[0]);
+
+  let summary="Tempo sem alerta relevante nas próximas 6h";
+  if(hailRisk&&windRisk)summary="Possibilidade de granizo e vendaval nas próximas 6h";
+  else if(hailRisk)summary="Possibilidade de granizo nas próximas 6h";
+  else if(windRisk)summary="Possibilidade de vendaval nas próximas 6h";
+  else if(rain>=20)summary="Chuva forte prevista nas próximas 6h";
+  else if(rain>=5)summary="Há previsão de chuva nas próximas 6h";
+  else if(prob>=50)summary="Chance de chuva nas próximas 6h";
+  else if(windAttention)summary="Rajadas fortes previstas nas próximas 6h";
+
+  const weatherIcon=weatherIconForCode(weatherCode,isDay);
+  const tempLabel=Number.isFinite(temp)?`${Math.round(temp)}°`:"—";
+  const maxLabel=Number.isFinite(max)?`${Math.round(max)}°`:"—";
+  const minLabel=Number.isFinite(min)?`${Math.round(min)}°`:"—";
+  const weatherDetail=`${summary} • chuva ${rain.toFixed(1)} mm • ${Math.round(prob)}% • ${maxLabel}/${minLabel} • agora ${tempLabel}`;
+
+  return {
+    source:"open_meteo",
+    source_label:"Open-Meteo",
+    fallback:true,
+    saved_at:Date.now(),
+    rain,prob,temp,max,min,currentRain,humidity,feelsLike,wind,
+    weatherCode,isDay,maxWind,maxGust,stormRisk,hailRisk,windRisk,windAttention,
+    detail:weatherDetail,
+    short_summary:summary,
+    icon:weatherIcon
+  };
+}
+
 async function loadWeather(){
   state.weatherUnavailable=false;
+  let snapshot=null;
+
   try{
-    const lat=-27.48755, lon=-48.66852;
-    const currentFields=[
-      "temperature_2m",
-      "relative_humidity_2m",
-      "apparent_temperature",
-      "precipitation",
-      "weather_code",
-      "is_day",
-      "wind_speed_10m"
-    ].join(",");
-    const hourlyFields=[
-      "precipitation",
-      "precipitation_probability",
-      "weather_code",
-      "wind_speed_10m",
-      "wind_gusts_10m"
-    ].join(",");
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=${currentFields}&hourly=${hourlyFields}&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=America%2FSao_Paulo`;
-    const r=await fetch(url);
-    if(!r.ok)throw new Error("weather");
-    const w=await r.json();
+    snapshot=await loadGoogleWeatherSnapshot();
+  }catch(googleError){
+    console.warn("Google Weather indisponível; usando fallback:",googleError);
+    try{
+      snapshot=await loadOpenMeteoWeatherSnapshot();
+    }catch(fallbackError){
+      console.warn("Open-Meteo fallback indisponível:",fallbackError);
+    }
+  }
 
-    let nowIdx=w.hourly.time.findIndex(t=>new Date(t)>=new Date());
-    if(nowIdx<0)nowIdx=Math.max(0,w.hourly.time.length-6);
-
-    const range=(key)=>(w.hourly?.[key]||[]).slice(nowIdx,nowIdx+6);
-    const nextRain=range("precipitation");
-    const nextProbability=range("precipitation_probability");
-    const nextCodes=range("weather_code").map(Number).filter(Number.isFinite);
-    const nextWind=range("wind_speed_10m").map(Number).filter(Number.isFinite);
-    const nextGust=range("wind_gusts_10m").map(Number).filter(Number.isFinite);
-
-    const rain=nextRain.reduce((a,b)=>a+(Number(b)||0),0);
-    const prob=Math.max(...nextProbability.map(Number).filter(Number.isFinite),0);
-    const maxWind=nextWind.length?Math.max(...nextWind):null;
-    const maxGust=nextGust.length?Math.max(...nextGust):null;
-    const stormRisk=nextCodes.some(code=>code===95||code===96||code===99);
-    const hailRisk=nextCodes.some(code=>code===96||code===99);
-    const windRisk=Number.isFinite(maxGust)&&maxGust>=60;
-    const windAttention=Number.isFinite(maxGust)&&maxGust>=50;
-
-    const temp=Number(w.current?.temperature_2m);
-    const currentRain=Number(w.current?.precipitation);
-    const humidity=Number(w.current?.relative_humidity_2m);
-    const feelsLike=Number(w.current?.apparent_temperature);
-    const wind=Number(w.current?.wind_speed_10m);
-    const weatherCode=Number(w.current?.weather_code);
-    const isDay=Number(w.current?.is_day);
-    const max=Number(w.daily?.temperature_2m_max?.[0]);
-    const min=Number(w.daily?.temperature_2m_min?.[0]);
-
-    let summary="Tempo sem alerta relevante nas próximas 6h";
-    if(hailRisk&&windRisk)summary="Possibilidade de granizo e vendaval nas próximas 6h";
-    else if(hailRisk)summary="Possibilidade de granizo nas próximas 6h";
-    else if(windRisk)summary="Possibilidade de vendaval nas próximas 6h";
-    else if(rain>=20)summary="Chuva forte prevista nas próximas 6h";
-    else if(rain>=5)summary="Há previsão de chuva nas próximas 6h";
-    else if(prob>=50)summary="Chance de chuva nas próximas 6h";
-    else if(windAttention)summary="Rajadas fortes previstas nas próximas 6h";
-
-    const weatherIcon=weatherIconForCode(weatherCode,isDay);
-    const tempLabel=Number.isFinite(temp)?`${Math.round(temp)}°`:"—";
-    const maxLabel=Number.isFinite(max)?`${Math.round(max)}°`:"—";
-    const minLabel=Number.isFinite(min)?`${Math.round(min)}°`:"—";
-    const weatherDetail=`${summary} • chuva ${rain.toFixed(1)} mm • ${Math.round(prob)}% • ${maxLabel}/${minLabel} • agora ${tempLabel}`;
-
-    const snapshot={
-      saved_at:Date.now(),
-      rain,prob,temp,max,min,currentRain,humidity,feelsLike,wind,
-      weatherCode,isDay,maxWind,maxGust,stormRisk,hailRisk,windRisk,windAttention,
-      detail:weatherDetail,
-      short_summary:summary,
-      icon:weatherIcon
-    };
-
+  if(snapshot){
     renderWeatherSnapshot(snapshot);
     try{localStorage.setItem(WEATHER_CACHE_KEY,JSON.stringify(snapshot));}catch(_){}
-  }catch(e){
+  }else{
     state.weatherUnavailable=true;
-    console.warn(e);
     let restored=false;
     try{
       const cached=JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"null");
@@ -410,6 +440,8 @@ async function loadWeather(){
 
     if(!restored){
       const unavailable={
+        source:"unavailable",
+        source_label:"Previsão indisponível",
         rain:null,prob:null,temp:null,max:null,min:null,currentRain:null,
         humidity:null,feelsLike:null,wind:null,weatherCode:2,isDay:1,
         maxWind:null,maxGust:null,stormRisk:false,hailRisk:false,windRisk:false,windAttention:false,
@@ -420,6 +452,7 @@ async function loadWeather(){
       renderWeatherSnapshot(unavailable);
     }
   }
+
   loadEpagriWeatherAlerts();
   renderPushSettings();
   renderSources();
