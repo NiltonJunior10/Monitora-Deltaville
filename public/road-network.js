@@ -6,7 +6,25 @@
  */
 (function(root){
   const roads=[];
-  const add=(id,name,points,width=7,avenue=null)=>roads.push({id,name,points,width,avenue});
+  const add=(id,name,points,width=7,avenue=null,options={})=>roads.push({id,name,points,width,avenue,...options});
+  const smoothClosed=(control,iterations=2)=>{
+    let pts=control.map(([x,y])=>[Number(x),Number(y)]);
+    if(pts.length>1){
+      const a=pts[0],b=pts[pts.length-1];
+      if(Math.hypot(a[0]-b[0],a[1]-b[1])<.001)pts=pts.slice(0,-1);
+    }
+    for(let pass=0;pass<iterations;pass++){
+      const next=[];
+      for(let i=0;i<pts.length;i++){
+        const p=pts[i],q=pts[(i+1)%pts.length];
+        next.push([p[0]*.75+q[0]*.25,p[1]*.75+q[1]*.25]);
+        next.push([p[0]*.25+q[0]*.75,p[1]*.25+q[1]*.75]);
+      }
+      pts=next;
+    }
+    pts.push([...pts[0]]);
+    return pts.map(([x,y])=>[Number(x.toFixed(2)),Number(y.toFixed(2))]);
+  };
   const egidio='Av. Egídio Abelino Richartz',wilson='Av. Wilson Castelo Branco',delta='Av. Deltaville',beira='Av. Beira Rio';
   add('egidio-oeste-v1',egidio,[[110,290],[106,302],[106,570],[105,594],[97,613],[81,625],[69,640],[61,658],[56,673],[39,683],[0,690]],10,egidio);
   add('egidio-leste-v1',egidio,[[600,302],[169,302],[153,304],[143,315],[143,577],[141,608],[132,628],[115,646],[103,669]],10,egidio);
@@ -14,13 +32,34 @@
   add('wilson-sul-v1',wilson,[[153,302],[592,302],[603,306],[612,318]],9,wilson);
   add('wilson-sul-leste-v1',wilson,[[678,321],[686,309],[698,302],[1105,302],[1119,306],[1131,320]],9,wilson);
   add('wilson-centro-v1',wilson,[[626,316],[627,307],[635,302],[657,302],[665,307],[668,316]],8,wilson);
-  add('deltaville-oeste-v1',delta,[[617,318],[617,829],[619,846],[624,863],[637,873],[645,878]],10,delta);
-  add('deltaville-leste-v1',delta,[[676,316],[676,828],[672,847],[659,864],[645,878]],10,delta);
-  add('deltaville-saida-oeste-v1',delta,[[624,863],[633,885],[635,901],[631,911],[620,916],[602,916]],10,delta);
-  add('deltaville-saida-leste-v1',delta,[[659,864],[652,884],[651,900],[656,913],[668,918],[694,918]],10,delta);
-  add('beira-oeste-v1',beira,[[1235,0],[1208,53],[1185,101],[1166,148],[1148,195],[1137,231],[1132,261],[1131,320],[1131,826],[1128,842],[1117,853],[1103,858]],10,beira);
-  add('beira-leste-v1',beira,[[1274,0],[1247,53],[1224,100],[1205,147],[1187,193],[1176,231],[1173,261],[1173,828],[1177,844],[1187,855],[1203,861]],10,beira);
-  add('beira-acesso-v1',beira,[[1173,281],[1180,271],[1194,266],[1220,265]],8,beira);
+  // v1 remains available only to interpret segment ratios already saved before this redraw.
+  add('deltaville-oeste-v1',delta,[[617,318],[617,829],[619,846],[624,863],[637,873],[645,878]],10,delta,{legacy:true});
+  add('deltaville-leste-v1',delta,[[676,316],[676,828],[672,847],[659,864],[645,878]],10,delta,{legacy:true});
+  add('deltaville-saida-oeste-v1',delta,[[624,863],[633,885],[635,901],[631,911],[620,916],[602,916]],10,delta,{legacy:true});
+  add('deltaville-saida-leste-v1',delta,[[659,864],[652,884],[651,900],[656,913],[668,918],[694,918]],10,delta,{legacy:true});
+  add('deltaville-circuito-v2',delta,smoothClosed([
+    [649,318],[635,320],[625,327],[618,340],[615,358],
+    [615,410],[615,465],[615,520],[615,575],[615,630],[615,685],[615,740],[615,790],
+    [617,820],[623,846],[635,866],[649,876],
+    [663,866],[675,846],[681,820],[684,790],
+    [684,740],[684,685],[684,630],[684,575],[684,520],[684,465],[684,410],[684,358],
+    [681,340],[674,327],[663,320],[649,318]
+  ],2),10,delta);
+
+  add('beira-oeste-v1',beira,[[1235,0],[1208,53],[1185,101],[1166,148],[1148,195],[1137,231],[1132,261],[1131,320],[1131,826],[1128,842],[1117,853],[1103,858]],10,beira,{legacy:true});
+  add('beira-leste-v1',beira,[[1274,0],[1247,53],[1224,100],[1205,147],[1187,193],[1176,231],[1173,261],[1173,828],[1177,844],[1187,855],[1203,861]],10,beira,{legacy:true});
+  add('beira-acesso-v1',beira,[[1173,281],[1180,271],[1194,266],[1220,265]],8,beira,{legacy:true});
+  add('beira-circuito-v2',beira,smoothClosed([
+    [1201,61],
+    [1194,77],[1208,99],[1212,120],[1207,142],[1196,163],[1187,185],[1183,206],[1179,227],
+    [1175,249],[1173,270],[1175,292],[1175,313],[1173,356],[1169,442],[1170,549],[1174,656],
+    [1168,742],[1167,763],[1164,785],[1163,806],[1163,828],[1160,849],
+    [1152,858],[1136,862],[1124,858],[1119,849],[1121,828],
+    [1129,806],[1134,785],[1137,763],[1139,742],[1140,656],[1142,549],[1142,442],[1142,356],
+    [1143,313],[1144,292],[1145,270],[1147,249],[1147,227],[1149,206],[1152,185],[1159,163],
+    [1168,142],[1177,120],[1186,99],[1194,77],[1201,61]
+  ],2),10,beira);
+  add('beira-acesso-v2',beira,[[1174,281],[1182,272],[1195,267],[1220,265]],8,beira);
   // Public perimeter shown on the plan; no invented monitored-location IDs.
   add('perimetral-jardins-v1','Via perimetral sul',[[101,676],[130,680],[166,689],[207,708],[248,731],[293,758],[338,786],[381,814],[428,843],[478,868],[528,890],[578,909],[615,919],[643,930],[679,927],[727,923],[782,916],[839,905],[897,890],[954,879],[1014,869],[1063,864],[1110,864],[1153,865],[1203,870],[1248,882],[1293,899],[1336,919],[1380,945],[1426,976]],14);
   add('acesso-sudoeste-v1','Acesso sudoeste',[[0,698],[46,696],[64,702],[73,720],[84,742],[99,761],[121,778],[150,799],[184,823],[216,849],[245,881],[267,915],[286,952],[294,982]],9);
@@ -80,7 +119,7 @@
   add('sunset-oeste-sul-v1','Sunset · via interna',[[1244,605],[1244,834]],7);
   add('sunset-centro-sul-v1','Sunset · via interna',[[1340,605],[1359,834]],7);
   add('sunset-leste-sul-v1','Sunset · via interna',[[1449,605],[1457,834]],7);
-  const network={version:1,width:1601,height:982,coordinateSystem:'image-pixels',roads};
+  const network={version:2,width:1601,height:982,coordinateSystem:'image-pixels',roads};
   if(typeof module==='object'&&module.exports)module.exports=network;
   else root.MonitoraRoadNetwork=network;
 })(typeof window==='undefined'?globalThis:window);
