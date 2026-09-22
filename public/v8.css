@@ -3999,3 +3999,51 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
     height:28px!important;
   }
 }
+
+
+/* v7.0.63 — limpeza UX do painel de clima */
+.desktop-weather-panel-grid,
+.v7-weather-detail-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+.weather-panel-head-actions .weather-provider-pill{
+  display:none!important;
+}
+.weather-alert-attribution{
+  margin:4px 0 0!important;
+  color:#7A8C9E!important;
+  font-size:8px!important;
+}
+.weather-alert-attribution a{
+  color:inherit!important;
+  text-decoration:underline!important;
+  text-underline-offset:2px!important;
+}
+.official-alert-source{
+  color:#73879A!important;
+  text-decoration:none!important;
+}
+.official-alert-source:hover,
+.official-alert-source:focus-visible{
+  text-decoration:underline!important;
+}
+.official-alert-open{
+  display:grid!important;
+  place-items:center!important;
+  text-decoration:none!important;
+}
+@media(max-width:900px){
+  .desktop-weather-panel-grid,
+  .v7-weather-detail-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:520px){
+  .desktop-weather-panel-grid,
+  .v7-weather-detail-grid{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .v7-weather-detail-grid article:last-child{
+    grid-column:1/-1!important;
+  }
+}

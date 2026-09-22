@@ -82,6 +82,51 @@ async function googleWeatherJson(env,ctx,cacheName,path,params,ttlSeconds){
   return JSON.parse(body);
 }
 
+function alertRiskFromSeverity(severity){
+  const value=String(severity||"UNKNOWN").toUpperCase();
+  if(value==="EXTREME")return "very_high";
+  if(value==="SEVERE")return "high";
+  if(value==="MODERATE")return "moderate";
+  if(value==="MINOR")return "low";
+  return "unknown";
+}
+
+function buildWeatherAlerts(raw){
+  const now=Date.now();
+  const notices=(raw?.weatherAlerts||[]).map(alert=>{
+    const start=alert?.startTime||null;
+    const end=alert?.expirationTime||null;
+    const startMs=start?new Date(start).getTime():NaN;
+    const status=Number.isFinite(startMs)&&startMs>now?"upcoming":"active";
+    const sourceName=alert?.dataSource?.name||alert?.dataSource?.publisher||"Fonte oficial";
+    const sourceUrl=alert?.dataSource?.authorityUri||null;
+    return {
+      id:alert?.alertId||null,
+      status,
+      risk:alertRiskFromSeverity(alert?.severity),
+      title:alert?.alertTitle?.text||"Aviso meteorológico",
+      events:alert?.eventType?[alert.eventType]:[],
+      area_name:alert?.areaName||"",
+      description:alert?.description||"",
+      certainty:alert?.certainty||"UNKNOWN",
+      urgency:alert?.urgency||"UNKNOWN",
+      starts_at:start,
+      ends_at:end,
+      source_name:sourceName,
+      source_url:sourceUrl,
+      url:sourceUrl,
+      instructions:Array.isArray(alert?.instruction)?alert.instruction:alert?.instruction?[alert.instruction]:[],
+      safety_recommendations:Array.isArray(alert?.safetyRecommendations)?alert.safetyRecommendations:[]
+    };
+  });
+  return {
+    source:"google_weather",
+    notices,
+    active:notices.filter(n=>n.status==="active"),
+    upcoming:notices.filter(n=>n.status==="upcoming")
+  };
+}
+
 function buildWeatherSnapshot(current,hourly,daily){
   const hours=(hourly?.forecastHours||[]).slice(0,24);
   const next6=hours.slice(0,6);
@@ -104,6 +149,7 @@ function buildWeatherSnapshot(current,hourly,daily){
 
   const temp=weatherNumber(current?.temperature?.degrees);
   const currentRain=weatherNumber(current?.precipitation?.qpf?.quantity);
+  const currentPrecipProbability=weatherNumber(current?.precipitation?.probability?.percent);
   const humidity=weatherNumber(current?.relativeHumidity);
   const feelsLike=weatherNumber(current?.feelsLikeTemperature?.degrees);
   const wind=weatherNumber(current?.wind?.speed?.value);
@@ -134,7 +180,7 @@ function buildWeatherSnapshot(current,hourly,daily){
     source_label:"Google Weather",
     saved_at:Date.now(),
     provider_updated_at:current?.currentTime||null,
-    rain,prob,temp,max,min,currentRain,humidity,feelsLike,wind,
+    rain,prob,temp,max,min,currentRain,currentPrecipProbability,humidity,feelsLike,wind,
     weatherCode,isDay,maxWind,maxGust,stormRisk,hailRisk,windRisk,windAttention,
     thunderstormProbability:stormProbability,
     conditionText,
@@ -149,12 +195,19 @@ async function handleWeather(env,ctx){
   }
 
   try{
-    const [current,hourly,daily]=await Promise.all([
+    const alertsPromise=googleWeatherJson(env,ctx,"alerts-v1","/publicAlerts:lookup",{},15*60)
+      .then(buildWeatherAlerts)
+      .catch(error=>{
+        console.error("Google Weather alerts:",error);
+        return {source:"google_weather",error:"unavailable",notices:[],active:[],upcoming:[]};
+      });
+    const [current,hourly,daily,alerts]=await Promise.all([
       googleWeatherJson(env,ctx,"current-v1","/currentConditions:lookup",{},15*60),
       googleWeatherJson(env,ctx,"hourly-v1","/forecast/hours:lookup",{hours:24,pageSize:24},30*60),
-      googleWeatherJson(env,ctx,"daily-v1","/forecast/days:lookup",{days:1,pageSize:1},6*60*60)
+      googleWeatherJson(env,ctx,"daily-v1","/forecast/days:lookup",{days:1,pageSize:1},6*60*60),
+      alertsPromise
     ]);
-    return json({ok:true,weather:buildWeatherSnapshot(current,hourly,daily)},200,{
+    return json({ok:true,weather:buildWeatherSnapshot(current,hourly,daily),alerts},200,{
       "X-Weather-Source":"Google Weather"
     });
   }catch(error){
