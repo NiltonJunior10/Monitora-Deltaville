@@ -75,17 +75,17 @@ function renderSources(){
       weatherText=(state.weatherUnavailable||mins>60?"Desatualizado":"Online")+" • atualização há "+mins+" min";
     }
   }catch(_){}
-  const official=state.epagriWeatherAlerts;
-  let officialText="Consulta pendente";
-  if(official?.error)officialText="Temporariamente indisponível";
+  const official=state.weatherAlerts;
+  let alertsText="avisos pendentes";
+  if(official?.error)alertsText="avisos indisponíveis";
   else if(official){
     const active=official.active?.length||0,upcoming=official.upcoming?.length||0;
-    officialText=active?`${active} aviso${active>1?"s":""} ativo${active>1?"s":""} para Biguaçu`
+    alertsText=active?`${active} aviso${active>1?"s":""} ativo${active>1?"s":""}`
       :upcoming?`${upcoming} aviso${upcoming>1?"s":""} previsto${upcoming>1?"s":""}`
-      :"Nenhum aviso ativo ou previsto para Biguaçu";
+      :"sem avisos ativos";
   }
   const pushText=state.pushEnabled?"Ativas neste aparelho":"Desativadas ou não confirmadas neste aparelho";
-  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>Epagri/Ciram · Avisos meteorológicos</b> — ${officialText}</p><p><b>Previsão numérica · ${weatherProvider}</b> — ${weatherText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
+  hosts.forEach(host=>host.innerHTML=`<p><b>Relatos dos moradores</b> — ${!navigator.onLine||state.connectionDegraded?"últimos dados disponíveis":"conectado"}</p><p><b>Epagri/Ciram · Rio Biguaçu</b> — ${sourceText}</p><p><b>${weatherProvider} · Previsão e avisos</b> — ${weatherText} • ${alertsText}</p><p><b>Notificações</b> — ${pushText}</p><p>Disponibilidade das fontes não indica ausência de risco na comunidade.</p>`);
 }
 async function loadPushConfig(){
   const {data,error}=await db.functions.invoke("app-config",{method:"GET"});
@@ -112,7 +112,7 @@ function isMapGestureTarget(target){
 }
 
 const state = {
-  user:null, profile:null, isAdmin:false, adminUsers:[], adminOccurrences:[], adminAlerts:[], condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null, epagriWeatherAlerts:null,
+  user:null, profile:null, isAdmin:false, adminUsers:[], adminOccurrences:[], adminAlerts:[], condominiums:[], locations:[], occurrences:[], recentResolved:[], alerts:[], riverStatus:null, weatherAlerts:null,
   maps:{}, markers:{home:[],full:[]}, filter:"all", alertFilter:"all",
   installPrompt:null, initialized:false, realtimeChannel:null,
   avenueLayers:{home:[],full:[]}, lakeLayers:{home:[],full:[]}, riverLayers:{home:[],full:[]},
@@ -2876,8 +2876,13 @@ function epagriNoticeSeverity(n){
   return n?.status==="active"?"alert":"attention";
 }
 function epagriNoticeEvents(n){
-  const labels={storm:"Tempestade",hail:"Granizo",heavy_rain:"Chuva intensa",wind:"Vendaval / rajadas",lightning:"Raios",tornado:"Tornado / tromba d’água"};
-  return (n?.events||[]).map(e=>labels[e]||e).join(" • ");
+  const labels={
+    storm:"Tempestade",hail:"Granizo",heavy_rain:"Chuva intensa",wind:"Vendaval / rajadas",lightning:"Raios",tornado:"Tornado / tromba d’água",
+    STORM:"Tempestade",THUNDERSTORM:"Tempestade",SEVERE_THUNDERSTORM_WARNING:"Tempestade severa",HAIL:"Granizo",RAIN:"Chuva",
+    FLOOD:"Alagamento / inundação",FLASH_FLOOD:"Inundação repentina",RIVER_FLOODING:"Cheia de rio",WIND:"Vento forte",
+    TORNADO:"Tornado",TORNADO_WARNING:"Alerta de tornado",COASTAL_FLOOD:"Inundação costeira",LANDSLIDE:"Deslizamento"
+  };
+  return (n?.events||[]).map(e=>labels[e]||String(e||"").replaceAll("_"," ").toLowerCase()).join(" • ");
 }
 function epagriNoticeTime(iso){
   if(!iso)return "—";
@@ -2891,20 +2896,22 @@ function epagriNoticeCard(n){
   const timing=active?`Ativo até ${epagriNoticeTime(n.ends_at)}`:`Previsto a partir de ${epagriNoticeTime(n.starts_at)}`;
   const events=epagriNoticeEvents(n);
   const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso oficial";
+  const source=n.source_name||"Fonte oficial";
+  const sourceMarkup=n.source_url?`<a class="epagri-official-link" href="${esc(n.source_url)}" target="_blank" rel="noopener noreferrer">${esc(source)}</a>`:`<span>${esc(source)}</span>`;
   return `<article class="event-card epagri-official-card ${severity}">
     <div class="event-icon ${severity}">!</div>
     <div>
       <h3>${esc(n.title||"Aviso meteorológico")}</h3>
-      <p><b>Epagri/Ciram • ${active?"Aviso ativo":"Aviso previsto"}</b></p>
+      <p><b>Google Weather • ${active?"Aviso ativo":"Aviso previsto"}</b></p>
       ${events?`<p>${esc(events)}</p>`:""}
       <small>${esc(risk)} • ${esc(timing)}</small>
-      ${n.url?`<a class="epagri-official-link" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Abrir aviso oficial</a>`:""}
+      <p class="weather-alert-attribution">Fonte: ${sourceMarkup}</p>
     </div>
   </article>`;
 }
 function renderOccurrences(){
   const groups=groupOccurrences(state.occurrences);
-  const officialActive=state.epagriWeatherAlerts?.active||[];
+  const officialActive=state.weatherAlerts?.active||[];
   const totalActive=groups.length+state.alerts.length+officialActive.length;
   const criticalActive=
     groups.filter(g=>highestSeverity(g.items)==="critical").length+
@@ -2934,7 +2941,7 @@ function renderOccurrences(){
   renderMobileHomeDashboard();
 }
 function renderAlertsPage(){
-  const officialNotices=state.epagriWeatherAlerts?.notices||[];
+  const officialNotices=state.weatherAlerts?.notices||[];
   let items=[
     ...groupOccurrences(state.occurrences).map(g=>({kind:"occ",severity:highestSeverity(g.items),date:g.items[0]?.created_at,html:occurrenceGroupCard(g,true)})),
     ...state.alerts.map(a=>({kind:"alert",severity:a.severity,date:a.created_at,html:alertCard(a)})),
@@ -2943,7 +2950,7 @@ function renderAlertsPage(){
 
   if(state.alertFilter!=="all")items=items.filter(i=>i.severity===state.alertFilter);
 
-  const officialActive=state.epagriWeatherAlerts?.active||[];
+  const officialActive=state.weatherAlerts?.active||[];
   const totalActive=groupOccurrences(state.occurrences).length+state.alerts.length+officialActive.length;
 
   $("#alertsCount").textContent=totalActive;
