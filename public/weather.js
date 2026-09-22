@@ -120,6 +120,8 @@ function weatherOfficialTime(iso){
 }
 
 function renderOfficialWeatherAlerts(data){
+  const desktopWrap=document.getElementById("desktopWeatherAlerts");
+  const mobileWrap=document.getElementById("v7WeatherOfficialAlerts");
   const lists=[
     document.getElementById("desktopWeatherAlertList"),
     document.getElementById("v7WeatherAlertList")
@@ -130,62 +132,46 @@ function renderOfficialWeatherAlerts(data){
   if(topBadge){
     if(notice&&!data?.error){
       const labels=(notice.events||[]).map(weatherEventLabel);
-      const shortLabel=labels.length?labels.slice(0,2).join(" • "):"Alerta meteorológico";
-      topBadge.innerHTML=notice.status==="active"
-        ?`<b>⚠ ALERTA</b><span>${weatherEscapeHtml(shortLabel)}</span>`
-        :`<b>⚠ PREVISTO</b><span>${weatherEscapeHtml(shortLabel)}</span>`;
-      topBadge.className=`top-weather-official-badge ${weatherOfficialSeverity(notice)}`;
+      const shortLabel=labels.length?labels.slice(0,1).join(" • "):"Aviso meteorológico";
+      topBadge.innerHTML=`<b>Alerta</b><span>${weatherEscapeHtml(shortLabel)}</span>`;
+      topBadge.className=`top-weather-official-badge weather-compact__alert ${weatherOfficialSeverity(notice)}`;
       topBadge.hidden=false;
       topBadge.title=notice.title||"Aviso meteorológico";
     }else{
       topBadge.hidden=true;
       topBadge.textContent="";
-      topBadge.className="top-weather-official-badge";
+      topBadge.className="top-weather-official-badge weather-compact__alert";
       topBadge.removeAttribute("title");
     }
   }
 
-  const sourceTitle=document.querySelector(".desktop-weather-alerts-title>span");
-  const sourceSub=document.querySelector(".desktop-weather-alerts-title>small");
-  if(sourceTitle)sourceTitle.textContent="Avisos meteorológicos";
-  if(sourceSub)sourceSub.textContent="Google Weather • Biguaçu";
+  const hasNotice=!!notice&&!data?.error;
+  if(desktopWrap)desktopWrap.hidden=!hasNotice;
+  if(mobileWrap)mobileWrap.hidden=!hasNotice;
 
   if(lists.length){
     let alertHtml="";
-    if(!data){
-      alertHtml='<span class="desktop-weather-alert-pending">Consultando avisos do Google Weather…</span>';
-    }else if(data.error){
-      alertHtml='<span class="desktop-weather-alert-unavailable">Não foi possível consultar os avisos do Google Weather agora. Isso não significa ausência de risco.</span>';
-    }else{
-      const notices=[...(data.active||[]),...(data.upcoming||[])];
-      if(!notices.length){
-        alertHtml='<span class="desktop-weather-alert-clear"><i></i><span><b>Sem avisos meteorológicos</b><small>Nenhum aviso ativo ou previsto para Biguaçu.</small></span></span>';
-      }else{
-        alertHtml=notices.map(n=>{
-          const severity=weatherOfficialSeverity(n);
-          const events=(n.events||[]).map(weatherEventLabel).join(" • ");
-          const timing=n.status==="active"
-            ?`Ativo até ${weatherOfficialTime(n.ends_at)}`
-            :`Previsto a partir de ${weatherOfficialTime(n.starts_at)}`;
-          const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso oficial";
-          const source=n.source_name||"Fonte oficial";
-          const sourceMarkup=n.source_url
-            ?`<a class="official-alert-source" href="${weatherEscapeHtml(n.source_url)}" target="_blank" rel="noopener noreferrer">${weatherEscapeHtml(source)}</a>`
-            :`<span class="official-alert-source">${weatherEscapeHtml(source)}</span>`;
-          return `
-            <div class="desktop-weather-official-alert ${severity}">
-              <span class="official-alert-icon" aria-hidden="true">!</span>
-              <span class="official-alert-copy">
-                ${sourceMarkup}
-                <b>${weatherEscapeHtml(n.title)}</b>
-                <small>${weatherEscapeHtml(events||risk)}</small>
-                <em>${weatherEscapeHtml(risk)} • ${weatherEscapeHtml(timing)}</em>
-              </span>
-              ${n.source_url?`<a class="official-alert-open" href="${weatherEscapeHtml(n.source_url)}" target="_blank" rel="noopener noreferrer" aria-label="Abrir fonte oficial">›</a>`:""}
-            </div>
-          `;
-        }).join("");
-      }
+    if(hasNotice){
+      const n=notice;
+      const severity=weatherOfficialSeverity(n);
+      const events=(n.events||[]).map(weatherEventLabel).join(" • ");
+      const timing=n.status==="active"
+        ?`Ativo até ${weatherOfficialTime(n.ends_at)}`
+        :`Previsto a partir de ${weatherOfficialTime(n.starts_at)}`;
+      const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso meteorológico";
+      const source=n.source_name||"Fonte oficial";
+      const sourceLine=`${source} • ${timing}`;
+      alertHtml=`
+        <div class="weather-sheet-alert ${severity}">
+          <span class="weather-sheet-alert__icon" aria-hidden="true">!</span>
+          <span class="weather-sheet-alert__copy">
+            <strong>${weatherEscapeHtml(n.title||"Aviso meteorológico")}</strong>
+            <span>${weatherEscapeHtml(events||risk)}</span>
+            <small>${weatherEscapeHtml(sourceLine)}</small>
+          </span>
+          ${n.source_url?`<a class="weather-sheet-alert__open" href="${weatherEscapeHtml(n.source_url)}" target="_blank" rel="noopener noreferrer" aria-label="Abrir fonte oficial">›</a>`:""}
+        </div>
+      `;
     }
     lists.forEach(host=>host.innerHTML=alertHtml);
   }
@@ -194,18 +180,17 @@ function renderOfficialWeatherAlerts(data){
   if(mobileRisk){
     if(notice){
       const labels=(notice.events||[]).map(weatherEventLabel);
-      const prefix=notice.status==="active"?"Aviso meteorológico ativo":"Aviso meteorológico previsto";
-      mobileRisk.textContent=`${prefix}: ${labels.length?labels.join(", "):notice.title}`;
+      mobileRisk.textContent=`Alerta: ${labels.length?labels.join(", "):notice.title}`;
       mobileRisk.hidden=false;
       mobileRisk.classList.add("official");
     }else{
       mobileRisk.classList.remove("official");
       const s=lastWeatherSnapshot;
       let trend="";
-      if(s?.hailRisk&&s?.windRisk)trend="Tendência do modelo: granizo e rajadas fortes possíveis";
-      else if(s?.hailRisk)trend="Tendência do modelo: possibilidade de granizo";
-      else if(s?.windRisk)trend="Tendência do modelo: possibilidade de vendaval";
-      else if(s?.windAttention)trend=`Tendência do modelo: rajadas até ${Math.round(Number(s.maxGust)||0)} km/h`;
+      if(s?.hailRisk&&s?.windRisk)trend="Possibilidade de granizo e rajadas fortes";
+      else if(s?.hailRisk)trend="Possibilidade de granizo";
+      else if(s?.windRisk)trend="Possibilidade de vendaval";
+      else if(s?.windAttention)trend=`Rajadas até ${Math.round(Number(s.maxGust)||0)} km/h`;
       mobileRisk.textContent=trend;
       mobileRisk.hidden=!trend;
     }
@@ -256,10 +241,11 @@ function renderWeatherSnapshot(snapshot){
   weatherSetText("#rain6h",rainText);
   weatherSetText("#rainChance",chanceText==="—"?"Previsão indisponível":`até ${chanceText} de chance`);
   weatherSetText("#weatherTemp",tempText);
-  weatherSetText("#weatherHeadline","Biguaçu agora");
+  weatherSetText("#weatherHeadline","Deltaville");
   weatherSetText("#topWeatherRain",rainText);
   weatherSetText("#weatherDetail",snapshot.detail||summary);
-  weatherSetText("#topWeatherIcon",snapshot.icon||"🌤️");
+  const compactIcon=$("#topWeatherIcon");
+  if(compactIcon)compactIcon.innerHTML=weatherIconMarkup(snapshot.weatherCode,snapshot.isDay);
   weatherSetText("#desktopRain6h",rainText);
 
   // Card principal: condição atual + temperatura + chuva para 6h.
@@ -283,44 +269,41 @@ function renderWeatherSnapshot(snapshot){
   weatherSetText("#v7WeatherChanceDetail",chanceText==="—"?"Chance —":`Até ${chanceText} de chance`);
   weatherSetText("#v7WeatherNowRain",currentRainText);
   weatherSetText("#v7WeatherNowRainDetail",currentPrecipChance==="—"?`Estimativa da última hora • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`:`${currentPrecipChance} de chance • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`);
-  weatherSetText("#v7WeatherWindNow",weatherHasNumber(snapshot.wind)?`${Math.round(Number(snapshot.wind))} km/h`:"—");
-  weatherSetText("#v7WeatherHumidity",humidityText);
   weatherSetText("#v7WeatherHail",snapshot.hailRisk?"Possível":"Sem indicação");
-  weatherSetText("#v7WeatherHailDetail",snapshot.hailRisk?"Código meteorológico com possibilidade de granizo nas próximas 6h.":"Sem indicação de granizo nas próximas 6h.");
+  weatherSetText("#v7WeatherHailDetail",snapshot.hailRisk?"Possibilidade nas próximas 6h":"Sem indicação no momento");
   weatherSetText("#v7WeatherWind6h",wind6hText);
   weatherSetText("#v7WeatherWindStatus",
     snapshot.windRisk?"Risco de vendaval":
     snapshot.windAttention?"Rajadas fortes previstas":
-    weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes previstas":"Previsão indisponível"
+    weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes":"Previsão indisponível"
   );
 
   // Painel detalhado do desktop.
-  weatherSetText("#desktopWeatherSummary",summary);
   weatherSetText("#desktopWeatherRain",rainText);
   weatherSetText("#desktopWeatherChance",chanceText==="—"?"Chance —":`Até ${chanceText} de chance`);
   weatherSetText("#desktopWeatherNowRain",currentRainText);
   weatherSetText("#desktopWeatherNowRainDetail",currentPrecipChance==="—"?`Estimativa da última hora • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`:`${currentPrecipChance} de chance • ${snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay)}`);
-  weatherSetText("#desktopWeatherWindNow",weatherHasNumber(snapshot.wind)?`${Math.round(Number(snapshot.wind))} km/h`:"—");
-  weatherSetText("#desktopWeatherHumidity",humidityText);
   weatherSetText("#desktopWeatherHail",snapshot.hailRisk?"Possível":"Sem indicação");
-  weatherSetText("#desktopWeatherHailDetail",snapshot.hailRisk?"Possibilidade de granizo nas próximas 6h.":"Sem indicação de granizo nas próximas 6h.");
+  weatherSetText("#desktopWeatherHailDetail",snapshot.hailRisk?"Possibilidade nas próximas 6h":"Sem indicação no momento");
   weatherSetText("#desktopWeatherWind6h",wind6hText);
   weatherSetText("#desktopWeatherWindStatus",
     snapshot.windRisk?"Risco de vendaval":
     snapshot.windAttention?"Rajadas fortes previstas":
-    weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes previstas":"Previsão indisponível"
+    weatherHasNumber(snapshot.maxGust)?"Sem rajadas fortes":"Previsão indisponível"
   );
 
   const provider=snapshot.source_label||(snapshot.source==="google_weather"?"Google Weather":snapshot.source==="open_meteo"?"Open-Meteo":"Previsão");
   const condition=snapshot.conditionText||weatherConditionLabel(snapshot.weatherCode,snapshot.isDay);
+  weatherSetText("#topWeatherCondition",condition);
   const providerTime=snapshot.provider_updated_at?new Date(snapshot.provider_updated_at).getTime():Number(snapshot.saved_at||Date.now());
-  const updatedMinutes=Math.max(0,Math.floor((Date.now()-(Number.isFinite(providerTime)?providerTime:Date.now()))/60000));
-  const updatedText=updatedMinutes<1?"Atualizado agora":`Atualizado há ${updatedMinutes} min`;
+  const providerDate=new Date(Number.isFinite(providerTime)?providerTime:Date.now());
+  const updatedClock=providerDate.toLocaleTimeString("pt-BR",{timeZone:"America/Sao_Paulo",hour:"2-digit",minute:"2-digit"});
+  const updatedText=`Atualizado às ${updatedClock}`;
   const rangeText=weatherHasNumber(snapshot.max)&&weatherHasNumber(snapshot.min)
     ?`Máx. ${Math.round(Number(snapshot.max))}° • Mín. ${Math.round(Number(snapshot.min))}°`
     :"Máx. — • Mín. —";
 
-  weatherSetText("#desktopWeatherProvider",provider);
+  weatherSetText("#desktopWeatherProviderLine",`Atualizado pelo ${provider}`);
   weatherSetText("#desktopWeatherSourceLabel",provider);
   weatherSetText("#desktopWeatherUpdated",updatedText);
   weatherSetText("#desktopWeatherCondition",condition);
@@ -329,7 +312,7 @@ function renderWeatherSnapshot(snapshot){
   const desktopHeroIcon=$("#desktopWeatherHeroIcon");
   if(desktopHeroIcon)desktopHeroIcon.innerHTML=weatherIconMarkup(snapshot.weatherCode,snapshot.isDay);
 
-  weatherSetText("#v7WeatherProvider",provider);
+  weatherSetText("#v7WeatherProvider",`Atualizado pelo ${provider}`);
   weatherSetText("#v7WeatherUpdated",updatedText);
   weatherSetText("#v7WeatherCondition",condition);
   weatherSetText("#v7WeatherHeroTemp",tempText);
@@ -520,8 +503,8 @@ function bindDesktopWeatherPanel(){
   const positionPanel=()=>{
     if(panel.hidden)return;
     const rect=trigger.getBoundingClientRect();
-    const maxWidth=Math.min(640,Math.max(360,window.innerWidth-32));
-    const width=Math.min(Math.max(rect.width,520),maxWidth);
+    const maxWidth=Math.min(570,Math.max(360,window.innerWidth-24));
+    const width=Math.min(Math.max(rect.width,540),maxWidth);
     let left=rect.left+rect.width/2-width/2;
     left=Math.max(16,Math.min(left,window.innerWidth-width-16));
     panel.style.setProperty("--desktop-weather-left",left+"px");
