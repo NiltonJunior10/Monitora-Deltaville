@@ -157,12 +157,55 @@ function weatherEventLabel(event){
   return labels[key]||labels[withoutEvent]||"Aviso meteorológico";
 }
 
+function weatherTranslateAlertTitle(raw,eventLabel="Aviso meteorológico"){
+  let text=String(raw||"").trim();
+  if(!text)return eventLabel;
+
+  const replacements=[
+    [/\bred alert\b/gi,"Alerta vermelho"],
+    [/\borange alert\b/gi,"Alerta laranja"],
+    [/\byellow alert\b/gi,"Alerta amarelo"],
+    [/\bgreen alert\b/gi,"Alerta verde"],
+    [/\bextreme alert\b/gi,"Alerta extremo"],
+    [/\bsevere thunderstorm(s)?\b/gi,"tempestade severa"],
+    [/\bthunderstorm(s)?\b/gi,"tempestade"],
+    [/\bheavy rain\b/gi,"chuva intensa"],
+    [/\bfreezing rain\b/gi,"chuva congelante"],
+    [/\bflash flood(ing)?\b/gi,"inundação repentina"],
+    [/\bflood(ing)?\b/gi,"inundação"],
+    [/\bstrong wind(s)?\b/gi,"vento forte"],
+    [/\bwind gust(s)?\b/gi,"rajadas de vento"],
+    [/\bhail\b/gi,"granizo"],
+    [/\btornado\b/gi,"tornado"],
+    [/\blandslide(s)?\b/gi,"deslizamento"],
+    [/\brain\b/gi,"chuva"],
+    [/\bstorm(s)?\b/gi,"tempestade"],
+    [/\bwarning\b/gi,"alerta"],
+    [/\bwatch\b/gi,"vigilância"]
+  ];
+  for(const [pattern,replacement] of replacements)text=text.replace(pattern,replacement);
+
+  text=text.replace(/\s*:\s*/g,": ").replace(/\s{2,}/g," ").trim();
+  if(text===raw&&eventLabel&&eventLabel!=="Aviso meteorológico")return eventLabel;
+  return text||eventLabel;
+}
+
 function weatherAlertDisplayTitle(notice){
-  const language=String(notice?.title_language||"").toLowerCase();
   const raw=String(notice?.title||"").trim();
   const eventLabel=(notice?.events||[]).map(weatherEventLabel).find(Boolean)||"Aviso meteorológico";
-  if(raw&&(!language||language.startsWith("pt")))return raw;
-  return eventLabel;
+  return weatherTranslateAlertTitle(raw,eventLabel);
+}
+
+function weatherAlertDisplayParts(notice){
+  const title=weatherAlertDisplayTitle(notice);
+  const parts=title.split(":");
+  if(parts.length>1){
+    return {
+      headline:parts.shift().trim()||"Alerta",
+      detail:parts.join(":").trim()||"Aviso meteorológico"
+    };
+  }
+  return {headline:"Alerta",detail:title||"Aviso meteorológico"};
 }
 
 function weatherOfficialSeverity(notice){
@@ -191,9 +234,8 @@ function renderOfficialWeatherAlerts(data){
 
   if(topBadge){
     if(notice&&!data?.error){
-      const labels=(notice.events||[]).map(weatherEventLabel);
-      const shortLabel=labels.length?labels.slice(0,1).join(" • "):"Aviso meteorológico";
-      topBadge.innerHTML=`<b>Alerta</b><span>${weatherEscapeHtml(shortLabel)}</span>`;
+      const parts=weatherAlertDisplayParts(notice);
+      topBadge.innerHTML=`<b>${weatherEscapeHtml(parts.headline)}</b><span>${weatherEscapeHtml(parts.detail)}</span>`;
       topBadge.className=`top-weather-official-badge weather-compact__alert ${weatherOfficialSeverity(notice)}`;
       topBadge.hidden=false;
       topBadge.title=weatherAlertDisplayTitle(notice);
@@ -214,7 +256,10 @@ function renderOfficialWeatherAlerts(data){
     if(hasNotice){
       const n=notice;
       const severity=weatherOfficialSeverity(n);
-      const events=(n.events||[]).map(weatherEventLabel).join(" • ");
+      const titleParts=weatherAlertDisplayParts(n);
+      const events=titleParts.detail&&titleParts.detail!=="Aviso meteorológico"
+        ?titleParts.detail
+        :(n.events||[]).map(weatherEventLabel).join(" • ");
       const timing=n.status==="active"
         ?`Ativo até ${weatherOfficialTime(n.ends_at)}`
         :`Previsto a partir de ${weatherOfficialTime(n.starts_at)}`;

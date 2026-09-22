@@ -2953,12 +2953,40 @@ function epagriNoticeEventLabel(event){
 function epagriNoticeEvents(n){
   return (n?.events||[]).map(epagriNoticeEventLabel).join(" • ");
 }
+function weatherNoticeTranslateTitle(raw,eventLabel="Aviso meteorológico"){
+  let text=String(raw||"").trim();
+  if(!text)return eventLabel;
+  const replacements=[
+    [/\bred alert\b/gi,"Alerta vermelho"],
+    [/\borange alert\b/gi,"Alerta laranja"],
+    [/\byellow alert\b/gi,"Alerta amarelo"],
+    [/\bgreen alert\b/gi,"Alerta verde"],
+    [/\bextreme alert\b/gi,"Alerta extremo"],
+    [/\bsevere thunderstorm(s)?\b/gi,"tempestade severa"],
+    [/\bthunderstorm(s)?\b/gi,"tempestade"],
+    [/\bheavy rain\b/gi,"chuva intensa"],
+    [/\bfreezing rain\b/gi,"chuva congelante"],
+    [/\bflash flood(ing)?\b/gi,"inundação repentina"],
+    [/\bflood(ing)?\b/gi,"inundação"],
+    [/\bstrong wind(s)?\b/gi,"vento forte"],
+    [/\bwind gust(s)?\b/gi,"rajadas de vento"],
+    [/\bhail\b/gi,"granizo"],
+    [/\btornado\b/gi,"tornado"],
+    [/\blandslide(s)?\b/gi,"deslizamento"],
+    [/\brain\b/gi,"chuva"],
+    [/\bstorm(s)?\b/gi,"tempestade"],
+    [/\bwarning\b/gi,"alerta"],
+    [/\bwatch\b/gi,"vigilância"]
+  ];
+  for(const [pattern,replacement] of replacements)text=text.replace(pattern,replacement);
+  text=text.replace(/\s*:\s*/g,": ").replace(/\s{2,}/g," ").trim();
+  if(text===raw&&eventLabel&&eventLabel!=="Aviso meteorológico")return eventLabel;
+  return text||eventLabel;
+}
 function weatherNoticeDisplayTitle(n){
-  const language=String(n?.title_language||"").toLowerCase();
   const raw=String(n?.title||"").trim();
   const eventLabel=(n?.events||[]).map(epagriNoticeEventLabel).find(Boolean)||"Aviso meteorológico";
-  if(raw&&(!language||language.startsWith("pt")))return raw;
-  return eventLabel;
+  return weatherNoticeTranslateTitle(raw,eventLabel);
 }
 function epagriNoticeTime(iso){
   if(!iso)return "—";
@@ -2970,14 +2998,17 @@ function epagriNoticeCard(n){
   const severity=epagriNoticeSeverity(n);
   const active=n.status==="active";
   const timing=active?`Ativo até ${epagriNoticeTime(n.ends_at)}`:`Previsto a partir de ${epagriNoticeTime(n.starts_at)}`;
-  const events=epagriNoticeEvents(n);
+  const title=weatherNoticeDisplayTitle(n);
+  const titleParts=title.split(":");
+  const titleDetail=titleParts.length>1?titleParts.slice(1).join(":").trim():"";
+  const events=titleDetail||epagriNoticeEvents(n);
   const risk=n.risk==="very_high"?"Risco muito alto":n.risk==="high"?"Risco alto":n.risk==="moderate"?"Risco moderado":n.risk==="low"?"Risco baixo":"Aviso oficial";
   const source=n.source_name||"Fonte oficial";
   const sourceMarkup=n.source_url?`<a class="epagri-official-link" href="${esc(n.source_url)}" target="_blank" rel="noopener noreferrer">${esc(source)}</a>`:`<span>${esc(source)}</span>`;
   return `<article class="event-card epagri-official-card ${severity}">
     <div class="event-icon ${severity}">!</div>
     <div>
-      <h3>${esc(weatherNoticeDisplayTitle(n))}</h3>
+      <h3>${esc(title)}</h3>
       <p><b>Google Weather • ${active?"Aviso ativo":"Aviso previsto"}</b></p>
       ${events?`<p>${esc(events)}</p>`:""}
       <small>${esc(risk)} • ${esc(timing)}</small>
