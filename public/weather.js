@@ -82,27 +82,87 @@ function weatherEscapeHtml(value){
 }
 
 function weatherEventLabel(event){
-  return ({
+  const labels={
     storm:"Tempestade",
     hail:"Granizo",
     heavy_rain:"Chuva intensa",
-    wind:"Vendaval / rajadas",
+    wind:"Vento forte / rajadas",
     lightning:"Raios",
     tornado:"Tornado / tromba d’água",
-    STORM:"Tempestade",
-    THUNDERSTORM:"Tempestade",
-    SEVERE_THUNDERSTORM_WARNING:"Tempestade severa",
-    HAIL:"Granizo",
-    RAIN:"Chuva",
-    FLOOD:"Alagamento / inundação",
+    ACID_RAIN:"Chuva ácida",
+    AVALANCHE:"Avalanche",
+    BLIZZARD:"Nevasca",
+    BLOWING_SNOW:"Neve com vento",
+    COASTAL_FLOOD:"Inundação costeira",
+    COASTAL_HAZARD:"Perigo costeiro",
+    COLD:"Frio intenso",
+    CYCLONE:"Ciclone",
+    DROUGHT:"Seca",
+    EXTRATROPICAL_CYCLONE:"Ciclone extratropical",
+    FIRE_WEATHER:"Risco de incêndio",
     FLASH_FLOOD:"Inundação repentina",
+    FLOOD:"Inundação",
+    FOG:"Nevoeiro",
+    FREEZING:"Congelamento",
+    FREEZING_AIR_TEMPERATURE:"Temperatura congelante",
+    FREEZING_DRIZZLE:"Garoa congelante",
+    FREEZING_RAIN:"Chuva congelante",
+    FROST:"Geada",
+    GALE:"Ventania",
+    GLAZE:"Gelo superficial",
+    HAIL:"Granizo",
+    HAZARDOUS_SEAS:"Mar perigoso",
+    HEAT:"Calor intenso",
+    HUMIDITY:"Umidade elevada",
+    HURRICANE:"Furacão",
+    ICE_STORM:"Tempestade de gelo",
+    LAKE_EFFECT_SNOW:"Neve por efeito de lago",
+    MONSOON:"Monção",
+    MUDDY_FLOOD:"Enxurrada com lama",
+    OUTFLOW:"Rajadas de saída",
+    RAIN:"Chuva",
     RIVER_FLOODING:"Cheia de rio",
-    WIND:"Vento forte",
+    SEVERE_THUNDERSTORM_WARNING:"Alerta de tempestade severa",
+    SNOW:"Neve",
+    SNOWSQUALL:"Rajada de neve",
+    STORM:"Tempestade",
+    STORM_SURGE:"Maré de tempestade",
+    THUNDER:"Trovões",
+    THUNDERSTORM:"Tempestade",
     TORNADO:"Tornado",
     TORNADO_WARNING:"Alerta de tornado",
-    COASTAL_FLOOD:"Inundação costeira",
-    LANDSLIDE:"Deslizamento"
-  })[event]||String(event||"").replaceAll("_"," ").toLowerCase();
+    TROPICAL_CYCLONE:"Ciclone tropical",
+    TROPICAL_CYCLONE_WARNINGS_AND_WATCHES:"Alertas de ciclone tropical",
+    TROPICAL_DISTURBANCE:"Distúrbio tropical",
+    TROPICAL_STORM:"Tempestade tropical",
+    TYPHOON:"Tufão",
+    WIND:"Vento forte",
+    WIND_CHILL:"Sensação térmica de frio",
+    WIND_WAVE:"Ondas por vento",
+    WINTER_STORM:"Tempestade de inverno",
+    WILDFIRE:"Incêndio florestal",
+    BUSHFIRE:"Incêndio em vegetação",
+    FIRE:"Incêndio",
+    LANDSLIDE:"Deslizamento",
+    EARTHQUAKE:"Terremoto",
+    DUST_STORM:"Tempestade de poeira",
+    AFTERSHOCK:"Réplica de terremoto",
+    TSUNAMI:"Tsunami",
+    VOLCANIC_ASH:"Cinzas vulcânicas",
+    VOLCANIC_ERUPTION:"Erupção vulcânica",
+    RADIATION:"Radiação"
+  };
+  const key=String(event||"").trim().toUpperCase();
+  const withoutEvent=key.endsWith("_EVENT")?key.slice(0,-6):key;
+  return labels[key]||labels[withoutEvent]||"Aviso meteorológico";
+}
+
+function weatherAlertDisplayTitle(notice){
+  const language=String(notice?.title_language||"").toLowerCase();
+  const raw=String(notice?.title||"").trim();
+  const eventLabel=(notice?.events||[]).map(weatherEventLabel).find(Boolean)||"Aviso meteorológico";
+  if(raw&&(!language||language.startsWith("pt")))return raw;
+  return eventLabel;
 }
 
 function weatherOfficialSeverity(notice){
@@ -136,7 +196,7 @@ function renderOfficialWeatherAlerts(data){
       topBadge.innerHTML=`<b>Alerta</b><span>${weatherEscapeHtml(shortLabel)}</span>`;
       topBadge.className=`top-weather-official-badge weather-compact__alert ${weatherOfficialSeverity(notice)}`;
       topBadge.hidden=false;
-      topBadge.title=notice.title||"Aviso meteorológico";
+      topBadge.title=weatherAlertDisplayTitle(notice);
     }else{
       topBadge.hidden=true;
       topBadge.textContent="";
@@ -165,7 +225,7 @@ function renderOfficialWeatherAlerts(data){
         <div class="weather-sheet-alert ${severity}">
           <span class="weather-sheet-alert__icon" aria-hidden="true">!</span>
           <span class="weather-sheet-alert__copy">
-            <strong>${weatherEscapeHtml(n.title||"Aviso meteorológico")}</strong>
+            <strong>${weatherEscapeHtml(weatherAlertDisplayTitle(n))}</strong>
             <span>${weatherEscapeHtml(events||risk)}</span>
             <small>${weatherEscapeHtml(sourceLine)}</small>
           </span>
