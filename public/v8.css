@@ -4442,6 +4442,15 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
   font-size:25px!important;
   font-weight:350!important;
 }
+.weather-mini-card__icon svg{
+  width:22px!important;
+  height:22px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
 .weather-mini-card small{
   display:block!important;
   color:#71849c!important;
