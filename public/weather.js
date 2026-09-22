@@ -284,8 +284,7 @@ function renderOfficialWeatherAlerts(data){
   const mobileRisk=document.getElementById("v7WeatherRisk");
   if(mobileRisk){
     if(notice){
-      const labels=(notice.events||[]).map(weatherEventLabel);
-      mobileRisk.textContent=`Alerta: ${labels.length?labels.join(", "):notice.title}`;
+      mobileRisk.textContent=weatherAlertDisplayTitle(notice);
       mobileRisk.hidden=false;
       mobileRisk.classList.add("official");
     }else{
