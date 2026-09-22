@@ -3612,3 +3612,8 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
   background:#102032!important;
   -webkit-text-fill-color:#EEF5FC!important;
 }
+
+/* Street focus follows the path rather than its large SVG bounding box. */
+.road-network-hit { cursor: crosshair; }
+.road-network-hit:focus { outline: none; }
+.road-network-hit:focus-visible { stroke: #237CB1; stroke-opacity: .4; }

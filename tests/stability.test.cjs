@@ -112,7 +112,7 @@ test('river sync deduplicates source timestamps, upserts corrections and records
 });
 test('release version and service-worker shell match files',()=>{
   const html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');
-  assert.equal(require('../package.json').version,'5.1.2');assert.ok(html.includes('v5.1.2'));
+  assert.ok(html.includes(`v${require('../package.json').version}`),'displayed release matches package version');
   assert.ok(!/user-scalable=no|maximum-scale=1/.test(html));
   const sw=fs.readFileSync(path.join(root,'public/service-worker.js'),'utf8');
   const shell=JSON.parse(sw.match(/const APP_SHELL=(\[[\s\S]*?\]);/)[1]);
