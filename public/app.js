@@ -2449,6 +2449,46 @@ function clearAvenueLayers(which){
   (state.avenueLayers[which]||[]).forEach(l=>l.remove());
   state.avenueLayers[which]=[];
 }
+function smoothVisualRoad(points,{radius=12,samples=4}={}){
+  if(!Array.isArray(points)||points.length<3)return points;
+  const same=(a,b)=>Math.hypot(Number(a[0])-Number(b[0]),Number(a[1])-Number(b[1]))<.001;
+  const closed=same(points[0],points[points.length-1]);
+  const src=(closed?points.slice(0,-1):points).map(p=>[Number(p[0]),Number(p[1])]);
+  if(src.length<3)return points;
+
+  const rounded=[];
+  const appendCorner=(prev,curr,next)=>{
+    const a=[prev[0]-curr[0],prev[1]-curr[1]];
+    const b=[next[0]-curr[0],next[1]-curr[1]];
+    const da=Math.hypot(a[0],a[1]),db=Math.hypot(b[0],b[1]);
+    if(da<.001||db<.001){rounded.push(curr);return;}
+    const dot=(a[0]*b[0]+a[1]*b[1])/(da*db);
+    // Trechos praticamente retos continuam exatamente retos.
+    if(dot<-.997){rounded.push(curr);return;}
+    const trim=Math.min(radius,da*.28,db*.28);
+    const pin=[curr[0]+a[0]*(trim/da),curr[1]+a[1]*(trim/da)];
+    const pout=[curr[0]+b[0]*(trim/db),curr[1]+b[1]*(trim/db)];
+    rounded.push(pin);
+    for(let s=1;s<samples;s++){
+      const t=s/samples,mt=1-t;
+      rounded.push([
+        mt*mt*pin[0]+2*mt*t*curr[0]+t*t*pout[0],
+        mt*mt*pin[1]+2*mt*t*curr[1]+t*t*pout[1]
+      ]);
+    }
+    rounded.push(pout);
+  };
+
+  if(closed){
+    for(let i=0;i<src.length;i++)appendCorner(src[(i-1+src.length)%src.length],src[i],src[(i+1)%src.length]);
+    rounded.push([...rounded[0]]);
+  }else{
+    rounded.push(src[0]);
+    for(let i=1;i<src.length-1;i++)appendCorner(src[i-1],src[i],src[i+1]);
+    rounded.push(src[src.length-1]);
+  }
+  return rounded;
+}
 function renderAvenues(which){
   const map=state.maps[which];if(!map)return;
   clearAvenueLayers(which);
@@ -2458,8 +2498,11 @@ function renderAvenues(which){
   for(const road of window.MonitoraRoadNetwork?.roads||[]){
     if(road.legacy)continue;
     const points=routeToLatLng(road.points);
-    const line=L.polyline(points,{
-      color:'#237CB1',weight:1,opacity:which==='home'?.35:.65,
+    // Suavização exclusivamente visual: preserva o traçado real usado para clique,
+    // seleção de trecho e compatibilidade com ocorrências já salvas.
+    const visualPoints=smoothVisualRoad(points,{radius:12,samples:5});
+    const line=L.polyline(visualPoints,{
+      color:'#237CB1',weight:1,opacity:which==='home'?.32:.56,
       lineCap:'round',lineJoin:'round',smoothFactor:0,interactive:false,
       className:'road-network-line'
     }).addTo(map);
