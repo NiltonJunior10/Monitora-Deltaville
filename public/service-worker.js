@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v758-segment-popup";
+const CACHE="monitora-deltaville-v759-smooth-road-overlay";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -17,7 +17,7 @@ const APP_SHELL=[
   "./weather.js?v=740",
   "./push.js?v=702",
   "./road-network.js?v=757",
-  "./app.js?v=758",
+  "./app.js?v=759",
   "./v6-ui.js?v=707",
   "./v8-ux.js?v=704",
   "./stability-core.js?v=702",
