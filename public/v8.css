@@ -3617,3 +3617,78 @@ button,[role="button"],a,.nav-item,.v7-summary-card{
 .road-network-hit { cursor: crosshair; }
 .road-network-hit:focus { outline: none; }
 .road-network-hit:focus-visible { stroke: #237CB1; stroke-opacity: .4; }
+
+
+/* v7.0.60 — popup contextual dos lagos, ancorado ao ícone clicado */
+@media(min-width:1180px) and (pointer:fine){
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual{
+    position:absolute!important;
+    z-index:1165!important;
+    right:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+    width:min(300px,calc(100% - 24px))!important;
+    max-height:min(360px,calc(100vh - 32px))!important;
+    margin:0!important;
+    padding:13px!important;
+    border:1px solid rgba(19,76,126,.13)!important;
+    border-radius:18px!important;
+    background:rgba(252,254,255,.97)!important;
+    box-shadow:0 16px 40px rgba(21,55,88,.18)!important;
+    backdrop-filter:blur(22px) saturate(170%)!important;
+    -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+    overflow:visible!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual::after{
+    content:""!important;
+    position:absolute!important;
+    top:var(--map-focus-arrow-y,50%)!important;
+    width:12px!important;
+    height:12px!important;
+    margin-top:-6px!important;
+    background:rgba(252,254,255,.97)!important;
+    border:1px solid rgba(19,76,126,.13)!important;
+    transform:rotate(45deg)!important;
+    pointer-events:none!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual[data-anchor-side="right"]::after{
+    left:-7px!important;
+    right:auto!important;
+    border-top:0!important;
+    border-right:0!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual[data-anchor-side="left"]::after{
+    right:-7px!important;
+    left:auto!important;
+    border-bottom:0!important;
+    border-left:0!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual .kicker{
+    display:none!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual h3{
+    font-size:14px!important;
+    line-height:1.15!important;
+    letter-spacing:-.015em!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual .map-focus-card__desc{
+    font-size:10px!important;
+    line-height:1.35!important;
+  }
+
+  body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual .map-focus-card__actions{
+    gap:7px!important;
+  }
+
+  :root[data-theme="dark"] body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual,
+  :root[data-theme="dark"] body.map-open [data-page="map"] #mapFocusCard.map-focus-card--contextual::after{
+    background:rgba(28,32,38,.96)!important;
+    border-color:rgba(255,255,255,.11)!important;
+  }
+}

@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v758-sidebar-ux";
+const CACHE="monitora-deltaville-v760-lake-popup";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -9,7 +9,7 @@ const APP_SHELL=[
   "./stability.css?v=757",
   "./apple-ui.css?v=757",
   "./v6.css?v=704",
-  "./v8.css?v=756",
+  "./v8.css?v=760",
   "./river-desktop.css?v=720",
   "./sidebar-desktop.css?v=758",
   "./auth.js?v=747",
@@ -17,7 +17,7 @@ const APP_SHELL=[
   "./weather.js?v=740",
   "./push.js?v=702",
   "./road-network.js?v=756",
-  "./app.js?v=756",
+  "./app.js?v=760",
   "./v6-ui.js?v=707",
   "./v8-ux.js?v=704",
   "./stability-core.js?v=702",
