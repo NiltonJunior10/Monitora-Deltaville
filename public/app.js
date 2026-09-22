@@ -2875,14 +2875,90 @@ function epagriNoticeSeverity(n){
   if(n?.risk==="moderate")return "attention";
   return n?.status==="active"?"alert":"attention";
 }
-function epagriNoticeEvents(n){
+function epagriNoticeEventLabel(event){
   const labels={
-    storm:"Tempestade",hail:"Granizo",heavy_rain:"Chuva intensa",wind:"Vendaval / rajadas",lightning:"Raios",tornado:"Tornado / tromba d’água",
-    STORM:"Tempestade",THUNDERSTORM:"Tempestade",SEVERE_THUNDERSTORM_WARNING:"Tempestade severa",HAIL:"Granizo",RAIN:"Chuva",
-    FLOOD:"Alagamento / inundação",FLASH_FLOOD:"Inundação repentina",RIVER_FLOODING:"Cheia de rio",WIND:"Vento forte",
-    TORNADO:"Tornado",TORNADO_WARNING:"Alerta de tornado",COASTAL_FLOOD:"Inundação costeira",LANDSLIDE:"Deslizamento"
+    storm:"Tempestade",
+    hail:"Granizo",
+    heavy_rain:"Chuva intensa",
+    wind:"Vento forte / rajadas",
+    lightning:"Raios",
+    tornado:"Tornado / tromba d’água",
+    ACID_RAIN:"Chuva ácida",
+    AVALANCHE:"Avalanche",
+    BLIZZARD:"Nevasca",
+    BLOWING_SNOW:"Neve com vento",
+    COASTAL_FLOOD:"Inundação costeira",
+    COASTAL_HAZARD:"Perigo costeiro",
+    COLD:"Frio intenso",
+    CYCLONE:"Ciclone",
+    DROUGHT:"Seca",
+    EXTRATROPICAL_CYCLONE:"Ciclone extratropical",
+    FIRE_WEATHER:"Risco de incêndio",
+    FLASH_FLOOD:"Inundação repentina",
+    FLOOD:"Inundação",
+    FOG:"Nevoeiro",
+    FREEZING:"Congelamento",
+    FREEZING_AIR_TEMPERATURE:"Temperatura congelante",
+    FREEZING_DRIZZLE:"Garoa congelante",
+    FREEZING_RAIN:"Chuva congelante",
+    FROST:"Geada",
+    GALE:"Ventania",
+    GLAZE:"Gelo superficial",
+    HAIL:"Granizo",
+    HAZARDOUS_SEAS:"Mar perigoso",
+    HEAT:"Calor intenso",
+    HUMIDITY:"Umidade elevada",
+    HURRICANE:"Furacão",
+    ICE_STORM:"Tempestade de gelo",
+    LAKE_EFFECT_SNOW:"Neve por efeito de lago",
+    MONSOON:"Monção",
+    MUDDY_FLOOD:"Enxurrada com lama",
+    OUTFLOW:"Rajadas de saída",
+    RAIN:"Chuva",
+    RIVER_FLOODING:"Cheia de rio",
+    SEVERE_THUNDERSTORM_WARNING:"Alerta de tempestade severa",
+    SNOW:"Neve",
+    SNOWSQUALL:"Rajada de neve",
+    STORM:"Tempestade",
+    STORM_SURGE:"Maré de tempestade",
+    THUNDER:"Trovões",
+    THUNDERSTORM:"Tempestade",
+    TORNADO:"Tornado",
+    TORNADO_WARNING:"Alerta de tornado",
+    TROPICAL_CYCLONE:"Ciclone tropical",
+    TROPICAL_CYCLONE_WARNINGS_AND_WATCHES:"Alertas de ciclone tropical",
+    TROPICAL_DISTURBANCE:"Distúrbio tropical",
+    TROPICAL_STORM:"Tempestade tropical",
+    TYPHOON:"Tufão",
+    WIND:"Vento forte",
+    WIND_CHILL:"Sensação térmica de frio",
+    WIND_WAVE:"Ondas por vento",
+    WINTER_STORM:"Tempestade de inverno",
+    WILDFIRE:"Incêndio florestal",
+    BUSHFIRE:"Incêndio em vegetação",
+    FIRE:"Incêndio",
+    LANDSLIDE:"Deslizamento",
+    EARTHQUAKE:"Terremoto",
+    DUST_STORM:"Tempestade de poeira",
+    AFTERSHOCK:"Réplica de terremoto",
+    TSUNAMI:"Tsunami",
+    VOLCANIC_ASH:"Cinzas vulcânicas",
+    VOLCANIC_ERUPTION:"Erupção vulcânica",
+    RADIATION:"Radiação"
   };
-  return (n?.events||[]).map(e=>labels[e]||String(e||"").replaceAll("_"," ").toLowerCase()).join(" • ");
+  const key=String(event||"").trim().toUpperCase();
+  const withoutEvent=key.endsWith("_EVENT")?key.slice(0,-6):key;
+  return labels[key]||labels[withoutEvent]||"Aviso meteorológico";
+}
+function epagriNoticeEvents(n){
+  return (n?.events||[]).map(epagriNoticeEventLabel).join(" • ");
+}
+function weatherNoticeDisplayTitle(n){
+  const language=String(n?.title_language||"").toLowerCase();
+  const raw=String(n?.title||"").trim();
+  const eventLabel=(n?.events||[]).map(epagriNoticeEventLabel).find(Boolean)||"Aviso meteorológico";
+  if(raw&&(!language||language.startsWith("pt")))return raw;
+  return eventLabel;
 }
 function epagriNoticeTime(iso){
   if(!iso)return "—";
@@ -2901,7 +2977,7 @@ function epagriNoticeCard(n){
   return `<article class="event-card epagri-official-card ${severity}">
     <div class="event-icon ${severity}">!</div>
     <div>
-      <h3>${esc(n.title||"Aviso meteorológico")}</h3>
+      <h3>${esc(weatherNoticeDisplayTitle(n))}</h3>
       <p><b>Google Weather • ${active?"Aviso ativo":"Aviso previsto"}</b></p>
       ${events?`<p>${esc(events)}</p>`:""}
       <small>${esc(risk)} • ${esc(timing)}</small>
