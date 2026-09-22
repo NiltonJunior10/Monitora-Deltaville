@@ -1,4 +1,4 @@
-const CACHE="monitora-deltaville-v757-css-cleanup";
+const CACHE="monitora-deltaville-v758-sidebar-ux";
 const APP_SHELL=[
   "https://unpkg.com/@supabase/supabase-js@2.113.0",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
@@ -11,7 +11,7 @@ const APP_SHELL=[
   "./v6.css?v=704",
   "./v8.css?v=756",
   "./river-desktop.css?v=720",
-  "./sidebar-desktop.css?v=725",
+  "./sidebar-desktop.css?v=758",
   "./auth.js?v=747",
   "./river.js?v=744",
   "./weather.js?v=740",
